@@ -343,58 +343,50 @@ family.forEach((f, i) => {
   world.add(f);
 });
 
-// ---------- the dog (original character, faces +z) ----------
+// ---------- the dog (original blocky character, faces +z, fur-textured) ----------
 const dog = group(0, 0, 0, scene);
 const pivot = group(0, 0.36, -0.35, dog); // hips: rotate X to rear up
-capsule(0.2, 0.5, M.furBody, 0, 0.22, 0.34, pivot, "z").scale.set(1.05, 1, 1);
-sphere(0.225, M.furBody, 0, 0.24, 0.62, pivot).scale.set(1, 1.02, 0.9); // chest
-sphere(0.19, M.furLight, 0, 0.17, 0.66, pivot).scale.set(0.85, 1, 0.8); // light chest fur
-sphere(0.2, M.furBody, 0, 0.23, 0.05, pivot).scale.set(1.05, 1, 1); // haunch
+box(0.46, 0.42, 0.92, M.furBody, 0, 0.22, 0.35, pivot); // body
+box(0.4, 0.06, 0.5, M.furLight, 0, 0.0, 0.45, pivot); // belly
 const legs = {};
-function leg(name, x, y, z, parent, thigh) {
+function leg(name, x, y, z, parent) {
   const g = group(x, y, z, parent);
-  if (thigh) sphere(0.13, M.furBody, 0, -0.02, 0, g).scale.set(0.75, 1.15, 1.1);
-  capsule(0.06, 0.24, M.furBody, 0, -0.17, 0, g);
-  sphere(0.068, M.furLight, 0, -0.34, 0.03, g, 14).scale.set(1, 0.6, 1.35);
+  box(0.13, 0.36, 0.14, M.furBody, 0, -0.17, 0, g);
+  box(0.15, 0.06, 0.18, M.furLight, 0, -0.35, 0.02, g);
   legs[name] = g;
 }
-leg("fl", -0.13, 0.04, 0.66, pivot);
-leg("fr", 0.13, 0.04, 0.66, pivot);
-leg("bl", -0.14, 0.36, -0.3, dog, true);
-leg("br", 0.14, 0.36, -0.3, dog, true);
+leg("fl", -0.14, 0.04, 0.68, pivot);
+leg("fr", 0.14, 0.04, 0.68, pivot);
+leg("bl", -0.15, 0.36, -0.3, dog);
+leg("br", 0.15, 0.36, -0.3, dog);
 const neck = group(0, 0.36, 0.78, pivot);
-capsule(0.13, 0.12, M.furBody, 0, -0.06, -0.06, neck).rotation.x = 0.5;
 const head = group(0, 0.08, 0.02, neck);
-sphere(0.19, M.furBody, 0, 0.1, 0.03, head).scale.set(1.0, 0.95, 1.05);
-capsule(0.095, 0.12, M.furLight, 0, 0.01, 0.25, head, "z").scale.set(1.05, 0.85, 1);
-sphere(0.06, M.furLight, 0, -0.035, 0.31, head, 14).scale.set(1.2, 0.6, 1); // lip
-sphere(0.042, M.nose, 0, 0.055, 0.395, head, 14).scale.set(1.25, 0.85, 0.85);
-const jaw = group(0, -0.07, 0.17, head);
-capsule(0.06, 0.1, M.furLight, 0, -0.01, 0.08, jaw, "z").scale.set(1, 0.6, 1);
-sphere(0.05, mat(0xd9465c, { roughness: 0.4 }), 0, 0.02, 0.1, jaw, 12).scale.set(0.9, 0.3, 1.6); // tongue
+box(0.4, 0.38, 0.4, M.furBody, 0, 0.1, 0.04, head);
+box(0.24, 0.17, 0.28, M.furLight, 0, 0.0, 0.32, head);
+box(0.08, 0.055, 0.05, M.nose, 0, 0.075, 0.465, head); // nose
+const jaw = group(0, -0.08, 0.2, head);
+box(0.2, 0.06, 0.24, M.furLight, 0, -0.02, 0.1, jaw);
+box(0.14, 0.02, 0.18, mat(0xd9465c, { roughness: 0.4 }), 0, 0.012, 0.1, jaw); // tongue
 const eyes = [];
 const brows = [];
 for (const s of [-1, 1]) {
-  const e = group(s * 0.085, 0.145, 0.19, head);
-  sphere(0.038, M.eye, 0, 0, 0, e, 16);
-  sphere(0.009, M.shine, s * -0.012, 0.014, 0.034, e, 8);
+  const e = group(s * 0.1, 0.17, 0.245, head);
+  box(0.085, 0.085, 0.02, mat(0xf4f1ea, { roughness: 0.3 }), 0, 0, 0, e);
+  box(0.055, 0.06, 0.02, M.eye, s * -0.01, -0.005, 0.008, e);
+  box(0.02, 0.02, 0.01, M.shine, s * -0.02, 0.012, 0.02, e);
   eyes.push(e);
-  const bGeo = new THREE.CapsuleGeometry(0.018, 0.06, 4, 8).rotateZ(Math.PI / 2);
-  const b = mesh(bGeo, M.furDark, s * 0.085, 0.24, 0.2, head);
-  brows.push(b);
+  brows.push(box(0.12, 0.03, 0.03, M.furDark, s * 0.1, 0.24, 0.25, head));
 }
 const ears = [];
 for (const s of [-1, 1]) {
-  const e = group(s * 0.16, 0.24, -0.01, head);
-  sphere(0.1, M.furDark, s * 0.035, -0.12, 0, e).scale.set(0.32, 1.45, 0.85);
+  const e = group(s * 0.2, 0.27, 0.0, head);
+  box(0.06, 0.28, 0.17, M.furDark, s * 0.03, -0.13, 0, e);
   ears.push(e);
 }
-const collar = mesh(new THREE.TorusGeometry(0.118, 0.02, 8, 24), mat(0xb3261e, { roughness: 0.5 }), 0, -0.07, -0.06, neck);
-collar.rotation.x = Math.PI / 2 - 0.5;
-const tag = mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.008, 14), new THREE.MeshStandardMaterial({ color: 0xe0b83c, metalness: 0.9, roughness: 0.25 }), 0, -0.13, 0.07, neck);
-tag.rotation.x = Math.PI / 2;
-const tail = group(0, 0.33, -0.12, pivot);
-mesh(new THREE.CylinderGeometry(0.022, 0.05, 0.38, 10).rotateX(Math.PI / 2), M.furBody, 0, 0, -0.18, tail);
+box(0.44, 0.08, 0.14, mat(0xb3261e, { roughness: 0.5 }), 0, -0.04, -0.02, neck); // collar
+box(0.07, 0.08, 0.02, new THREE.MeshStandardMaterial({ color: 0xe0b83c, metalness: 0.9, roughness: 0.25 }), 0, -0.1, 0.06, neck); // tag
+const tail = group(0, 0.36, -0.1, pivot);
+box(0.07, 0.07, 0.36, M.furBody, 0, 0, -0.17, tail);
 const cape = group(0, 0.46, 0.68, pivot);
 const capeMesh = new THREE.Mesh(new THREE.PlaneGeometry(0.6, 0.85, 1, 4), T.fabric(0xc8201f, { key: "cape", weave: 2 }));
 capeMesh.material.side = THREE.DoubleSide;
@@ -424,7 +416,7 @@ function dogPose({
   for (const e of eyes) e.scale.set(1, 1 - squint * 0.7, 1);
   brows.forEach((b, i) => {
     b.rotation.z = (i === 0 ? -1 : 1) * angry * 0.45;
-    b.position.y = 0.24 - angry * 0.035;
+    b.position.y = 0.24 - angry * 0.03;
   });
   ears.forEach((e, i) => (e.rotation.z = (i === 0 ? -1 : 1) * earUp * 0.5));
   cape.visible = capeOn;
