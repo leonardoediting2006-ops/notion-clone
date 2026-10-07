@@ -2,7 +2,7 @@ import { createShort, THREE, gsap } from "../../js/engine.js";
 import * as T from "../../js/textures.js";
 import { createForest } from "../../js/trees.js";
 import { loadAvatar } from "../../js/avatar.js";
-import { loadProp, mailbox } from "../../js/props.js";
+import { loadProp, mailbox, useEnvironment } from "../../js/props.js";
 
 // "What your dog thinks the mail carrier is" — pet-POV short.
 // Every shot is a pure function of time, so scrubbing and rendering are exact.
@@ -15,6 +15,7 @@ camera.far = 2000;
 camera.updateProjectionMatrix();
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+useEnvironment(renderer, scene, 0.45);
 renderer.toneMappingExposure = 1.05;
 
 // ---------- helpers ----------
@@ -271,6 +272,11 @@ flowers.position.set(4.4, 0.55, -7.4);
 world.add(flowers);
 box(0.6, 0.55, 0.45, T.paintedWood(0x5a3d28), 4.4, 0.275, -7.4, world); // side table
 // curbside mailbox by the gate
+// realistic car parked across the street
+const parked = loadProp(short, "CarConcept", { length: 4.5, paint: 0x1f3550 });
+parked.position.set(4.2, 0, 14.7);
+parked.rotation.y = -Math.PI / 2;
+world.add(parked);
 const mbox = mailbox();
 mbox.position.set(1.15, 0, 8.45);
 mbox.setFlag(1);

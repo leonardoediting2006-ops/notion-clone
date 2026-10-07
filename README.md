@@ -157,16 +157,17 @@ Preview them at `characters/real/?only=<Name>` (`&face`, `&walk`, `&walk=run`, `
 ```js
 import { loadProp, mailbox, handbag, hat, picketFence, CATALOG } from "../../js/props.js";
 const sofa = loadProp(short, "SheenWoodLeatherSofa", { width: 2.7 }); // or height / length / scale
-const car = loadProp(short, "sedan", { length: 4.4 });
+const car = loadProp(short, "CarConcept", { length: 4.5, paint: 0x1f3550 }); // any paint colour
 const box = mailbox(); box.setFlag(1); box.setDoor(0.5);
 scene.add(sofa, car, box, handbag({ color: 0x7a3f2a }), hat("fedora"), picketFence(6));
 ```
 
 Downloaded: `GlamVelvetSofa`, `SheenWoodLeatherSofa`, `SheenChair`, `ChairDamaskPurplegold`,
 `SpecularSilkPouf`, `AnisotropyBarnLamp`, `GlassVaseFlowers`, `DiffuseTransmissionPlant`, `TrafficCone`
-(realistic) and `sedan`, `hatchback`, `suv`, `van`, `delivery-truck`, `taxi`, `police-car` (low-poly).
+and `CarConcept` (realistic car, `paint` option) and `sedan`, `hatchback`, `suv`, `van`, `delivery-truck`, `taxi`, `police-car` (low-poly).
 Code-built: `mailbox()`, `handbag()`, `hat("cap" | "fedora" | "uniform" | "beanie")`, `picketFence(len)`.
-Preview: `characters/props/?group=furniture | vehicles | small`.
+Preview: `characters/props/?group=furniture | cars | vehicles | small`.
+Call `useEnvironment(renderer, scene)` once so metal, car paint and glass get reflections.
 
 Motion capture for avatars: `person.loadClip("m_walk_neutral_01")` before `short.start()`, then
 `person.play("m_walk_neutral_01", t)` + `person.update()` every frame. Included clips:

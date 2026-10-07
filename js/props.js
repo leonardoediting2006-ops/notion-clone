@@ -10,6 +10,7 @@ import { THREE } from "./engine.js";
 import { GLTFLoader } from "../lib/jsm/loaders/GLTFLoader.js";
 import { DRACOLoader } from "../lib/jsm/loaders/DRACOLoader.js";
 import * as T from "./textures.js";
+import { RoomEnvironment } from "../lib/jsm/environments/RoomEnvironment.js";
 
 const ASSETS = new URL("../assets/", import.meta.url).href;
 const loader = new GLTFLoader();
@@ -27,6 +28,8 @@ export const CATALOG = {
   GlassVaseFlowers: "props/GlassVaseFlowers.glb",
   DiffuseTransmissionPlant: "props/DiffuseTransmissionPlant.glb",
   TrafficCone: { file: "props/TrafficCone.glb", only: ["Cone Normal"] }, // file also holds a demo floor + bulb
+  // realistic car (Khronos CarConcept, CC-BY 4.0) — logo parts removed
+  CarConcept: { file: "vehicles/CarConcept.glb", hide: ["InteriorSteeringEmblem", "License Plate"] },
   // low-poly vehicles (Kenney)
   sedan: "vehicles/sedan.gltf",
   hatchback: "vehicles/hatchback.gltf",
@@ -39,16 +42,35 @@ export const CATALOG = {
 
 // Load a model by catalog name. Size it with ONE of: height | width | length | scale.
 // Returns a Group immediately; the model appears once loaded (rendering waits for it).
-export function loadProp(short, name, { height, width, length, scale, shadows = true } = {}) {
+export function loadProp(short, name, { height, width, length, scale, shadows = true, paint = null } = {}) {
   const holder = new THREE.Group();
   holder.name = name;
   const entry = CATALOG[name] ?? name;
   const file = typeof entry === "string" ? entry : entry.file;
   const only = typeof entry === "string" ? null : entry.only;
+  const hide = typeof entry === "string" ? null : entry.hide;
   let done;
   short.track(new Promise((ok) => (done = ok)));
   loader.load(ASSETS + file, (gltf) => {
     const obj = gltf.scene;
+    if (hide) {
+      const drop = [];
+      obj.traverse((o) => { if (hide.includes(o.name)) drop.push(o); });
+      drop.forEach((o) => o.removeFromParent());
+    }
+    // optional body colour for vehicles (materials named "Paint…")
+    if (paint !== null) {
+      obj.traverse((o) => {
+        if (!o.isMesh) return;
+        for (const m of Array.isArray(o.material) ? o.material : [o.material]) {
+          if (/^paint/i.test(m.name ?? "")) {
+            m.color.set(paint);
+            if (m.map) m.map = null;
+            m.needsUpdate = true;
+          }
+        }
+      });
+    }
     if (only) {
       const drop = [];
       obj.traverse((o) => { if (o.isMesh && !only.includes(o.name) && !only.includes(o.parent?.name)) drop.push(o); });
@@ -83,6 +105,14 @@ export function loadProp(short, name, { height, width, length, scale, shadows = 
     done();
   });
   return holder;
+}
+
+// Soft image-based lighting so metal, car paint, glass and leather reflect something.
+export function useEnvironment(renderer, scene, intensity = 0.6) {
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+  scene.environmentIntensity = intensity;
+  pmrem.dispose();
 }
 
 // ---------------------------------------------------------------- code-built props

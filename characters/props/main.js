@@ -1,7 +1,7 @@
 // Prop Library preview: every downloaded + code-built prop in one studio shot.
 // ?group=furniture | vehicles | small to frame one group.
 import { createShort, THREE } from "../../js/engine.js";
-import { loadProp, mailbox, handbag, hat, picketFence } from "../../js/props.js";
+import { loadProp, mailbox, handbag, hat, picketFence, useEnvironment } from "../../js/props.js";
 import { loadAvatar } from "../../js/avatar.js";
 import * as T from "../../js/textures.js";
 
@@ -9,6 +9,7 @@ const group = new URLSearchParams(location.search).get("group") ?? "furniture";
 const short = createShort({ duration: 6, lights: false, fov: 35, background: "#d6d8dc" });
 const { scene, camera, renderer, onUpdate } = short;
 renderer.shadowMap.enabled = true;
+useEnvironment(renderer, scene, 0.7);
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 scene.add(new THREE.HemisphereLight(0xf2f4ff, 0x8a8070, 1.4));
 const key = new THREE.DirectionalLight(0xfff1e0, 2.6);
@@ -41,6 +42,11 @@ if (group === "furniture") {
   const cars = ["sedan", "hatchback", "suv", "van", "delivery-truck", "taxi", "police-car"];
   cars.forEach((c, i) => place(loadProp(short, c, { length: c === "delivery-truck" ? 5.5 : 4.4 }), (i % 2 - 0.5) * 3.4, i * -3.2 + 6, 0.5));
   cam = [[0, 10, 22], [0, 0.5, -3]];
+} else if (group === "cars") {
+  place(loadProp(short, "CarConcept", { length: 4.5 }), -1.5, 1.2, 0.7);
+  place(loadProp(short, "CarConcept", { length: 4.5, paint: 0x1f3550 }), 1.6, -1.6, 0.7);
+  place(loadProp(short, "CarConcept", { length: 4.5, paint: 0xd8d8d4 }), -1.2, -4.6, 0.7);
+  cam = [[0, 4.6, 15], [0, 0.6, -1.8]];
 } else {
   place(mailbox(), -1.1, 0.1, 0.5).setFlag(1);
   place(picketFence(2.4), -0.4, -0.9);

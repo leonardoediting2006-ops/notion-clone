@@ -16,6 +16,7 @@ the description of any video that shows them.
 | `props/GlassVaseFlowers.glb` | Khronos glTF Sample Assets | Eric Chadwick, Rico Cilliers | CC0 |
 | `props/DiffuseTransmissionPlant.glb` | Khronos glTF Sample Assets | Eric Chadwick, Rico Cilliers | CC-BY 4.0 / CC0 |
 | `props/TrafficCone.glb` | Khronos glTF Sample Assets | Rob Tuytel, hinndia | CC-BY 4.0 / CC0 |
+| `vehicles/CarConcept.glb` | Khronos glTF Sample Assets (from a CC0 model by Unity Fan) | Eric Chadwick, Darmstadt Graphics Group | CC-BY 4.0 (Khronos logo parts removed at load) |
 | `vehicles/*.gltf` | [Kenney](https://kenney.nl) via [pmndrs/market-assets](https://github.com/pmndrs/market-assets) | Kenney | CC0 |
 | `shorts/dog-mailman/textures/*` (brick, hardwood, grass) | [three.js examples](https://github.com/mrdoob/three.js) | three.js authors | MIT |
 
@@ -24,6 +25,6 @@ Code-built (no licence needed): mailbox, handbag, hats, picket fence (`js/props.
 ## Video description credits
 
 ```
-3D models: Microsoft Rocketbox (MIT); Khronos glTF Sample Assets by Eric Chadwick, Fran Calvente,
-Rico Cilliers, Rob Tuytel (CC BY 4.0); Kenney (CC0).
+3D models: Microsoft Rocketbox (MIT); Khronos glTF Sample Assets by Eric Chadwick (Darmstadt Graphics
+Group), Fran Calvente, Rico Cilliers, Rob Tuytel (CC BY 4.0); Kenney (CC0).
 ```
