@@ -2,7 +2,7 @@
 // covered in thousands of alpha-cut leaf cards (one InstancedMesh for all
 // trees, so it stays cheap to render).
 
-import { THREE } from "../../js/engine.js";
+import { THREE } from "./engine.js";
 import * as T from "./textures.js";
 
 let s = 424242;

@@ -49,6 +49,11 @@ lib/                  three.module.min.js (r170), gsap.min.js (3.15)
 shorts/
   _template/          copy this to start a new short
   hello-3d/           example: spinning knot, orbiting cubes, star field, word-pop captions
+  dog-mailman/        "What your dog thinks the mail carrier is" (pet-POV style)
+characters/           Character Lab: preview every human preset (?only=dad, &face for a close-up)
+js/human.js           reusable realistic human template + PRESETS
+js/textures.js        procedural textures (fur, fabric, denim, plaster, bark, sky…)
+js/trees.js           procedural trees and bushes with leaf cards
 tools/
   server.mjs          tiny static dev server
   render.mjs          headless frame-by-frame MP4 / PNG exporter
@@ -79,3 +84,43 @@ Don't use `requestAnimationFrame`, `Date.now()`, `Math.random()` per frame, or f
 - Press **S** in the preview: the bottom ~380px and the right edge are covered by YouTube's UI.
 - Hook in the first second, and loop-friendly endings get replays.
 - Put textures, `.glb` models and audio next to the short (e.g. `shorts/my-short/assets/`).
+
+## Human template (`js/human.js`)
+
+Build a person once, reuse them in every short by changing clothes and features:
+
+```js
+import { createHuman, PRESETS } from "../../js/human.js";
+
+const carrier = createHuman(PRESETS.mailCarrier);
+const neighbour = createHuman({
+  ...PRESETS.dad,
+  top: { type: "hoodie", color: 0x2f5d8a },
+  hair: { style: "buzz", color: 0x1e1612 },
+  glasses: { color: 0x111111 },
+});
+scene.add(carrier, neighbour);
+
+onUpdate((t) => carrier.walk(t * 7, 0.5)); // 0.5 walk … 1.0 run
+neighbour.sit();
+```
+
+Options (all optional):
+
+| option | values |
+|---|---|
+| `height`, `build` | metres (1.78 default); 0.85 slim … 1.25 heavy |
+| `body` | `"male"` \| `"female"` |
+| `skin`, `eyes` | hex colours |
+| `face` | `{ nose, jaw, chin, lips, brow, cheeks }` multipliers around 1 |
+| `hair` | `{ style: "short" \| "buzz" \| "long" \| "ponytail" \| "balding" \| "bald", color }` |
+| `beard` | `"none"` \| `"stubble"` \| `"beard"` \| `"mustache"` |
+| `top` | `{ type: "tshirt" \| "polo" \| "shirt" \| "hoodie" \| "sweater", color }` |
+| `bottom` | `{ type: "jeans" \| "pants" \| "shorts" \| "skirt", color }` |
+| `shoes` | `{ type: "sneakers" \| "shoes" \| "boots", color }` |
+| `hat` | `{ type: "cap" \| "uniform" \| "beanie", color }` or `null` |
+| `glasses` | `{ color }` or `null` |
+
+Joints for custom poses: `pelvis, spine, head, armL/armR, elbowL/R, handL/R, legL/legR, kneeL/R, ankleL/R`.
+Helpers: `walk(phase, amount)`, `sit()`, `resetPose()`, `blink(0..1)`, `look(yaw, pitch)`.
+Presets: `mailCarrier`, `dad`, `mom`, `teen`, `grandpa`. Preview them at `characters/`.

@@ -2,7 +2,7 @@
 // asphalt, concrete, fabric, shingles, siding, painted wood, skin, paper, sky.
 // Seeded, so every render produces exactly the same pixels.
 
-import { THREE } from "../../js/engine.js";
+import { THREE } from "./engine.js";
 
 let s = 1234567;
 const rnd = () => ((s = (s * 16807) % 2147483647) / 2147483647);
@@ -335,4 +335,47 @@ export function skyTexture(kind = "day") {
     t.wrapS = THREE.RepeatWrapping;
     return t;
   });
+}
+
+export function denim(color = 0x34466b, { key = "" } = {}) {
+  const base = hex(color);
+  return painted(`denim${color}${key}`, 512, (x, w, h) => {
+    x.fillStyle = rgb(base);
+    x.fillRect(0, 0, w, h);
+    // diagonal twill weave
+    for (let i = -h; i < w; i += 3) {
+      x.strokeStyle = rgb(base, rr(1.05, 1.35), 0.35);
+      x.lineWidth = 1;
+      x.beginPath();
+      x.moveTo(i, 0);
+      x.lineTo(i + h, h);
+      x.stroke();
+    }
+    // white weft speckle + soft fading
+    speckle(x, w, h, 9000, 1.5, ["#ffffff", "#c9d3e0"], 0.18);
+    noise(x, w, h, { base: 2, octaves: 4, alpha: 0.22, light: [210, 220, 235] });
+  }, { repeat: [3, 3], bump: 0.012, roughness: 0.95 });
+}
+
+export function leather(color = 0x2a1d16) {
+  const base = hex(color);
+  return painted(`leather${color}`, 256, (x, w, h) => {
+    x.fillStyle = rgb(base);
+    x.fillRect(0, 0, w, h);
+    noise(x, w, h, { base: 4, octaves: 5, alpha: 0.25 });
+    speckle(x, w, h, 4000, 1.5, ["#000", "#fff"], 0.12);
+  }, { bump: 0.01, roughness: 0.45 });
+}
+
+// Clothing material: fabric texture, double-sided so open hems look solid.
+const clothCache = new Map();
+export function cloth(color, kind = "cotton") {
+  const key = `${color}${kind}`;
+  if (!clothCache.has(key)) {
+    const src = kind === "denim" ? denim(color) : kind === "knit" ? fabric(color, { weave: 5, key: "knit" }) : fabric(color, { weave: 3, key: kind });
+    const m = src.clone();
+    m.side = THREE.DoubleSide;
+    clothCache.set(key, m);
+  }
+  return clothCache.get(key);
 }

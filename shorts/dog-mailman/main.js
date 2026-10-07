@@ -1,6 +1,7 @@
 import { createShort, THREE, gsap } from "../../js/engine.js";
-import * as T from "./textures.js";
-import { createForest } from "./trees.js";
+import * as T from "../../js/textures.js";
+import { createForest } from "../../js/trees.js";
+import { createHuman, PRESETS } from "../../js/human.js";
 
 // "What your dog thinks the mail carrier is" — pet-POV short.
 // Every shot is a pure function of time, so scrubbing and rendering are exact.
@@ -251,10 +252,10 @@ box(0.03, 0.12, 8, M.trim, 5.89, 0.06, -4, world);
 box(3.4, 0.012, 2.2, M.rug, 0.5, 0.008, -3.6, world);
 // sofa + family on the back wall
 const sofa = group(1.5, 0, -6.8, world);
-capsule(0.22, 2.9, M.sofa, 0, 0.36, 0.05, sofa, "x").scale.set(1, 1, 2.2);
-capsule(0.17, 2.9, M.sofa, 0, 0.82, -0.36, sofa, "x").scale.set(1, 2.2, 1);
-capsule(0.15, 0.6, M.sofa, -1.6, 0.5, 0, sofa, "z").scale.set(1, 1.3, 1);
-capsule(0.15, 0.6, M.sofa, 1.6, 0.5, 0, sofa, "z").scale.set(1, 1.3, 1);
+capsule(0.22, 2.9, M.sofa, 0, 0.24, 0.05, sofa, "x").scale.set(1, 1, 2.2);
+capsule(0.17, 2.9, M.sofa, 0, 0.72, -0.36, sofa, "x").scale.set(1, 2.2, 1);
+capsule(0.15, 0.6, M.sofa, -1.6, 0.4, 0, sofa, "z").scale.set(1, 1.3, 1);
+capsule(0.15, 0.6, M.sofa, 1.6, 0.4, 0, sofa, "z").scale.set(1, 1.3, 1);
 for (const x of [-1.4, 1.4]) box(0.06, 0.12, 0.06, 0x2a1b10, x, 0.06, 0.3, sofa);
 const frame = box(1.6, 1.0, 0.05, T.paintedWood(0x2e2018), -2.6, 1.9, -7.88, world);
 box(1.4, 0.82, 0.01, T.leaves(1), 0, 0, 0.03, frame); // painting
@@ -263,83 +264,27 @@ mesh(new THREE.CylinderGeometry(0.02, 0.02, 1.5, 8), mat(0x2a2a2a, { metalness: 
 mesh(new THREE.CylinderGeometry(0.2, 0.3, 0.35, 16, 1, true), mat(0xfff1c9, { emissive: 0x806a40, side: THREE.DoubleSide }), 0, 1.6, 0, lamp);
 mesh(new THREE.CylinderGeometry(0.18, 0.18, 0.03, 16), mat(0x2a2a2a), 0, 0.015, 0, lamp);
 
-function person({ shirt, pants, skinTone = 0xe0b08a, hair = 0x3a2a1e }) {
-  const shirtM = T.fabric(shirt, { key: "shirt" });
-  const pantsM = T.fabric(pants, { key: "pants", weave: 2 });
-  const skinM = T.skin(skinTone);
-  const hairM = T.fur(hair, { key: "hair", streak: 0.6 });
-  const shoeM = mat(0x1d1a18, { roughness: 0.5 });
-  const p = group();
-  p.legL = group(-0.12, 0.95, 0, p);
-  p.legR = group(0.12, 0.95, 0, p);
-  for (const l of [p.legL, p.legR]) {
-    capsule(0.095, 0.72, pantsM, 0, -0.44, 0, l);
-    capsule(0.065, 0.14, shoeM, 0, -0.88, 0.06, l, "z").scale.set(1.15, 0.8, 1);
-  }
-  p.torso = capsule(0.22, 0.32, shirtM, 0, 1.3, 0, p);
-  p.torso.scale.set(1, 1, 0.62);
-  capsule(0.2, 0.05, pantsM, 0, 0.98, 0, p).scale.set(1, 1, 0.65); // hips
-  p.armL = group(-0.29, 1.58, 0, p);
-  p.armR = group(0.29, 1.58, 0, p);
-  for (const a of [p.armL, p.armR]) {
-    capsule(0.068, 0.46, shirtM, 0, -0.28, 0, a);
-    sphere(0.058, skinM, 0, -0.6, 0, a, 12).scale.set(0.9, 1.2, 0.8);
-  }
-  capsule(0.06, 0.06, skinM, 0, 1.66, 0, p); // neck
-  p.head = group(0, 1.8, 0, p);
-  sphere(0.14, skinM, 0, 0.04, 0, p.head).scale.set(0.9, 1.12, 0.98);
-  sphere(0.017, skinM, 0, 0.022, 0.138, p.head, 10).scale.set(1, 1.3, 1.1); // nose
-  const browM = mat(hair, { roughness: 0.9 });
-  const lipM = mat(0xa8524a, { roughness: 0.6 });
-  const cheekM = new THREE.MeshStandardMaterial({ color: 0xe88a80, transparent: true, opacity: 0.35, roughness: 0.8, depthWrite: false });
-  for (const sx of [-1, 1]) {
-    // eye: white, iris, pupil, catch-light
-    sphere(0.026, mat(0xf7f4ee, { roughness: 0.25 }), sx * 0.05, 0.068, 0.112, p.head, 14).scale.set(1, 0.72, 0.55);
-    sphere(0.015, mat(0x5a3a22, { roughness: 0.15 }), sx * 0.05, 0.066, 0.124, p.head, 12).scale.set(1, 1, 0.45);
-    sphere(0.008, M.eye, sx * 0.05, 0.066, 0.13, p.head, 8).scale.set(1, 1, 0.4);
-    sphere(0.004, M.shine, sx * 0.05 - 0.005, 0.072, 0.133, p.head, 6);
-    // eyebrow
-    const brow = capsule(0.008, 0.03, browM, sx * 0.05, 0.103, 0.118, p.head, "x");
-    brow.rotation.z = sx * -0.12;
-    // cheeks + ears
-    sphere(0.025, cheekM, sx * 0.075, 0.015, 0.105, p.head, 10).scale.set(1, 0.7, 0.4);
-    sphere(0.024, skinM, sx * 0.128, 0.04, 0, p.head, 8).scale.set(0.5, 1, 0.8);
-  }
-  // friendly smile
-  const smile = mesh(new THREE.TorusGeometry(0.03, 0.0065, 6, 16, Math.PI), lipM, 0, -0.018, 0.122, p.head);
-  smile.rotation.z = Math.PI;
-  smile.scale.set(1, 0.75, 1);
-  p.hair = mesh(new THREE.SphereGeometry(0.15, 18, 10, 0, Math.PI * 2, 0, Math.PI * 0.55), hairM, 0, 0.07, -0.01, p.head);
-  p.hair.scale.set(0.95, 1.05, 1.05);
-  return p;
-}
-
 // mail carrier (generic uniform)
-const carrier = person({ shirt: 0x8fb0d0, pants: 0x2b364d, skinTone: 0xf0c8a4, hair: 0x4a3322 });
-carrier.hair.visible = false;
-const navy = T.fabric(0x26324a, { key: "cap" });
-mesh(new THREE.CylinderGeometry(0.15, 0.155, 0.11, 18), navy, 0, 0.17, 0, carrier.head);
-mesh(new THREE.SphereGeometry(0.15, 18, 8, 0, Math.PI * 2, 0, Math.PI / 2), navy, 0, 0.215, 0, carrier.head).scale.set(1, 0.35, 1);
-box(0.22, 0.015, 0.13, navy, 0, 0.13, 0.17, carrier.head).rotation.x = 0.15;
+const carrier = createHuman(PRESETS.mailCarrier);
 const bagM = T.fabric(0x6e4a2a, { key: "bag", weave: 2 });
-box(0.13, 0.36, 0.42, bagM, 0.31, 1.05, 0, carrier);
-const strap = box(0.05, 0.92, 0.3, bagM, 0.02, 1.38, 0, carrier);
-strap.rotation.z = 0.55;
+box(0.11, 0.3, 0.36, bagM, 0.225, 0.98, 0.0, carrier); // satchel
+// cross-body strap: a flattened ring from the left shoulder to the right hip
+const strapPivot = group(0.04, 1.225, -0.005, carrier);
+strapPivot.rotation.z = Math.atan2(0.49, -0.32);
+const strap = mesh(new THREE.TorusGeometry(1, 0.035, 6, 40), bagM, 0, 0, 0, strapPivot);
+strap.rotation.x = Math.PI / 2;
+strap.scale.set(0.3, 0.125, 0.3);
 const letters = [];
 for (let i = 0; i < 3; i++) letters.push(box(0.24, 0.006, 0.13, M.paper, 0, 0, 0, world));
 world.add(carrier);
 
 // family on the sofa
-const family = [
-  person({ shirt: 0xc9673f, pants: 0x46464a }),
-  person({ shirt: 0x5d955f, pants: 0x34405e, hair: 0x6e4220, skinTone: 0xc99474 }),
-];
+const family = [createHuman(PRESETS.dad), createHuman(PRESETS.mom)];
 family.forEach((f, i) => {
-  f.position.set(1.0 + i * 1.1, -0.42, -6.72);
-  f.legL.rotation.x = f.legR.rotation.x = -1.45;
-  f.armL.rotation.x = f.armR.rotation.x = -0.9;
-  box(0.08, 0.15, 0.015, mat(0x111111, { roughness: 0.2 }), 0, -0.64, 0.07, f.armR); // phone
-  f.head.rotation.x = 0.45; // staring at phone
+  f.sit();
+  f.position.set(0.9 + i * 1.2, -0.41, -6.85);
+  box(0.075, 0.15, 0.012, mat(0x111111, { roughness: 0.2 }), 0, -0.1, 0.04, f.handR).rotation.x = -0.4; // phone
+  f.head.rotation.x = 0.45; // staring at the phone
   world.add(f);
 });
 
@@ -518,21 +463,13 @@ function setEnv(kind, { exposure = 1.05, fillIntensity = 0 } = {}) {
 function resetWorld() {
   carrier.position.set(0, 0, 30);
   carrier.rotation.set(0, Math.PI, 0);
-  carrier.legL.rotation.x = carrier.legR.rotation.x = 0;
-  carrier.armL.rotation.set(0, 0, 0);
-  carrier.armR.rotation.set(0, 0, 0);
+  carrier.resetPose();
   gate.rotation.y = 0;
   letters.forEach((l) => (l.visible = false));
   qmarkEl.style.display = "none";
   boardEl.style.display = "none";
 }
-function walk(p, phase, amt = 0.5) {
-  const s = Math.sin(phase) * amt;
-  p.legL.rotation.x = s;
-  p.legR.rotation.x = -s;
-  p.armL.rotation.x = -s * 0.8;
-  p.armR.rotation.x = s * 0.8;
-}
+const walk = (p, phase, amt = 0.5) => p.walk(phase, amt);
 
 // dog standing on its hind legs at the door window, carrier walking up the path
 function windowShot(lt, { start = 9.5, speed = 1.6 } = {}) {
@@ -573,7 +510,8 @@ const SHOTS = [
     const turn = ease.inOut(prog(lt, 0.55, 0.85));
     carrier.position.set(0.15, 0, 0.6 + Math.max(0, lt - 0.8) * 1.4);
     carrier.rotation.y = Math.PI - turn * Math.PI;
-    carrier.armR.rotation.x = -0.55 * reach * (1 - turn);
+    carrier.armR.rotation.x = -0.75 * reach * (1 - turn);
+    carrier.elbowR.rotation.x = -0.15 - 0.5 * reach * (1 - turn);
     if (lt > 0.8) walk(carrier, (lt - 0.8) * 7);
     letters.forEach((l, i) => {
       const p = prog(lt, 0.25 + i * 0.06, 0.5 + i * 0.06);
