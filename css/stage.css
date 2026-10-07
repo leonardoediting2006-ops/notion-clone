@@ -1,0 +1,127 @@
+/* Shared styles for every short. The stage is always 1080x1920 (9:16)
+   and gets scaled down to fit the browser window for previewing. */
+:root {
+  --stage-w: 1080px;
+  --stage-h: 1920px;
+  --ui: #1a1a24;
+  --ui-text: #e8e8f0;
+  --accent: #ff3d7f;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: #050508;
+  color: var(--ui-text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  overflow: hidden;
+}
+
+#viewport {
+  position: fixed;
+  inset: 0 0 64px 0;
+  display: grid;
+  place-items: center;
+}
+
+#stage {
+  position: relative;
+  width: var(--stage-w);
+  height: var(--stage-h);
+  overflow: hidden;
+  transform-origin: center center;
+  flex: none;
+}
+
+#stage canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* HTML overlay layer for captions/titles, sits above the 3D canvas. */
+.overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  padding: 0 70px;
+  text-align: center;
+  font-family: "Arial Black", "Inter", Impact, system-ui, sans-serif;
+  font-weight: 900;
+  font-size: 120px;
+  line-height: 1.05;
+  color: #fff;
+  -webkit-text-stroke: 6px #000;
+  paint-order: stroke fill;
+  text-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+}
+
+.caption.small { font-size: 68px; -webkit-text-stroke: 4px #000; }
+.caption .word { display: inline-block; }
+.caption .hl { color: var(--accent); }
+
+/* YouTube Shorts UI safe-zone guide (toggle with the S key). */
+.safe-zone {
+  position: absolute;
+  inset: 0;
+  display: none;
+  pointer-events: none;
+}
+.safe-zone.on { display: block; }
+.safe-zone::before, .safe-zone::after {
+  content: "";
+  position: absolute;
+  background: rgba(255, 0, 0, 0.25);
+  outline: 2px dashed rgba(255, 80, 80, 0.9);
+}
+/* bottom: title, channel, description */
+.safe-zone::before { left: 0; right: 0; bottom: 0; height: 380px; }
+/* right: like / comment / share buttons */
+.safe-zone::after { top: 700px; right: 0; width: 180px; bottom: 380px; }
+
+/* Preview controls */
+#controls {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+  background: var(--ui);
+  font-size: 14px;
+}
+#controls button {
+  background: #2c2c3a;
+  color: var(--ui-text);
+  border: 0;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font: inherit;
+  cursor: pointer;
+}
+#controls button:hover { background: #3a3a4c; }
+#controls input[type="range"] { flex: 1; accent-color: var(--accent); }
+#controls .time { font-variant-numeric: tabular-nums; min-width: 110px; text-align: right; }
+#controls .hint { opacity: 0.55; }
+
+/* Render mode: the page is exactly the stage, no UI, no scaling. */
+body.render #viewport { inset: 0; display: block; }
+body.render #stage { transform: none !important; }
+body.render #controls { display: none; }
+
+@media (max-width: 600px) {
+  #controls .hint { display: none; }
+}

@@ -1,27 +1,14 @@
 {
   "name": "shorts-3d-studio",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
-  "description": "Code-driven 3D animations for YouTube Shorts (1080x1920), built with Remotion + React Three Fiber.",
+  "type": "module",
+  "description": "3D YouTube Shorts (1080x1920) made with plain HTML, CSS, JavaScript, Three.js and GSAP.",
   "scripts": {
-    "dev": "remotion studio",
-    "render": "remotion render",
-    "still": "remotion still",
-    "typecheck": "tsc --noEmit"
-  },
-  "dependencies": {
-    "@react-three/drei": "^9.122.0",
-    "@react-three/fiber": "^8.17.10",
-    "@remotion/cli": "4.0.533",
-    "@remotion/three": "4.0.533",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "remotion": "4.0.533",
-    "three": "^0.170.0"
+    "dev": "node tools/server.mjs",
+    "render": "node tools/render.mjs"
   },
   "devDependencies": {
-    "@types/react": "^18.3.12",
-    "@types/three": "^0.170.0",
-    "typescript": "^5.6.3"
+    "playwright": "^1.56.0"
   }
 }
