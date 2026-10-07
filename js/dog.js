@@ -165,9 +165,14 @@ export function createDog({ colors = DOG_COLORS.golden, key = "", glowEyes = fal
     wag = 0, wagSpeed = 18, t = 0, trot = 0, trotSpeed = 11,
     squint = 0, angry = 0, earUp = 0, earBack = 0, capeOn = false, cute = 0, tilt = 0,
     closed = 0, sad = 0, snarl = 0, glasses: glassesPos = null, earpiece: hasEarpiece = false,
+    pupil = 1, shiver = 0, bow = 0,
   } = {}) => {
-    dog.position.set(x, y, z);
-    dog.rotation.set(0, ry, 0);
+    // shiver: whole-body excited vibration; bow: play bow (chest down, bum up)
+    const sx = shiver ? Math.sin(t * 97) * 0.012 * shiver : 0;
+    const sz = shiver ? Math.cos(t * 83) * 0.008 * shiver : 0;
+    dog.position.set(x + sx, y, z + sz);
+    dog.rotation.set(0, ry + (shiver ? Math.sin(t * 71) * 0.03 * shiver : 0), 0);
+    rear -= bow * 0.38;
     // sitting: hips drop and the back legs fold forward; lying: belly on the floor
     const sitTilt = sit * 0.5;
     pivot.position.y = 0.36 - sit * 0.2 - lie * 0.33;
@@ -184,13 +189,15 @@ export function createDog({ colors = DOG_COLORS.golden, key = "", glowEyes = fal
     legs.bl.rotation.x = -s - sit * 1.35 - lie * 1.4;
     legs.br.rotation.x = s - sit * 1.35 - lie * 1.4;
     for (const g of [legs.bl, legs.br]) g.position.z = -0.3 + sit * 0.12 + lie * 0.05;
+    legs.fl.rotation.x -= bow * 1.35; // forelegs stretched out flat on the floor
+    legs.fr.rotation.x -= bow * 1.35;
     dog.position.y += Math.abs(Math.sin(t * trotSpeed)) * 0.04 * trot;
     for (const e of eyes) {
       // cute = big glossy puppy eyes: iris fills the eye, two sparkles, blush
       const big = 1 + cute * 0.45;
       e.scale.set(big, big * (1 - squint * 0.7), 1);
       e.iris.visible = cute > 0 && !glowEyes;
-      e.pupil.scale.set((glowEyes ? 0.3 : 1) + cute * 0.15, 1 + cute * 0.15, 1);
+      e.pupil.scale.set(((glowEyes ? 0.3 : 1) + cute * 0.15) * pupil, (1 + cute * 0.15) * Math.min(pupil, 1.2), 1);
       e.shine.scale.setScalar(1 + cute * 0.8);
       e.shine.position.y = 0.012 + cute * 0.008;
       e.shine.visible = !glowEyes;

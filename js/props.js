@@ -29,6 +29,7 @@ export const CATALOG = {
   GlassVaseFlowers: "props/GlassVaseFlowers.glb",
   DiffuseTransmissionPlant: "props/DiffuseTransmissionPlant.glb",
   TrafficCone: { file: "props/TrafficCone.glb", only: ["Cone Normal"] }, // file also holds a demo floor + bulb
+  RubberDuck: "props/RubberDuck.glb", // Khronos "Duck" (SCEA Shared Source License, see props/LICENSE-SCEA.txt)
   // realistic car (Khronos CarConcept, CC-BY 4.0) — logo parts removed
   CarConcept: { file: "vehicles/CarConcept.glb", hide: ["InteriorSteeringEmblem", "License Plate"] },
   // low-poly vehicles (Kenney)

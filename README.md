@@ -57,6 +57,7 @@ shorts/
   hello-3d/           example: spinning knot, orbiting cubes, star field, word-pop captions
   dog-mailman/        "What your dog thinks the mail carrier is" (pet-POV style)
   dog-bathroom/       "Why your dog follows you into the bathroom" (voiceover-synced, voiceover.srt)
+  dog-toy/            "Why your dog grabs a toy when you come home" (60 fps, rubber-duck hero toy)
 characters/           Character Lab: preview every human preset (?only=dad, &face for a close-up)
 js/avatar.js          photorealistic premade people (Rocketbox) with walk/run/sit in code
 js/human.js           code-built stylised human template + PRESETS (fallback)
@@ -214,6 +215,9 @@ dog.pose({ t, sit: 1, cute: 1, wag: 1 });                  // call every frame
 Pose options: `x y z ry`, `sit`, `lie`, `rear` (on hind legs), `trot`, `headYaw headPitch tilt`, `jawOpen`,
 `wag`, `cute` (puppy eyes), `sad`, `angry`, `squint`, `closed` (eyelids), `snarl`, `earUp`, `earBack`,
 `capeOn`, `glasses` (sunglasses: 0 = on the forehead, 1 = on the eyes), `earpiece`. Carry things with `dog.mouth.add(obj)`.
+
+Toys: `js/toys.js` has `plushToy()` (code-built squeaky plush fox), `tennisBall()`, `ropeToy()`;
+the rubber duck (`loadProp(short, "RubberDuck")`) is a real model. Carry one with `dog.mouth.add(toy)`.
 
 ## Syncing to a voiceover (`js/voiceover.js`)
 

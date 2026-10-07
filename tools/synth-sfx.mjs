@@ -202,3 +202,9 @@ save("yawn", env(voice(1.1, (t) => (t < 0.35 ? 500 + t * 2600 : 1410 - (t - 0.35
   }
   save("pant", x, 0.6);
 }
+
+// rubber squeaky toy: a whistle that swoops up and down as the air squeezes out
+{
+  const x = voice(0.32, (t) => 1500 + 900 * Math.sin(Math.min(1, t / 0.32) * Math.PI) - t * 900, { formants: [2200, 3600], breath: 0.25, vib: 30, vibAmt: 0.02, harmonics: 5 });
+  save("squeak", env(x, (t, p) => Math.min(1, p * 12) * (1 - p) ** 0.6));
+}

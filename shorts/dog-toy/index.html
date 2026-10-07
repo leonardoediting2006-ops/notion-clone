@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <title>Why Your Dog Grabs a Toy When You Come Home · Shorts 3D Studio</title>
+  <link rel="stylesheet" href="../../css/stage.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="../../lib/gsap.min.js"></script>
+</head>
+<body>
+  <div id="viewport">
+    <div id="stage">
+      <div class="overlay">
+        <div class="pulse" id="pulse"></div>
+        <div class="ekg" id="ekg">
+          <div class="ekg-head"><span class="ekg-heart">♥</span> <span id="bpm">72</span> <small>BPM</small></div>
+          <svg viewBox="0 -140 900 400" preserveAspectRatio="none">
+            <defs>
+              <pattern id="grid" width="45" height="45" patternUnits="userSpaceOnUse">
+                <path d="M45 0H0V45" fill="none" stroke="rgba(60,255,140,0.12)" stroke-width="2"/>
+              </pattern>
+            </defs>
+            <rect x="0" y="-140" width="900" height="400" fill="url(#grid)"/>
+            <path id="ekg-line" d="" fill="none" stroke="#3dff8c" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="flash" id="flash"></div>
+        <div class="tw-caption" id="caption"></div>
+      </div>
+    </div>
+  </div>
+  <script type="module" src="main.js"></script>
+</body>
+</html>

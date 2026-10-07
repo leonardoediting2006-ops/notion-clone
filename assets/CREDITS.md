@@ -15,6 +15,7 @@ the description of any video that shows them.
 | `props/AnisotropyBarnLamp.glb` | Khronos glTF Sample Assets | Eric Chadwick | CC-BY 4.0 |
 | `props/GlassVaseFlowers.glb` | Khronos glTF Sample Assets | Eric Chadwick, Rico Cilliers | CC0 |
 | `props/DiffuseTransmissionPlant.glb` | Khronos glTF Sample Assets | Eric Chadwick, Rico Cilliers | CC-BY 4.0 / CC0 |
+| `props/RubberDuck.glb` (the "Duck") | Khronos glTF Sample Assets | © 2006 Sony Computer Entertainment | SCEA Shared Source License 1.0 (`props/LICENSE-SCEA.txt`; commercial use OK, no credit needed in videos) |
 | `props/TrafficCone.glb` | Khronos glTF Sample Assets | Rob Tuytel, hinndia | CC-BY 4.0 / CC0 |
 | `vehicles/CarConcept.glb` | Khronos glTF Sample Assets (from a CC0 model by Unity Fan) | Eric Chadwick, Darmstadt Graphics Group | CC-BY 4.0 (Khronos logo parts removed at load) |
 | `vehicles/*.gltf` | [Kenney](https://kenney.nl) via [pmndrs/market-assets](https://github.com/pmndrs/market-assets) | Kenney | CC0 |

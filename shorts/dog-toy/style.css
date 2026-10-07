@@ -1,0 +1,65 @@
+/* "Pet POV" look: yellow typewriter captions with a heavy black outline, word by word. */
+.tw-caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 1060px;
+  padding: 0 50px;
+  text-align: center;
+  font-family: "Courier New", "Courier Prime", "Courier 10 Pitch", "Liberation Mono", monospace;
+  font-weight: 700;
+  font-size: 76px;
+  letter-spacing: -1px;
+  color: #ffe93b;
+  -webkit-text-stroke: 14px #000;
+  paint-order: stroke fill;
+  text-shadow: 0 4px 0 #000;
+  white-space: nowrap;
+}
+
+.flash {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background: #fff;
+  pointer-events: none;
+}
+
+/* adrenaline: red heartbeat pulse around the edges */
+.pulse {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background: radial-gradient(ellipse at 50% 45%, rgba(255, 0, 0, 0) 40%, rgba(220, 20, 30, 0.85) 100%);
+  pointer-events: none;
+}
+
+/* heart monitor */
+.ekg {
+  display: none;
+  position: absolute;
+  left: 70px;
+  right: 70px;
+  top: 130px;
+  height: 300px;
+  padding: 18px 22px 10px;
+  background: rgba(4, 18, 10, 0.82);
+  border: 6px solid #1d2b24;
+  border-radius: 26px;
+  box-shadow: 0 0 0 4px #000, 0 0 60px rgba(61, 255, 140, 0.25);
+  font-family: "Courier New", "Liberation Mono", monospace;
+  font-weight: 700;
+  color: #3dff8c;
+}
+.ekg-head {
+  font-size: 58px;
+  line-height: 1;
+  text-shadow: 0 0 18px rgba(61, 255, 140, 0.8);
+}
+.ekg-head small { font-size: 32px; }
+.ekg-heart { color: #ff3b4e; text-shadow: 0 0 18px rgba(255, 59, 78, 0.9); }
+.ekg svg {
+  width: 100%;
+  height: 200px;
+  filter: drop-shadow(0 0 10px rgba(61, 255, 140, 0.9));
+}
