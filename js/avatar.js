@@ -271,6 +271,31 @@ export function loadAvatar(short, name, { height = null, facing = 0 } = {}) {
     h._clipTime = t;
   };
 
+  // Attach `obj` to a bone (handle name like "head" or a Biped bone name). `offset` is in
+  // metres from the bone, along the character's own axes in its rest pose (x left, y up, z front).
+  h.attach = (key, obj, offset = [0, 0, 0]) => {
+    const run = () => {
+      const bone = bones[BONES[key] ?? key];
+      if (!bone) return;
+      const saved = new Map([...rest.keys()].map((b) => [b, b.quaternion.clone()]));
+      for (const b of rest.keys()) b.quaternion.copy(rest.get(b));
+      root.updateMatrixWorld(true);
+      const rq = root.getWorldQuaternion(new THREE.Quaternion());
+      const pos = bone.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(...offset).applyQuaternion(rq));
+      const holder = new THREE.Group();
+      bone.add(holder);
+      holder.position.copy(bone.worldToLocal(pos));
+      holder.quaternion.copy(bone.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(rq));
+      holder.scale.setScalar(1 / bone.getWorldScale(new THREE.Vector3()).x);
+      holder.add(obj);
+      for (const [b, q] of saved) b.quaternion.copy(q);
+      root.updateMatrixWorld(true);
+    };
+    if (h.ready) run();
+    else pendingClips.push(run);
+    return obj;
+  };
+
   h.resetPose = () => {
     h._clip = null;
     for (const n of handleNames) {

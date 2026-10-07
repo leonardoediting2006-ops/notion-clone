@@ -18,7 +18,7 @@ the description of any video that shows them.
 | `props/TrafficCone.glb` | Khronos glTF Sample Assets | Rob Tuytel, hinndia | CC-BY 4.0 / CC0 |
 | `vehicles/CarConcept.glb` | Khronos glTF Sample Assets (from a CC0 model by Unity Fan) | Eric Chadwick, Darmstadt Graphics Group | CC-BY 4.0 (Khronos logo parts removed at load) |
 | `vehicles/*.gltf` | [Kenney](https://kenney.nl) via [pmndrs/market-assets](https://github.com/pmndrs/market-assets) | Kenney | CC0 |
-| `shorts/dog-mailman/textures/*` (brick, hardwood, grass) | [three.js examples](https://github.com/mrdoob/three.js) | three.js authors | MIT |
+| `textures/*` (brick, hardwood, grass) | [three.js examples](https://github.com/mrdoob/three.js) | three.js authors | MIT |
 
 Code-built (no licence needed): mailbox, handbag, hats, picket fence (`js/props.js`), trees, all procedural textures.
 

@@ -300,7 +300,14 @@ export function skyTexture(kind = "day") {
   return make(`sky${kind}`, () => {
     const [c, x] = canvas(1024, 512);
     const g = x.createLinearGradient(0, 0, 0, 512);
-    if (kind === "red") {
+    if (kind === "dusk") {
+      g.addColorStop(0, "#1d2a52");
+      g.addColorStop(0.3, "#5a5a8a");
+      g.addColorStop(0.44, "#e48a5a");
+      g.addColorStop(0.5, "#ffc27a");
+      g.addColorStop(0.56, "#6a5048");
+      g.addColorStop(1, "#1e1a18");
+    } else if (kind === "red") {
       g.addColorStop(0, "#3a0306");
       g.addColorStop(0.45, "#8d0f14");
       g.addColorStop(0.5, "#d2401f");
@@ -318,7 +325,7 @@ export function skyTexture(kind = "day") {
     x.beginPath();
     x.rect(0, 40, 1024, 220);
     x.clip();
-    const cloud = kind === "red" ? [255, 120, 80] : [255, 255, 255];
+    const cloud = kind === "red" ? [255, 120, 80] : kind === "dusk" ? [255, 170, 130] : [255, 255, 255];
     for (let i = 0; i < 160; i++) {
       const cx = rnd() * 1024, cy = rr(80, 240), r = rr(15, 55);
       const rg = x.createRadialGradient(cx, cy, 0, cx, cy, r);
@@ -378,4 +385,51 @@ export function cloth(color, kind = "cotton") {
     clothCache.set(key, m);
   }
   return clothCache.get(key);
+}
+
+// Glazed ceramic tiles: `cols` x `rows` tiles per texture repeat. offset: 0.5 = subway/brick bond.
+export function tiles(color = 0xf4f3ef, { cols = 4, rows = 8, grout = 0xb9b5ad, offset = 0.5, repeat = [1, 1], key = "" } = {}) {
+  const base = hex(color);
+  return painted(`tiles${color}${cols}x${rows}${offset}${key}`, 1024, (x, w, h) => {
+    x.fillStyle = rgb(hex(grout));
+    x.fillRect(0, 0, w, h);
+    const tw = w / cols, th = h / rows, g = 5;
+    for (let r = 0; r < rows; r++) {
+      for (let c = -1; c <= cols; c++) {
+        const px = (c + (r % 2) * offset) * tw, py = r * th;
+        const k = rr(0.94, 1.05);
+        const grad = x.createLinearGradient(px, py, px + tw, py + th);
+        grad.addColorStop(0, rgb(base, k * 1.03));
+        grad.addColorStop(1, rgb(base, k * 0.95));
+        x.fillStyle = grad;
+        x.fillRect(px + g, py + g, tw - g * 2, th - g * 2);
+        // bevelled edge highlight
+        x.fillStyle = rgb([255, 255, 255], 1, 0.25);
+        x.fillRect(px + g, py + g, tw - g * 2, 3);
+      }
+    }
+    noise(x, w, h, { base: 4, octaves: 3, alpha: 0.05 });
+  }, { repeat, bump: 0.025, roughness: 0.18 });
+}
+
+// Pond / lake surface: dark, glossy, with a ripple bump you can scroll (map offset).
+export function water(color = 0x1a3138) {
+  return make(`water${color}`, () => {
+    const [c, x] = canvas(512);
+    x.fillStyle = "#808080";
+    x.fillRect(0, 0, 512, 512);
+    noise(x, 512, 512, { base: 6, octaves: 4, alpha: 0.5 });
+    const bump = toTexture(c, { repeat: [6, 6], color: false });
+    return new THREE.MeshStandardMaterial({ color, roughness: 0.06, metalness: 0.75, bumpMap: bump, bumpScale: 0.6 });
+  });
+}
+
+// Mossy grey rock
+export function rock(color = 0x7d7a72) {
+  return painted(`rock${color}`, 512, (x, w, h) => {
+    x.fillStyle = rgb(hex(color));
+    x.fillRect(0, 0, w, h);
+    noise(x, w, h, { base: 3, octaves: 6, alpha: 0.35 });
+    speckle(x, w, h, 5000, 3, ["#2b2a26", "#d8d4c8", "#5d6b3a"], 0.35);
+  }, { repeat: [2, 2], bump: 0.06, roughness: 0.92 });
 }

@@ -4,6 +4,7 @@ import { createForest } from "../../js/trees.js";
 import { loadAvatar } from "../../js/avatar.js";
 import { loadProp, mailbox, useEnvironment, captureEnvironment } from "../../js/props.js";
 import { car } from "../../js/vehicles.js";
+import { createDog } from "../../js/dog.js";
 
 // "What your dog thinks the mail carrier is" — pet-POV short.
 // Every shot is a pure function of time, so scrubbing and rendering are exact.
@@ -91,19 +92,19 @@ const rand = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
 // ---------- materials ----------
 const tile = (m) => [1 / m, 1 / m];
 const brick = new THREE.MeshStandardMaterial({
-  map: short.loadTexture("textures/brick_diffuse.jpg", { repeat: tile(1.6) }),
-  bumpMap: short.loadTexture("textures/brick_bump.jpg", { repeat: tile(1.6), color: false }),
+  map: short.loadTexture("../../assets/textures/brick_diffuse.jpg", { repeat: tile(1.6) }),
+  bumpMap: short.loadTexture("../../assets/textures/brick_bump.jpg", { repeat: tile(1.6), color: false }),
   bumpScale: 3,
   roughness: 0.95,
 });
 const hardwood = new THREE.MeshStandardMaterial({
-  map: short.loadTexture("textures/hardwood2_diffuse.jpg", { repeat: [1 / 3, 1 / 1.5] }),
-  bumpMap: short.loadTexture("textures/hardwood2_bump.jpg", { repeat: [1 / 3, 1 / 1.5], color: false }),
+  map: short.loadTexture("../../assets/textures/hardwood2_diffuse.jpg", { repeat: [1 / 3, 1 / 1.5] }),
+  bumpMap: short.loadTexture("../../assets/textures/hardwood2_bump.jpg", { repeat: [1 / 3, 1 / 1.5], color: false }),
   bumpScale: 1.5,
   roughness: 0.55,
 });
 const grass = new THREE.MeshStandardMaterial({
-  map: short.loadTexture("textures/grass.jpg", { repeat: tile(3) }),
+  map: short.loadTexture("../../assets/textures/grass.jpg", { repeat: tile(3) }),
   roughness: 1,
 });
 const M = {
@@ -126,12 +127,6 @@ const M = {
   sofa: T.fabric(0x5a7aa0, { repeat: [3, 2], weave: 3 }),
   paper: T.paper(),
   glass: new THREE.MeshStandardMaterial({ color: 0x5f7f99, roughness: 0.08, metalness: 0.7 }),
-  furBody: T.fur(0xc68f55),
-  furLight: T.fur(0xeed4ab, { key: "light" }),
-  furDark: T.fur(0x74482a, { key: "dark", streak: 0.7 }),
-  nose: new THREE.MeshStandardMaterial({ color: 0x141010, roughness: 0.25 }),
-  eye: new THREE.MeshStandardMaterial({ color: 0x2b1a0e, roughness: 0.08 }),
-  shine: new THREE.MeshBasicMaterial({ color: 0xffffff }),
 };
 M.asphalt.map.repeat.set(1 / 4, 1 / 4);
 M.asphalt.bumpMap.repeat.set(1 / 4, 1 / 4);
@@ -312,97 +307,11 @@ const phones = family.map((f, i) => {
 const _hl = new THREE.Vector3(), _hr = new THREE.Vector3(), _hd = new THREE.Vector3();
 const SEAT_HIP_Y = 0.58; // hip height when sitting on the sofa
 
-// ---------- the dog (original blocky character, faces +z, fur-textured) ----------
-const dog = group(0, 0, 0, scene);
-const pivot = group(0, 0.36, -0.35, dog); // hips: rotate X to rear up
-box(0.46, 0.42, 0.92, M.furBody, 0, 0.22, 0.35, pivot); // body
-box(0.4, 0.06, 0.5, M.furLight, 0, 0.0, 0.45, pivot); // belly
-const legs = {};
-function leg(name, x, y, z, parent) {
-  const g = group(x, y, z, parent);
-  box(0.13, 0.36, 0.14, M.furBody, 0, -0.17, 0, g);
-  box(0.15, 0.06, 0.18, M.furLight, 0, -0.35, 0.02, g);
-  legs[name] = g;
-}
-leg("fl", -0.14, 0.04, 0.68, pivot);
-leg("fr", 0.14, 0.04, 0.68, pivot);
-leg("bl", -0.15, 0.36, -0.3, dog);
-leg("br", 0.15, 0.36, -0.3, dog);
-const neck = group(0, 0.36, 0.78, pivot);
-const head = group(0, 0.08, 0.02, neck);
-box(0.4, 0.38, 0.4, M.furBody, 0, 0.1, 0.04, head);
-box(0.24, 0.17, 0.28, M.furLight, 0, 0.0, 0.32, head);
-box(0.08, 0.055, 0.05, M.nose, 0, 0.075, 0.465, head); // nose
-const jaw = group(0, -0.08, 0.2, head);
-box(0.2, 0.06, 0.24, M.furLight, 0, -0.02, 0.1, jaw);
-box(0.14, 0.02, 0.18, mat(0xd9465c, { roughness: 0.4 }), 0, 0.012, 0.1, jaw); // tongue
-const eyes = [];
-const brows = [];
-for (const s of [-1, 1]) {
-  const e = group(s * 0.1, 0.17, 0.245, head);
-  e.white = box(0.085, 0.085, 0.02, mat(0xf4f1ea, { roughness: 0.3 }), 0, 0, 0, e);
-  e.iris = box(0.07, 0.074, 0.02, mat(0x4a2a12, { roughness: 0.05 }), s * -0.006, -0.004, 0.005, e);
-  e.pupil = box(0.055, 0.06, 0.02, M.eye, s * -0.01, -0.005, 0.008, e);
-  e.shine = box(0.02, 0.02, 0.01, M.shine, s * -0.02, 0.012, 0.02, e);
-  e.shine2 = box(0.011, 0.011, 0.01, M.shine, s * 0.012, -0.022, 0.02, e);
-  e.blush = box(0.07, 0.03, 0.01, new THREE.MeshBasicMaterial({ color: 0xff8fa3, transparent: true, opacity: 0.55, depthWrite: false }), s * 0.035, -0.085, 0.002, e);
-  eyes.push(e);
-  brows.push(box(0.12, 0.03, 0.03, M.furDark, s * 0.1, 0.24, 0.25, head));
-}
-const ears = [];
-for (const s of [-1, 1]) {
-  const e = group(s * 0.2, 0.27, 0.0, head);
-  box(0.06, 0.28, 0.17, M.furDark, s * 0.03, -0.13, 0, e);
-  ears.push(e);
-}
-box(0.44, 0.08, 0.14, mat(0xb3261e, { roughness: 0.5 }), 0, -0.04, -0.02, neck); // collar
-box(0.07, 0.08, 0.02, new THREE.MeshStandardMaterial({ color: 0xe0b83c, metalness: 0.9, roughness: 0.25 }), 0, -0.1, 0.06, neck); // tag
-const tail = group(0, 0.36, -0.1, pivot);
-box(0.07, 0.07, 0.36, M.furBody, 0, 0, -0.17, tail);
-const cape = group(0, 0.46, 0.68, pivot);
-const capeMesh = new THREE.Mesh(new THREE.PlaneGeometry(0.6, 0.85, 1, 4), T.fabric(0xc8201f, { key: "cape", weave: 2 }));
-capeMesh.material.side = THREE.DoubleSide;
-capeMesh.position.set(0, 0, -0.42);
-capeMesh.rotation.x = -Math.PI / 2 + 0.15;
-cape.add(capeMesh);
-
-function dogPose({
-  x = 0, y = 0, z = 0, ry = 0,
-  rear = 0, headYaw = 0, headPitch = 0, jawOpen = 0,
-  wag = 0, wagSpeed = 18, t = 0, trot = 0,
-  squint = 0, angry = 0, earUp = 0, capeOn = false, cute = 0, tilt = 0,
-} = {}) {
-  dog.position.set(x, y, z);
-  dog.rotation.set(0, ry, 0);
-  pivot.rotation.x = -rear * 1.0;
-  neck.rotation.set(rear * 1.0 + headPitch, headYaw, tilt);
-  head.rotation.set(0, 0, 0);
-  jaw.rotation.x = jawOpen * 0.55;
-  tail.rotation.set(-0.7, Math.sin(t * wagSpeed) * 0.7 * wag, 0);
-  const s = Math.sin(t * 11) * 0.7 * trot;
-  legs.fl.rotation.x = s - rear * 0.6;
-  legs.fr.rotation.x = -s - rear * 0.6;
-  legs.bl.rotation.x = -s;
-  legs.br.rotation.x = s;
-  dog.position.y += Math.abs(Math.sin(t * 11)) * 0.04 * trot;
-  for (const e of eyes) {
-    // cute = big glossy puppy eyes: iris fills the eye, two sparkles, blush
-    const big = 1 + cute * 0.45;
-    e.scale.set(big, big * (1 - squint * 0.7), 1);
-    e.iris.visible = cute > 0;
-    e.pupil.scale.set(1 + cute * 0.15, 1 + cute * 0.15, 1);
-    e.shine.scale.setScalar(1 + cute * 0.8);
-    e.shine.position.y = 0.012 + cute * 0.008;
-    e.shine2.visible = e.blush.visible = cute > 0;
-  }
-  brows.forEach((b, i) => {
-    const side = i === 0 ? -1 : 1;
-    b.rotation.z = side * angry * 0.45 - side * cute * 0.35;
-    b.position.y = 0.24 - angry * 0.03 + cute * 0.035;
-  });
-  ears.forEach((e, i) => (e.rotation.z = (i === 0 ? -1 : 1) * earUp * 0.5));
-  cape.visible = capeOn;
-}
+// ---------- the dog (shared blocky character, js/dog.js) ----------
+const dog = createDog();
+scene.add(dog);
+const { capeMesh, ears } = dog;
+const dogPose = (o) => dog.pose(o);
 
 // ---------- space set (fantasy cutaways) ----------
 const SPACE_Y = 600;

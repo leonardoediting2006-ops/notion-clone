@@ -1,0 +1,36 @@
+/* "Pet POV" look: yellow typewriter captions with a heavy black outline, word by word. */
+.tw-caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 1060px;
+  padding: 0 50px;
+  text-align: center;
+  font-family: "Courier New", "Courier Prime", "Courier 10 Pitch", "Liberation Mono", monospace;
+  font-weight: 700;
+  font-size: 76px;
+  letter-spacing: -1px;
+  color: #ffe93b;
+  -webkit-text-stroke: 14px #000;
+  paint-order: stroke fill;
+  text-shadow: 0 4px 0 #000;
+  white-space: nowrap;
+}
+
+/* full-frame colour flash (ambush, cut into the dog's mind) */
+.flash {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background: #fff;
+  pointer-events: none;
+}
+
+/* dark edges for the night/wild scenes */
+.vignette {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background: radial-gradient(ellipse at 50% 45%, rgba(0, 0, 0, 0) 45%, rgba(0, 0, 0, 0.75) 100%);
+  pointer-events: none;
+}

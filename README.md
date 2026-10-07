@@ -50,6 +50,7 @@ shorts/
   _template/          copy this to start a new short
   hello-3d/           example: spinning knot, orbiting cubes, star field, word-pop captions
   dog-mailman/        "What your dog thinks the mail carrier is" (pet-POV style)
+  dog-bathroom/       "Why your dog follows you into the bathroom" (voiceover-synced, voiceover.srt)
 characters/           Character Lab: preview every human preset (?only=dad, &face for a close-up)
 js/avatar.js          photorealistic premade people (Rocketbox) with walk/run/sit in code
 js/human.js           code-built stylised human template + PRESETS (fallback)
@@ -165,7 +166,9 @@ scene.add(sofa, car, box, handbag({ color: 0x7a3f2a }), hat("fedora"), picketFen
 Downloaded: `GlamVelvetSofa`, `SheenWoodLeatherSofa`, `SheenChair`, `ChairDamaskPurplegold`,
 `SpecularSilkPouf`, `AnisotropyBarnLamp`, `GlassVaseFlowers`, `DiffuseTransmissionPlant`, `TrafficCone`
 and `CarConcept` (realistic car, `paint` option) and `sedan`, `hatchback`, `suv`, `van`, `delivery-truck`, `taxi`, `police-car` (low-poly).
-Code-built: `mailbox()`, `handbag()`, `hat("cap" | "fedora" | "uniform" | "beanie")`, `picketFence(len)`.
+Code-built: `mailbox()`, `handbag()`, `hat("cap" | "fedora" | "uniform" | "beanie")`, `picketFence(len)`,
+bathroom: `toilet()`, `vanity()` (sink + tap), `mirror()`, `bathtub()`, `towel()`, `handTowel()`, `bathMat()`,
+`toiletPaper()`, `rubberDuck()`.
 Preview: `characters/props/?group=furniture | cars | vehicles | small`.
 Call `useEnvironment(renderer, scene)` once so metal, car paint and glass get reflections.
 
@@ -189,3 +192,37 @@ c.position.set(4, 0, 14); c.rotation.y = Math.PI; scene.add(c);
 c.spinWheels(distance); // when driving
 ```
 Cars face +x. Preview: `characters/props/?group=family` (`&close` for a close-up).
+
+## The dog (`js/dog.js`)
+
+The studio's blocky fur-textured dog, shared by every short. Preview all poses at `characters/dog/`
+(`?only=N` for one).
+
+```js
+import { createDog, DOG_COLORS } from "../../js/dog.js";
+const dog = createDog();                                   // golden dog
+const wolf = createDog({ colors: DOG_COLORS.wolf, key: "wolf", pointyEars: true, snout: 1.35, collar: false });
+dog.pose({ t, sit: 1, cute: 1, wag: 1 });                  // call every frame
+```
+
+Pose options: `x y z ry`, `sit`, `lie`, `rear` (on hind legs), `trot`, `headYaw headPitch tilt`, `jawOpen`,
+`wag`, `cute` (puppy eyes), `sad`, `angry`, `squint`, `closed` (eyelids), `snarl`, `earUp`, `earBack`,
+`capeOn`, `glasses` (sunglasses: 0 = on the forehead, 1 = on the eyes), `earpiece`. Carry things with `dog.mouth.add(obj)`.
+
+## Syncing to a voiceover (`js/voiceover.js`)
+
+Export word-level subtitles from your editor (DaVinci Resolve / CapCut auto-captions, one word per cue)
+as an `.srt`, drop it in the short's folder, and key every cut to the words:
+
+```js
+import { loadSrt, cues, wordCaptions } from "../../js/voiceover.js";
+const words = await loadSrt("voiceover.srt");
+const at = cues(words);
+at("bathroom");      // start time of that word (s)
+at("they", 3);       // its 3rd occurrence
+const captions = wordCaptions(captionEl, words, { lines: ["When your dog", "insists on", …] });
+onUpdate((t) => captions(t));   // each word pops in exactly when it is spoken
+```
+
+Re-record the voiceover, export a new `.srt`, and the whole edit re-times itself. Render with the
+audio: `npm run render -- shorts/dog-bathroom --audio voiceover.wav`.

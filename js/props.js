@@ -1,5 +1,5 @@
 // Props: downloaded models (furniture, decor, vehicles) + code-built realistic
-// props (mailbox, handbag, hats, picket fence). See assets/CREDITS.md.
+// props (mailbox, handbag, hats, picket fence, bathroom fixtures). See assets/CREDITS.md.
 //
 //   import { loadProp, mailbox } from "../../js/props.js";
 //   const sofa = loadProp(short, "GlamVelvetSofa", { width: 2.1 });
@@ -11,6 +11,7 @@ import { GLTFLoader } from "../lib/jsm/loaders/GLTFLoader.js";
 import { DRACOLoader } from "../lib/jsm/loaders/DRACOLoader.js";
 import * as T from "./textures.js";
 import { RoomEnvironment } from "../lib/jsm/environments/RoomEnvironment.js";
+import { Reflector } from "../lib/jsm/objects/Reflector.js";
 
 const ASSETS = new URL("../assets/", import.meta.url).href;
 const loader = new GLTFLoader();
@@ -280,5 +281,158 @@ export function picketFence(length = 6, { height = 0.95, spacing = 0.14, color =
     mesh(new THREE.BoxGeometry(0.09, height + 0.06, 0.09), wood, g, x, (height + 0.06) / 2, -0.04);
     mesh(new THREE.BoxGeometry(0.11, 0.03, 0.11), wood, g, x, height + 0.075, -0.04);
   }
+  return g;
+}
+
+// ---------------------------------------------------------------- bathroom
+const ceramic = () => new THREE.MeshPhysicalMaterial({ color: 0xf6f5f1, roughness: 0.14, clearcoat: 1, clearcoatRoughness: 0.08 });
+const chrome = () => std(0xe8e8e8, { metalness: 1, roughness: 0.08 });
+// open bowl from a lathe profile: [radius, height] pairs from the bottom outside, over the rim, back down inside
+function bowl(rBottom, rTop, h, wall, mat, parent) {
+  const pts = [
+    [0.001, 0], [rBottom, 0], [rBottom * 1.05, h * 0.2], [rTop * 0.95, h * 0.8], [rTop, h], [rTop - wall, h],
+    [rTop - wall * 1.3, h * 0.85], [rBottom * 0.8, h * 0.25], [0.001, h * 0.18],
+  ].map(([r, y]) => new THREE.Vector2(r, y));
+  return mesh(new THREE.LatheGeometry(pts, 40), mat, parent);
+}
+
+// Toilet with the lid down; back against the wall at z = 0, faces +z.
+export function toilet() {
+  const g = new THREE.Group();
+  const c = ceramic();
+  mesh(new THREE.BoxGeometry(0.46, 0.36, 0.18, 2, 2, 2), c, g, 0, 0.62, 0.1);
+  mesh(new THREE.BoxGeometry(0.49, 0.035, 0.21), c, g, 0, 0.815, 0.1); // tank lid
+  mesh(new THREE.BoxGeometry(0.06, 0.018, 0.03), chrome(), g, -0.17, 0.74, 0.205); // flush lever
+  const base = mesh(new THREE.CylinderGeometry(0.11, 0.14, 0.3, 28), c, g, 0, 0.15, 0.36);
+  base.scale.z = 1.35;
+  const b = bowl(0.13, 0.2, 0.16, 0.025, c, g);
+  b.position.set(0, 0.25, 0.38);
+  b.scale.z = 1.3;
+  const seat = mesh(new THREE.TorusGeometry(0.17, 0.028, 12, 36), c, g, 0, 0.425, 0.39);
+  seat.rotation.x = Math.PI / 2;
+  seat.scale.set(1, 1.3, 0.5);
+  const lid = mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.025, 36), c, g, 0, 0.45, 0.39);
+  lid.scale.z = 1.28;
+  mesh(new THREE.BoxGeometry(0.3, 0.03, 0.06), c, g, 0, 0.44, 0.2); // hinge block
+  return g;
+}
+
+// Vanity cabinet with a vessel sink and chrome tap; back against the wall at z = 0.
+export function vanity({ width = 0.9, color = 0x41566b, top = 0xe8e4dc } = {}) {
+  const g = new THREE.Group();
+  const wood = T.paintedWood(color);
+  const D = 0.5, H = 0.82;
+  mesh(new THREE.BoxGeometry(width, H - 0.1, D), wood, g, 0, (H - 0.1) / 2 + 0.1, D / 2);
+  mesh(new THREE.BoxGeometry(width - 0.06, 0.1, D - 0.06), std(0x1e1e1e, { roughness: 0.8 }), g, 0, 0.05, D / 2 - 0.02); // toe kick
+  // two doors with a seam and handles
+  for (const s of [-1, 1]) {
+    mesh(new THREE.BoxGeometry(width / 2 - 0.04, H - 0.18, 0.02), wood, g, s * width / 4, (H - 0.18) / 2 + 0.13, D + 0.01);
+    const h = mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.12, 10), std(0xc9b27a, { metalness: 1, roughness: 0.3 }), g, s * 0.05, H - 0.2, D + 0.035);
+    h.position.x = s * 0.05;
+  }
+  mesh(new THREE.BoxGeometry(width + 0.04, 0.04, D + 0.03), T.concrete({ tile: 1, repeat: [1, 1], color: top }), g, 0, H + 0.02, D / 2 + 0.01);
+  const sink = bowl(0.12, 0.2, 0.13, 0.015, ceramic(), g);
+  sink.position.set(0, H + 0.04, D / 2 + 0.03);
+  sink.scale.z = 0.8;
+  // tap: vertical post + curved spout
+  mesh(new THREE.CylinderGeometry(0.022, 0.025, 0.26, 16), chrome(), g, 0, H + 0.17, 0.1);
+  const spout = mesh(new THREE.TorusGeometry(0.07, 0.014, 10, 20, Math.PI), chrome(), g, 0, H + 0.3, 0.17);
+  spout.rotation.y = Math.PI / 2;
+  mesh(new THREE.CylinderGeometry(0.018, 0.018, 0.05, 12), chrome(), g, 0.06, H + 0.27, 0.1).rotation.z = Math.PI / 2;
+  g.userData.basin = new THREE.Vector3(0, H + 0.12, D / 2 + 0.03); // centre of the sink bowl
+  return g;
+}
+
+// Rectangular mirror with a thin frame, centre at the origin, facing +z. A real reflection
+// (the scene rendered again from the mirrored camera) unless { real: false }.
+export function mirror(w = 0.8, h = 1.0, { frame = 0x2a2a2a, real = true, resolution = 512 } = {}) {
+  const g = new THREE.Group();
+  mesh(new THREE.BoxGeometry(w + 0.05, h + 0.05, 0.03), std(frame, { metalness: 0.6, roughness: 0.35 }), g, 0, 0, 0.015);
+  const geo = new THREE.PlaneGeometry(w, h);
+  const glass = real
+    ? new Reflector(geo, { textureWidth: resolution, textureHeight: Math.round((resolution * h) / w), color: 0xd8d8d8, clipBias: 0.003 })
+    : new THREE.Mesh(geo, std(0xffffff, { metalness: 1, roughness: 0.03 }));
+  glass.position.z = 0.032;
+  g.add(glass);
+  g.userData.glass = glass;
+  return g;
+}
+
+// Built-in bathtub: footprint w (x) by d (z), origin at the floor centre.
+export function bathtub({ w = 1.7, d = 0.75, h = 0.55 } = {}) {
+  const g = new THREE.Group();
+  const c = ceramic();
+  const t = 0.08;
+  mesh(new THREE.BoxGeometry(w, h, t), c, g, 0, h / 2, d / 2 - t / 2);
+  mesh(new THREE.BoxGeometry(w, h, t), c, g, 0, h / 2, -d / 2 + t / 2);
+  mesh(new THREE.BoxGeometry(t, h, d), c, g, w / 2 - t / 2, h / 2, 0);
+  mesh(new THREE.BoxGeometry(t, h, d), c, g, -w / 2 + t / 2, h / 2, 0);
+  mesh(new THREE.BoxGeometry(w - t, 0.12, d - t), c, g, 0, 0.06, 0);
+  mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.012, 16), chrome(), g, -w / 2 + 0.25, 0.125, 0); // drain
+  const spout = mesh(new THREE.CylinderGeometry(0.02, 0.022, 0.16, 12), chrome(), g, -w / 2 + 0.04, h + 0.06, 0);
+  spout.rotation.z = Math.PI / 2;
+  return g;
+}
+
+// Terry towel hanging over a rail (rail along x at the origin, towel hangs down both sides).
+export function towel({ color = 0xf1ece2, w = 0.5, h = 0.55, rail = true } = {}) {
+  const g = new THREE.Group();
+  const cloth = fabricMat(color, { roughness: 1, kind: "knit", sheen: 0.6 });
+  for (const s of [-1, 1]) {
+    const p = mesh(new THREE.BoxGeometry(w, h, 0.012, 1, 8, 1), cloth, g, 0, -h / 2, s * 0.022);
+    const pos = p.geometry.attributes.position;
+    for (let i = 0; i < pos.count; i++) pos.setZ(i, pos.getZ(i) + Math.sin((pos.getY(i) / h + 0.5) * Math.PI) * 0.01 * s);
+    p.geometry.computeVertexNormals();
+  }
+  const top = mesh(new THREE.CylinderGeometry(0.03, 0.03, w, 16, 1, false, 0, Math.PI), cloth, g, 0, 0, 0);
+  top.rotation.z = Math.PI / 2;
+  top.rotation.x = -Math.PI / 2;
+  if (rail) {
+    const r = mesh(new THREE.CylinderGeometry(0.012, 0.012, w + 0.2, 12), chrome(), g, 0, 0, 0);
+    r.rotation.z = Math.PI / 2;
+  }
+  return g;
+}
+
+// Small folded hand towel draped over something (e.g. carried in a dog's mouth). Origin at the fold.
+export function handTowel({ color = 0xf1ece2, w = 0.34, l = 0.36 } = {}) {
+  const g = new THREE.Group();
+  const geo = new THREE.BoxGeometry(w, 0.02, l, 8, 1, 10);
+  const pos = geo.attributes.position;
+  for (let i = 0; i < pos.count; i++) {
+    const x = pos.getX(i), z = pos.getZ(i);
+    pos.setY(i, pos.getY(i) - Math.abs(x / w) ** 1.6 * 0.22 + Math.sin(z * 18) * 0.006);
+  }
+  geo.computeVertexNormals();
+  mesh(geo, fabricMat(color, { roughness: 1, kind: "knit", sheen: 0.6 }), g);
+  return g;
+}
+
+export function rubberDuck(size = 0.12) {
+  const g = new THREE.Group();
+  const yellow = new THREE.MeshPhysicalMaterial({ color: 0xffd21f, roughness: 0.35, clearcoat: 0.6 });
+  const body = mesh(new THREE.SphereGeometry(0.5, 24, 16), yellow, g, 0, 0.38, 0);
+  body.scale.set(0.85, 0.7, 1.1);
+  mesh(new THREE.SphereGeometry(0.32, 20, 14), yellow, g, 0, 0.9, 0.22);
+  const beak = mesh(new THREE.SphereGeometry(0.16, 16, 10), std(0xff7a1a, { roughness: 0.4 }), g, 0, 0.85, 0.52);
+  beak.scale.set(1.2, 0.5, 1);
+  for (const s of [-1, 1]) mesh(new THREE.SphereGeometry(0.05, 10, 8), std(0x111111, { roughness: 0.2 }), g, s * 0.16, 0.98, 0.45);
+  g.scale.setScalar(size);
+  return g;
+}
+
+export function toiletPaper() {
+  const g = new THREE.Group();
+  const roll = mesh(new THREE.CylinderGeometry(0.055, 0.055, 0.11, 24), fabricMat(0xfbfbf8, { roughness: 1 }), g);
+  roll.rotation.z = Math.PI / 2;
+  const bar = mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.16, 10), chrome(), g);
+  bar.rotation.z = Math.PI / 2;
+  return g;
+}
+
+// Bath mat (fluffy rectangle on the floor)
+export function bathMat({ color = 0x9fb8c8, w = 0.8, d = 0.5 } = {}) {
+  const g = new THREE.Group();
+  mesh(new THREE.BoxGeometry(w, 0.018, d, 4, 1, 4), fabricMat(color, { roughness: 1, kind: "knit", sheen: 0.8 }), g, 0, 0.009, 0);
   return g;
 }
