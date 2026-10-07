@@ -2,6 +2,7 @@ import { createShort, THREE, gsap } from "../../js/engine.js";
 import * as T from "../../js/textures.js";
 import { createForest } from "../../js/trees.js";
 import { loadAvatar } from "../../js/avatar.js";
+import { loadProp, mailbox } from "../../js/props.js";
 
 // "What your dog thinks the mail carrier is" — pet-POV short.
 // Every shot is a pure function of time, so scrubbing and rendering are exact.
@@ -251,22 +252,37 @@ box(0.03, 0.12, 8, M.trim, -5.89, 0.06, -4, world);
 box(0.03, 0.12, 8, M.trim, 5.89, 0.06, -4, world);
 box(3.4, 0.012, 2.2, M.rug, 0.5, 0.008, -3.6, world);
 // sofa + family on the back wall
-const sofa = group(1.5, 0, -6.8, world);
-capsule(0.22, 2.9, M.sofa, 0, 0.24, 0.05, sofa, "x").scale.set(1, 1, 2.2);
-capsule(0.17, 2.9, M.sofa, 0, 0.72, -0.36, sofa, "x").scale.set(1, 2.2, 1);
-capsule(0.15, 0.6, M.sofa, -1.6, 0.4, 0, sofa, "z").scale.set(1, 1.3, 1);
-capsule(0.15, 0.6, M.sofa, 1.6, 0.4, 0, sofa, "z").scale.set(1, 1.3, 1);
-for (const x of [-1.4, 1.4]) box(0.06, 0.12, 0.06, 0x2a1b10, x, 0.06, 0.3, sofa);
+// real furniture (Khronos glTF sample assets, see assets/CREDITS.md)
+const sofa = loadProp(short, "SheenWoodLeatherSofa", { width: 2.7 });
+sofa.position.set(1.5, 0, -7.15);
+world.add(sofa);
+const armchair = loadProp(short, "SheenChair", { height: 0.85 });
+armchair.position.set(-1.6, 0, -6.6);
+armchair.rotation.y = 0.6;
+world.add(armchair);
+const plant = loadProp(short, "DiffuseTransmissionPlant", { height: 1.1 });
+plant.position.set(-5.3, 0, -7.3);
+world.add(plant);
+const pouf = loadProp(short, "SpecularSilkPouf", { height: 0.4 });
+pouf.position.set(-0.4, 0, -5.4);
+world.add(pouf);
+const flowers = loadProp(short, "GlassVaseFlowers", { height: 0.45 });
+flowers.position.set(4.4, 0.55, -7.4);
+world.add(flowers);
+box(0.6, 0.55, 0.45, T.paintedWood(0x5a3d28), 4.4, 0.275, -7.4, world); // side table
+// curbside mailbox by the gate
+const mbox = mailbox();
+mbox.position.set(1.15, 0, 8.45);
+mbox.setFlag(1);
+world.add(mbox);
 const frame = box(1.6, 1.0, 0.05, T.paintedWood(0x2e2018), -2.6, 1.9, -7.88, world);
 box(1.4, 0.82, 0.01, T.leaves(1), 0, 0, 0.03, frame); // painting
-const lamp = group(4.4, 0, -6.6, world);
-mesh(new THREE.CylinderGeometry(0.02, 0.02, 1.5, 8), mat(0x2a2a2a, { metalness: 0.8, roughness: 0.3 }), 0, 0.75, 0, lamp);
-mesh(new THREE.CylinderGeometry(0.2, 0.3, 0.35, 16, 1, true), mat(0xfff1c9, { emissive: 0x806a40, side: THREE.DoubleSide }), 0, 1.6, 0, lamp);
-mesh(new THREE.CylinderGeometry(0.18, 0.18, 0.03, 16), mat(0x2a2a2a), 0, 0.015, 0, lamp);
 
 // mail carrier (generic uniform)
 // realistic premade people (Microsoft Rocketbox, MIT licence)
 const carrier = loadAvatar(short, "Delivery_Male_01");
+carrier.loadClip("m_walk_neutral_01");
+carrier.loadClip("m_run_fast_01");
 const letters = [];
 for (let i = 0; i < 3; i++) letters.push(box(0.24, 0.006, 0.13, M.paper, 0, 0, 0, world));
 world.add(carrier);
@@ -274,14 +290,14 @@ world.add(carrier);
 // family on the sofa
 const family = [loadAvatar(short, "Male_Adult_08"), loadAvatar(short, "Female_Adult_01")];
 const phones = family.map((f, i) => {
-  f.position.set(0.9 + i * 1.2, 0, -6.62);
+  f.position.set(0.95 + i * 1.15, 0, -6.98);
   world.add(f);
   const phone = box(0.075, 0.15, 0.01, mat(0x111111, { roughness: 0.2 }), 0, 0, 0, world);
   box(0.066, 0.135, 0.002, new THREE.MeshBasicMaterial({ color: 0x9fc6ff }), 0, 0, 0.006, phone); // lit screen
   return phone;
 });
 const _hl = new THREE.Vector3(), _hr = new THREE.Vector3(), _hd = new THREE.Vector3();
-const SEAT_HIP_Y = 0.52; // hip height when sitting on the sofa
+const SEAT_HIP_Y = 0.58; // hip height when sitting on the sofa
 
 // ---------- the dog (original blocky character, faces +z, fur-textured) ----------
 const dog = group(0, 0, 0, scene);
@@ -464,7 +480,8 @@ function resetWorld() {
   qmarkEl.style.display = "none";
   boardEl.style.display = "none";
 }
-const walk = (p, phase, amt = 0.5) => p.walk(phase, amt);
+// motion capture: phase is ~7 rad/s for a normal walk; lower = slow motion
+const walk = (p, phase, amt = 0.5) => p.play(amt > 0.8 ? "m_run_fast_01" : "m_walk_neutral_01", phase / 7);
 
 // dog standing on its hind legs at the door window, carrier walking up the path
 function windowShot(lt, { start = 9.5, speed = 1.6 } = {}) {
@@ -638,7 +655,7 @@ onUpdate((t) => {
     f.bones.Bip01_R_Finger2.getWorldPosition(_hr);
     f.bones.Bip01_Head.getWorldPosition(_hd);
     const ph = phones[i];
-    ph.position.copy(_hl).lerp(_hr, 0.6); // palm centre
+    ph.position.copy(_hl).lerp(_hr, 0.4); // palm centre
     ph.position.y += 0.025;
     world.worldToLocal(ph.position);
     ph.lookAt(_hd);

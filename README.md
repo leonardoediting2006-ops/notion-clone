@@ -54,7 +54,9 @@ characters/           Character Lab: preview every human preset (?only=dad, &fac
 js/avatar.js          photorealistic premade people (Rocketbox) with walk/run/sit in code
 js/human.js           code-built stylised human template + PRESETS (fallback)
 assets/rocketbox/     downloaded Rocketbox avatars + their MIT licence
-lib/jsm/              three.js FBX loader
+lib/jsm/              three.js FBX / glTF / Draco loaders
+js/props.js           furniture, decor & vehicle loader + code-built mailbox, handbag, hats, fence
+assets/props/, assets/vehicles/   downloaded models (see assets/CREDITS.md)
 js/textures.js        procedural textures (fur, fabric, denim, plaster, bark, sky…)
 js/trees.js           procedural trees and bushes with leaf cards
 tools/
@@ -149,3 +151,27 @@ Included: `Delivery_Male_01`, `Male_Adult_08`, `Female_Adult_01`. The library ha
 (and `*_opacity_color.tga` if present) into `assets/rocketbox/<Name>/`, converting the TGAs to
 `.jpg` (`.png` for opacity) — e.g. `ffmpeg -i x.tga -vf scale=2048:-1 x.jpg`.
 Preview them at `characters/real/?only=<Name>` (`&face`, `&walk`, `&walk=run`, `&sit`).
+
+## Props (`js/props.js`)
+
+```js
+import { loadProp, mailbox, handbag, hat, picketFence, CATALOG } from "../../js/props.js";
+const sofa = loadProp(short, "SheenWoodLeatherSofa", { width: 2.7 }); // or height / length / scale
+const car = loadProp(short, "sedan", { length: 4.4 });
+const box = mailbox(); box.setFlag(1); box.setDoor(0.5);
+scene.add(sofa, car, box, handbag({ color: 0x7a3f2a }), hat("fedora"), picketFence(6));
+```
+
+Downloaded: `GlamVelvetSofa`, `SheenWoodLeatherSofa`, `SheenChair`, `ChairDamaskPurplegold`,
+`SpecularSilkPouf`, `AnisotropyBarnLamp`, `GlassVaseFlowers`, `DiffuseTransmissionPlant`, `TrafficCone`
+(realistic) and `sedan`, `hatchback`, `suv`, `van`, `delivery-truck`, `taxi`, `police-car` (low-poly).
+Code-built: `mailbox()`, `handbag()`, `hat("cap" | "fedora" | "uniform" | "beanie")`, `picketFence(len)`.
+Preview: `characters/props/?group=furniture | vehicles | small`.
+
+Motion capture for avatars: `person.loadClip("m_walk_neutral_01")` before `short.start()`, then
+`person.play("m_walk_neutral_01", t)` + `person.update()` every frame. Included clips:
+`m_walk_neutral_01, m_run_fast_01, m_idle_neutral_01, m_idle_look_around_01, m_knock_door, m_wave_01,
+m_cell_phone_textmessage, f_cell_phone_textmessage, m_sit_chair_idle_neutral_01, f_sit_chair_idle_neutral_01`.
+The Rocketbox library has 471 more (dancing, cheering, laughing, sitting down, door opening…).
+
+Credits for CC-BY models: see `assets/CREDITS.md` (copy its block into video descriptions).

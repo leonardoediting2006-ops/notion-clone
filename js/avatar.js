@@ -106,12 +106,12 @@ export function loadAvatar(short, name, { height = null, facing = 0 } = {}) {
       o.material = Array.isArray(o.material) ? out : out[0];
     });
 
-    for (const [k, n] of Object.entries(BONES)) if (!bones[n]) console.warn("missing bone", n);
+    const human = !!bones.Bip01_L_UpperArm;
     const B = (k) => bones[BONES[k]];
 
     // natural rest pose: arms down from the T-pose, slightly away from the body
     root.updateMatrixWorld(true);
-    aimBone(B("armL"), B("elbowL"), new THREE.Vector3(0.14, -1, 0.0));
+    if (human) aimBone(B("armL"), B("elbowL"), new THREE.Vector3(0.14, -1, 0.0));
     aimBone(B("armR"), B("elbowR"), new THREE.Vector3(-0.14, -1, 0.0));
     aimBone(B("elbowL"), B("handL"), new THREE.Vector3(0.05, -1, 0.14));
     aimBone(B("elbowR"), B("handR"), new THREE.Vector3(-0.05, -1, 0.14));
@@ -129,7 +129,7 @@ export function loadAvatar(short, name, { height = null, facing = 0 } = {}) {
     }
     model.position.y -= box.min.y;
     root.updateMatrixWorld(true);
-    h.hipHeight = B("legL").getWorldPosition(_v).y - root.getWorldPosition(_v2).y;
+    if (B("legL")) h.hipHeight = B("legL").getWorldPosition(_v).y - root.getWorldPosition(_v2).y;
     h.baseY = model.position.y;
 
     // remember rest pose + root axes in each bone's parent space
@@ -144,13 +144,16 @@ export function loadAvatar(short, name, { height = null, facing = 0 } = {}) {
     // let callers attach props to the real hands
     for (const side of ["L", "R"]) {
       const bone = B("hand" + side);
+      if (!bone) continue; // animals have no hands
       const holder = h["hand" + side];
       // compensate the model scale so props are authored in metres, hand-local
       holder.scale.setScalar(1 / model.scale.x);
       bone.add(holder);
     }
     h.bones = bones;
+    mixer = new THREE.AnimationMixer(model);
     h.ready = true;
+    pendingClips.splice(0).forEach((f) => f());
     h.update();
   }
 
@@ -191,6 +194,22 @@ export function loadAvatar(short, name, { height = null, facing = 0 } = {}) {
   h.update = () => {
     if (!h.ready) return;
     const B = (k) => bones[BONES[k]];
+    if (h._clip) {
+      // motion capture drives every bone; head handle adds a turn on top
+      const c = clips.get(h._clip);
+      if (c) {
+        if (!c.action) {
+          c.action = mixer.clipAction(c.clip);
+          c.action.play();
+        }
+        for (const other of clips.values()) if (other.action) other.action.weight = other === c ? 1 : 0;
+        mixer.setTime(h._clipTime % c.clip.duration);
+        const hr = h.head.rotation, hb = B("head"), ax = axes.get(hb);
+        if (hr.y) hb.quaternion.premultiply(_q.setFromAxisAngle(ax.y, hr.y));
+        if (hr.x) hb.quaternion.premultiply(_q.setFromAxisAngle(ax.x, hr.x));
+      }
+      return;
+    }
     for (const b of Object.values(bones)) b.quaternion.copy(rest.get(b));
     model.position.y = h.baseY + (h.pelvis.position.y ? h.pelvis.position.y - 0.93 : 0);
     drive(B("pelvis"), h.pelvis.rotation.x, h.pelvis.rotation.y, h.pelvis.rotation.z);
@@ -209,7 +228,51 @@ export function loadAvatar(short, name, { height = null, facing = 0 } = {}) {
     }
   };
 
+  // ---- motion capture (Rocketbox animations, see assets/rocketbox/animations)
+  const clips = new Map();
+  let mixer;
+  // load a clip by file name, e.g. "m_walk_neutral_01" (call before short.start())
+  h.loadClip = (clipName) => {
+    if (clips.has(clipName)) return;
+    clips.set(clipName, null);
+    let ok;
+    short.track(new Promise((r) => (ok = r)));
+    const load = () => new FBXLoader().load(`${BASE}animations/${clipName}.fbx`, (fbx) => {
+      const clip = fbx.animations[0];
+      clip.name = clipName;
+      // keep only bones this avatar has; keep root height but cancel horizontal drift (in place)
+      clip.tracks = clip.tracks.filter((t) => bones[t.name.split(".")[0]]);
+      const rootT = clip.tracks.find((t) => t.name === "Bip01.position");
+      if (rootT) {
+        const parentQ = bones.Bip01.parent.getWorldQuaternion(new THREE.Quaternion()).invert();
+        const up = new THREE.Vector3(0, 1, 0).applyQuaternion(parentQ).normalize();
+        const v = rootT.values, first = new THREE.Vector3(v[0], v[1], v[2]);
+        const v0h = first.clone().addScaledVector(up, -first.dot(up));
+        for (let i = 0; i < v.length; i += 3) {
+          const cur = new THREE.Vector3(v[i], v[i + 1], v[i + 2]);
+          const height = cur.dot(up);
+          const out = v0h.clone().addScaledVector(up, height);
+          v[i] = out.x; v[i + 1] = out.y; v[i + 2] = out.z;
+        }
+      }
+      clips.set(clipName, { clip });
+      ok();
+    }, undefined, (e) => {
+      console.error("Clip failed", clipName, e);
+      ok();
+    });
+    if (h.ready) load();
+    else pendingClips.push(load);
+  };
+  const pendingClips = [];
+  // play a loaded clip at time t (seconds); pass null to go back to code poses
+  h.play = (clipName, t = 0) => {
+    h._clip = clipName;
+    h._clipTime = t;
+  };
+
   h.resetPose = () => {
+    h._clip = null;
     for (const n of handleNames) {
       h[n].rotation.set(0, 0, 0);
       h[n].position.set(0, 0, 0);
