@@ -1,5 +1,6 @@
 import { createShort, THREE, gsap } from "../../js/engine.js";
 import * as T from "./textures.js";
+import { createForest } from "./trees.js";
 
 // "What your dog thinks the mail carrier is" — pet-POV short.
 // Every shot is a pure function of time, so scrubbing and rendering are exact.
@@ -194,26 +195,8 @@ for (const x of [-3, 3]) {
   box(1.4, 1.2, 0.02, T.fabric(0xe8e0d0, { key: "curtain" }), x, 1.6, -0.12, world); // curtain inside
 }
 
-function bush(x, y, z, scale = 1, m = M.leaves2) {
-  const g = group(x, y, z, world);
-  for (let i = 0; i < 4; i++) {
-    const b = mesh(new THREE.IcosahedronGeometry(0.32 * scale * (0.7 + rand() * 0.5), 1), m, (rand() - 0.5) * 0.5 * scale, 0.25 * scale + rand() * 0.15, (rand() - 0.5) * 0.3 * scale, g);
-    b.rotation.set(rand() * 3, rand() * 3, 0);
-  }
-  return g;
-}
-function tree(x, z, h = 1.6, scale = 1) {
-  const g = group(x, 0, z, world);
-  const trunk = mesh(new THREE.CylinderGeometry(0.1 * scale, 0.16 * scale, h, 9), M.bark, 0, h / 2, 0, g);
-  trunk.rotation.z = (rand() - 0.5) * 0.08;
-  for (let i = 0; i < 6; i++) {
-    const r = (0.6 + rand() * 0.45) * scale;
-    const c = mesh(new THREE.IcosahedronGeometry(r, 1), rand() < 0.5 ? M.leaves : M.leaves2, (rand() - 0.5) * 1.1 * scale, h + (0.2 + rand() * 0.9) * scale, (rand() - 0.5) * 1.1 * scale, g);
-    c.rotation.set(rand() * 3, rand() * 3, rand() * 3);
-  }
-  return g;
-}
-for (const x of [-1.7, 1.7, -4.4, 4.4]) bush(x, 0, 0.55, 1.1);
+const forest = createForest(world);
+for (const x of [-1.7, 1.7, -4.4, 4.4]) forest.bush(x, 0.55, 1.2);
 
 // yard, path, fence, gate, street
 const ground = plane(80, 60, M.grass, world);
@@ -247,11 +230,12 @@ for (let i = -3; i <= 3; i++) {
   box(1, 2, 0.1, T.paintedWood(0x6b4a3a), hx, 1, 17.98, world);
   box(1, 0.8, 0.1, M.glass, hx - 1.6, 1.8, 17.98, world);
   box(1, 0.8, 0.1, M.glass, hx + 1.6, 1.8, 17.98, world);
-  bush(hx - 1.8, 0, 17.5, 0.9, M.leaves);
+  forest.bush(hx - 1.8, 17.5, 1);
 }
-for (let i = 0; i < 14; i++) tree(-24 + i * 3.7 + rand(), 17 + rand() * 1.2, 1.5 + rand() * 0.6, 1.1);
-tree(-3.4, 5.5, 1.9, 1.3);
-tree(4.6, 6.2, 1.7, 1.2);
+for (let i = 0; i < 14; i++) forest.tree(-24 + i * 3.7 + rand(), 17 + rand() * 1.2, { height: 2.6 + rand() * 0.8, scale: 1.25 });
+forest.tree(-3.4, 5.5, { height: 2.9, scale: 1.35 });
+forest.tree(4.6, 6.2, { height: 2.6, scale: 1.25 });
+forest.build();
 
 // interior (z from -8 to 0)
 const floor = plane(12, 8, M.hardwood, world);
@@ -487,14 +471,19 @@ function look(px, py, pz, tx, ty, tz, fov = 50) {
 
 // ---------- shots ----------
 const DAY_FOG = new THREE.Fog(0xc6d3dd, 30, 150);
-const RED_FOG = new THREE.Fog(0x7a0e12, 12, 45);
-function setEnv(kind) {
+const RED_FOG = new THREE.Fog(0xb8352a, 22, 80);
+const fill = new THREE.DirectionalLight(0xfff4e6, 0);
+scene.add(fill, fill.target);
+function setEnv(kind, { exposure = 1.05, fillIntensity = 0 } = {}) {
   const space = kind === "space";
+  renderer.toneMappingExposure = exposure;
+  fill.intensity = fillIntensity;
   skyDome.visible = !space;
   scene.background = space ? SPACE : null;
   skyMat.map = T.skyTexture(kind === "red" ? "red" : "day");
   scene.fog = space ? null : kind === "red" ? RED_FOG : DAY_FOG;
-  hemi.color.set(kind === "red" ? 0xffa090 : 0xdfeaff);
+  hemi.color.set(kind === "red" ? 0xffb8a8 : 0xdfeaff);
+  hemi.intensity = kind === "red" ? 2.4 : 1.6;
   sun.color.set(kind === "red" ? 0xff9a70 : 0xfff0d8);
 }
 function resetWorld() {
@@ -548,7 +537,7 @@ const SHOTS = [
   }],
   // 4 — over the carrier's shoulder: letters go through the slot, he leaves
   [4.4, (lt) => {
-    setEnv("day");
+    setEnv("day", { exposure: 1.3, fillIntensity: 1.6 });
     const bark = Math.pow(Math.abs(Math.sin(lt * 9)), 2);
     dogPose({ z: -0.5, rear: 1, jawOpen: bark, t: lt, earUp: 0.8, angry: 0.6 });
     const reach = ease.out(prog(lt, 0, 0.3));
@@ -564,6 +553,8 @@ const SHOTS = [
       l.rotation.set(0, 0, 0);
     });
     look(1.35, 2.05, 3.4, -0.05, 1.05, 0);
+    fill.position.set(2.5, 2.5, 4);
+    fill.target.position.set(0, 1, 0.5);
   }],
   // 5 — top-down: dog sniffs the letters, red "?"
   [5.6, (lt) => {
@@ -603,7 +594,9 @@ const SHOTS = [
   }],
   // 8 — red sky: the "invader" fleeing down the street in slow motion
   [10.0, (lt) => {
-    setEnv("red");
+    setEnv("red", { exposure: 1.45, fillIntensity: 1.4 });
+    fill.position.set(-4, 3, 6);
+    fill.target.position.set(1, 1, 12);
     dogPose({ z: -30 });
     carrier.position.set(-0.5 + lt * 1.6, 0, 12.3);
     carrier.rotation.y = Math.PI / 2;
@@ -668,4 +661,5 @@ onUpdate((t) => {
   if (c !== lastCaption) captionEl.textContent = lastCaption = c;
 });
 
+window.__dbg = { scene, camera, renderer }; // used by preview screenshots
 short.start();
