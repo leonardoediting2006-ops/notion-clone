@@ -3,6 +3,7 @@
 //   node tools/render.mjs shorts/hello-3d                 → out/hello-3d.mp4
 //   node tools/render.mjs shorts/hello-3d --audio music.mp3 --out out/final.mp4
 //   node tools/render.mjs shorts/hello-3d --frame 60      → out/hello-3d.png (single still)
+//   --headed  render in a visible window (forces the GPU)   --cpu  no GPU available (slow)
 //
 // Needs: ffmpeg on PATH, and `npm install` + `npx playwright install chromium` once.
 // Set CHROMIUM_PATH to use an existing Chrome/Chromium binary instead.
@@ -22,6 +23,8 @@ const { values: opts, positionals } = parseArgs({
     frame: { type: "string" },
     crf: { type: "string", default: "18" },
     port: { type: "string", default: "5174" },
+    cpu: { type: "boolean", default: !!process.env.SOFTWARE_GL }, // no GPU (cloud/CI): software WebGL
+    headed: { type: "boolean", default: false }, // render in a visible window (always uses the GPU)
   },
 });
 
@@ -36,9 +39,13 @@ const out = opts.out ?? `out/${name}.${still ? "png" : "mp4"}`;
 await mkdir(dirname(out), { recursive: true });
 
 const server = await startServer(Number(opts.port));
+// GPU by default (fast on a normal PC); --cpu (or SOFTWARE_GL=1) for machines without one.
 const browser = await chromium.launch({
   executablePath: process.env.CHROMIUM_PATH || undefined,
-  args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"],
+  headless: !opts.headed,
+  args: opts.cpu
+    ? ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"]
+    : ["--ignore-gpu-blocklist", "--enable-gpu", "--enable-gpu-rasterization"],
 });
 
 try {
@@ -48,6 +55,15 @@ try {
   await page.waitForFunction(() => window.__shortReady === true, null, { timeout: 180000 });
   await page.evaluate(() => document.fonts.ready);
   const { fps, frames } = await page.evaluate(() => ({ fps: window.__short.fps, frames: window.__short.frames }));
+  const gpu = await page.evaluate(() => {
+    const gl = document.querySelector("#stage canvas")?.getContext("webgl2");
+    const info = gl?.getExtension("WEBGL_debug_renderer_info");
+    return info ? gl.getParameter(info.UNMASKED_RENDERER_WEBGL) : "unknown";
+  });
+  console.log(`WebGL renderer: ${gpu}`);
+  if (/swiftshader|llvmpipe|software/i.test(gpu) && !opts.cpu) {
+    console.log("⚠ Rendering on the CPU (no GPU detected) — this will be slow. Try --headed to force the graphics card.");
+  }
   const stage = page.locator("#stage");
 
   if (still) {

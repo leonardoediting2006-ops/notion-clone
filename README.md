@@ -33,7 +33,13 @@ npm run render -- shorts/hello-3d                          # → out/hello-3d.mp
 npm run render -- shorts/hello-3d --audio music.mp3        # with a soundtrack
 npm run render -- shorts/hello-3d --frame 90               # one PNG frame (thumbnail)
 npm run render -- shorts/hello-3d --out out/v2.mp4 --crf 16
+npm run render -- shorts/hello-3d --headed                 # visible window: guarantees the GPU is used
+npm run render -- shorts/hello-3d --cpu                    # machines with no GPU (cloud/CI), much slower
 ```
+
+Rendering uses your graphics card. The first line it prints is `WebGL renderer: …`. If that says
+SwiftShader or llvmpipe, it is running on the CPU; add `--headed` to fix it. On a PC with any
+graphics card, a 25 s short renders in a few minutes. In a GPU-less cloud container it takes about 30 min.
 
 The renderer opens the short in headless Chrome, seeks the GSAP timeline to every frame,
 screenshots it (3D canvas *and* HTML/CSS captions) and pipes the frames into ffmpeg (H.264).
