@@ -288,18 +288,34 @@ function person({ shirt, pants, skinTone = 0xe0b08a, hair = 0x3a2a1e }) {
   capsule(0.06, 0.06, skinM, 0, 1.66, 0, p); // neck
   p.head = group(0, 1.8, 0, p);
   sphere(0.14, skinM, 0, 0.04, 0, p.head).scale.set(0.9, 1.12, 0.98);
-  sphere(0.022, skinM, 0, 0.02, 0.14, p.head, 8).scale.set(1, 1.3, 1.2); // nose
+  sphere(0.017, skinM, 0, 0.022, 0.138, p.head, 10).scale.set(1, 1.3, 1.1); // nose
+  const browM = mat(hair, { roughness: 0.9 });
+  const lipM = mat(0xa8524a, { roughness: 0.6 });
+  const cheekM = new THREE.MeshStandardMaterial({ color: 0xe88a80, transparent: true, opacity: 0.35, roughness: 0.8, depthWrite: false });
   for (const sx of [-1, 1]) {
-    sphere(0.017, M.eye, sx * 0.05, 0.07, 0.122, p.head, 8);
-    sphere(0.024, skinM, sx * 0.128, 0.04, 0, p.head, 8).scale.set(0.5, 1, 0.8); // ears
+    // eye: white, iris, pupil, catch-light
+    sphere(0.026, mat(0xf7f4ee, { roughness: 0.25 }), sx * 0.05, 0.068, 0.112, p.head, 14).scale.set(1, 0.72, 0.55);
+    sphere(0.015, mat(0x5a3a22, { roughness: 0.15 }), sx * 0.05, 0.066, 0.124, p.head, 12).scale.set(1, 1, 0.45);
+    sphere(0.008, M.eye, sx * 0.05, 0.066, 0.13, p.head, 8).scale.set(1, 1, 0.4);
+    sphere(0.004, M.shine, sx * 0.05 - 0.005, 0.072, 0.133, p.head, 6);
+    // eyebrow
+    const brow = capsule(0.008, 0.03, browM, sx * 0.05, 0.103, 0.118, p.head, "x");
+    brow.rotation.z = sx * -0.12;
+    // cheeks + ears
+    sphere(0.025, cheekM, sx * 0.075, 0.015, 0.105, p.head, 10).scale.set(1, 0.7, 0.4);
+    sphere(0.024, skinM, sx * 0.128, 0.04, 0, p.head, 8).scale.set(0.5, 1, 0.8);
   }
+  // friendly smile
+  const smile = mesh(new THREE.TorusGeometry(0.03, 0.0065, 6, 16, Math.PI), lipM, 0, -0.018, 0.122, p.head);
+  smile.rotation.z = Math.PI;
+  smile.scale.set(1, 0.75, 1);
   p.hair = mesh(new THREE.SphereGeometry(0.15, 18, 10, 0, Math.PI * 2, 0, Math.PI * 0.55), hairM, 0, 0.07, -0.01, p.head);
   p.hair.scale.set(0.95, 1.05, 1.05);
   return p;
 }
 
 // mail carrier (generic uniform)
-const carrier = person({ shirt: 0x8fb0d0, pants: 0x2b364d });
+const carrier = person({ shirt: 0x8fb0d0, pants: 0x2b364d, skinTone: 0xf0c8a4, hair: 0x4a3322 });
 carrier.hair.visible = false;
 const navy = T.fabric(0x26324a, { key: "cap" });
 mesh(new THREE.CylinderGeometry(0.15, 0.155, 0.11, 18), navy, 0, 0.17, 0, carrier.head);
@@ -355,9 +371,12 @@ const eyes = [];
 const brows = [];
 for (const s of [-1, 1]) {
   const e = group(s * 0.1, 0.17, 0.245, head);
-  box(0.085, 0.085, 0.02, mat(0xf4f1ea, { roughness: 0.3 }), 0, 0, 0, e);
-  box(0.055, 0.06, 0.02, M.eye, s * -0.01, -0.005, 0.008, e);
-  box(0.02, 0.02, 0.01, M.shine, s * -0.02, 0.012, 0.02, e);
+  e.white = box(0.085, 0.085, 0.02, mat(0xf4f1ea, { roughness: 0.3 }), 0, 0, 0, e);
+  e.iris = box(0.07, 0.074, 0.02, mat(0x4a2a12, { roughness: 0.05 }), s * -0.006, -0.004, 0.005, e);
+  e.pupil = box(0.055, 0.06, 0.02, M.eye, s * -0.01, -0.005, 0.008, e);
+  e.shine = box(0.02, 0.02, 0.01, M.shine, s * -0.02, 0.012, 0.02, e);
+  e.shine2 = box(0.011, 0.011, 0.01, M.shine, s * 0.012, -0.022, 0.02, e);
+  e.blush = box(0.07, 0.03, 0.01, new THREE.MeshBasicMaterial({ color: 0xff8fa3, transparent: true, opacity: 0.55, depthWrite: false }), s * 0.035, -0.085, 0.002, e);
   eyes.push(e);
   brows.push(box(0.12, 0.03, 0.03, M.furDark, s * 0.1, 0.24, 0.25, head));
 }
@@ -382,12 +401,12 @@ function dogPose({
   x = 0, y = 0, z = 0, ry = 0,
   rear = 0, headYaw = 0, headPitch = 0, jawOpen = 0,
   wag = 0, wagSpeed = 18, t = 0, trot = 0,
-  squint = 0, angry = 0, earUp = 0, capeOn = false,
+  squint = 0, angry = 0, earUp = 0, capeOn = false, cute = 0, tilt = 0,
 } = {}) {
   dog.position.set(x, y, z);
   dog.rotation.set(0, ry, 0);
   pivot.rotation.x = -rear * 1.0;
-  neck.rotation.set(rear * 1.0 + headPitch, headYaw, 0);
+  neck.rotation.set(rear * 1.0 + headPitch, headYaw, tilt);
   head.rotation.set(0, 0, 0);
   jaw.rotation.x = jawOpen * 0.55;
   tail.rotation.set(-0.7, Math.sin(t * wagSpeed) * 0.7 * wag, 0);
@@ -397,10 +416,20 @@ function dogPose({
   legs.bl.rotation.x = -s;
   legs.br.rotation.x = s;
   dog.position.y += Math.abs(Math.sin(t * 11)) * 0.04 * trot;
-  for (const e of eyes) e.scale.set(1, 1 - squint * 0.7, 1);
+  for (const e of eyes) {
+    // cute = big glossy puppy eyes: iris fills the eye, two sparkles, blush
+    const big = 1 + cute * 0.45;
+    e.scale.set(big, big * (1 - squint * 0.7), 1);
+    e.iris.visible = cute > 0;
+    e.pupil.scale.set(1 + cute * 0.15, 1 + cute * 0.15, 1);
+    e.shine.scale.setScalar(1 + cute * 0.8);
+    e.shine.position.y = 0.012 + cute * 0.008;
+    e.shine2.visible = e.blush.visible = cute > 0;
+  }
   brows.forEach((b, i) => {
-    b.rotation.z = (i === 0 ? -1 : 1) * angry * 0.45;
-    b.position.y = 0.24 - angry * 0.03;
+    const side = i === 0 ? -1 : 1;
+    b.rotation.z = side * angry * 0.45 - side * cute * 0.35;
+    b.position.y = 0.24 - angry * 0.03 + cute * 0.035;
   });
   ears.forEach((e, i) => (e.rotation.z = (i === 0 ? -1 : 1) * earUp * 0.5));
   cape.visible = capeOn;
@@ -508,7 +537,7 @@ function walk(p, phase, amt = 0.5) {
 // dog standing on its hind legs at the door window, carrier walking up the path
 function windowShot(lt, { start = 9.5, speed = 1.6 } = {}) {
   setEnv("day");
-  dogPose({ z: -0.5, rear: 1, wag: 1, t: lt, earUp: 0.3 });
+  dogPose({ z: -0.5, rear: 1, wag: 1, t: lt, earUp: 0.3, cute: 1, tilt: 0.12 });
   carrier.position.set(0, 0, start - lt * speed);
   carrier.rotation.y = Math.PI;
   walk(carrier, lt * 7);
@@ -524,7 +553,7 @@ const SHOTS = [
   [1.6, (lt) => {
     windowShot(lt + 1.6);
     carrier.position.z = 30;
-    dogPose({ z: -0.42, rear: 1, wag: 1, t: lt, earUp: 0.6 });
+    dogPose({ z: -0.42, rear: 1, wag: 1, t: lt, earUp: 0.6, cute: 1, tilt: 0.22 * Math.sin(Math.min(lt, 1.2) * 1.4), jawOpen: 0.25 + Math.sin(lt * 14) * 0.08 });
     look(0.75, 0.95, 3.0 - lt * 0.12, 0, 1.3, 0);
   }],
   // 3 — profile: barking at the door
@@ -566,7 +595,7 @@ const SHOTS = [
       l.rotation.set(0, spots[i][2], 0);
     });
     const sniff = Math.sin(lt * 14) * 0.06;
-    dogPose({ x: 0.75, z: -1.45, ry: -0.62, headPitch: 0.55 + sniff, headYaw: Math.sin(lt * 3) * 0.2, wag: 0.5, t: lt });
+    dogPose({ x: 0.75, z: -1.45, ry: -0.62, headPitch: 0.55 + sniff, headYaw: Math.sin(lt * 3) * 0.2, wag: 0.5, t: lt, cute: 1 });
     look(0.3, 2.3, -0.25, 0.15, 0.1, -0.85);
     const pop = ease.back(prog(lt, 0.55, 0.85));
     if (lt > 0.55) {
@@ -587,7 +616,7 @@ const SHOTS = [
   // 7 — fantasy: proud hero dog in space, cape flapping, slow orbit
   [8.4, (lt) => {
     setEnv("space");
-    dogPose({ y: SPACE_Y, ry: 0.35, headPitch: 0.05, wag: 0.6, t: lt, earUp: 0.5, capeOn: true });
+    dogPose({ y: SPACE_Y, ry: 0.35, headPitch: 0.05, wag: 0.6, t: lt, earUp: 0.5, capeOn: true, cute: 0.7 });
     capeMesh.rotation.x = -Math.PI / 2 + 0.25 + Math.sin(lt * 9) * 0.18;
     const a = 0.25 + lt * 0.35;
     look(Math.sin(a) * 4.2, SPACE_Y + 0.45, Math.cos(a) * 4.2, 0, SPACE_Y + 0.6, 0, 32);
@@ -609,13 +638,13 @@ const SHOTS = [
     setEnv("day");
     carrier.head.rotation.y = 0;
     const x = -2.2 + lt * 2.2;
-    dogPose({ x, z: -4.6, ry: Math.PI / 2, trot: 1, wag: 1, t: lt, headPitch: -0.2, earUp: 0.4 });
+    dogPose({ x, z: -4.6, ry: Math.PI / 2, trot: 1, wag: 1, t: lt, headPitch: -0.2, earUp: 0.4, cute: 1, jawOpen: 0.3 });
     look(x - 1.2, 0.5, -1.7, x + 0.3, 0.8, -5.8);
   }],
   // 10 — fantasy scoreboard: 10 years undefeated
   [13.0, (lt) => {
     setEnv("space");
-    dogPose({ y: SPACE_Y, ry: 0, headPitch: -0.35, wag: 0.8, t: lt, earUp: 0.5, capeOn: true });
+    dogPose({ y: SPACE_Y, ry: 0, headPitch: -0.35, wag: 0.8, t: lt, earUp: 0.5, capeOn: true, cute: 0.7 });
     capeMesh.rotation.x = -Math.PI / 2 + 0.25 + Math.sin(lt * 9) * 0.18;
     look(0, SPACE_Y + 1.9, 3.6 - lt * 0.25, 0, SPACE_Y + 1.25, 0);
     boardEl.style.display = "block";
@@ -627,7 +656,7 @@ const SHOTS = [
   [14.6, (lt) => {
     setEnv("day");
     const snap = ease.snap(prog(lt, 0.55, 0.75));
-    dogPose({ z: -1.3, headYaw: lerp(1.3, 0, snap), headPitch: lerp(0.35, -0.1, snap), earUp: snap, t: lt, wag: 0.2 });
+    dogPose({ z: -1.3, headYaw: lerp(1.3, 0, snap), headPitch: lerp(0.35, -0.1, snap), earUp: snap, t: lt, wag: 0.2, cute: 1 - snap });
     carrier.position.set(0.05, 0, 8.4);
     carrier.rotation.y = Math.PI;
     gate.rotation.y = -ease.inOut(prog(lt, 0.2, 1.2)) * 1.1;
