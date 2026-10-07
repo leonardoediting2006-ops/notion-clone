@@ -114,6 +114,23 @@ function bodyTexture(spec, colorHex) {
     x.fillRect(u * w - 14, 0.31 * h, 28, 6);
     x.fillRect(u * w - 14, 0.67 * h, 28, 6);
   }
+  // road grime: dusty brown haze rising from the sills, plus fine speckle
+  for (const [y0, dir] of [[0, 1], [h, -1]]) {
+    const gr = x.createLinearGradient(0, y0, 0, y0 + dir * 0.22 * h);
+    gr.addColorStop(0, "rgba(70,58,44,0.55)");
+    gr.addColorStop(1, "rgba(70,58,44,0)");
+    x.fillStyle = gr;
+    x.fillRect(0, Math.min(y0, y0 + dir * 0.22 * h), w, 0.22 * h);
+  }
+  let sd = 7;
+  for (let i = 0; i < 6000; i++) {
+    sd = (sd * 16807) % 2147483647;
+    const px = (sd / 2147483647) * w;
+    sd = (sd * 16807) % 2147483647;
+    const py = (sd / 2147483647) * h;
+    x.fillStyle = `rgba(${i % 2 ? "255,250,240" : "60,50,40"},0.06)`;
+    x.fillRect(px, py, 2, 2);
+  }
   // black lower cladding / sills
   x.fillStyle = spec.squareness > 4 ? "#1c1d1f" : `#${col.clone().multiplyScalar(0.6).getHexString()}`;
   x.fillRect(0, 0, w, 0.06 * h);
@@ -121,6 +138,43 @@ function bodyTexture(spec, colorHex) {
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
   t.anisotropy = 8;
+  return t;
+}
+
+// Roughness map: glossy upper body, duller dirty sills.
+function roughTexture() {
+  if (texCache.has("rough")) return texCache.get("rough");
+  const c = document.createElement("canvas");
+  c.width = 64;
+  c.height = 256;
+  const x = c.getContext("2d");
+  const gr = x.createLinearGradient(0, 0, 0, 256);
+  gr.addColorStop(0, "#d0d0d0");
+  gr.addColorStop(0.2, "#7a7a7a");
+  gr.addColorStop(0.5, "#6a6a6a");
+  gr.addColorStop(0.8, "#7a7a7a");
+  gr.addColorStop(1, "#d0d0d0");
+  x.fillStyle = gr;
+  x.fillRect(0, 0, 64, 256);
+  const t = new THREE.CanvasTexture(c);
+  texCache.set("rough", t);
+  return t;
+}
+
+// soft dark blob under the car so it sits on the road
+function contactShadowTexture() {
+  if (texCache.has("ao")) return texCache.get("ao");
+  const c = document.createElement("canvas");
+  c.width = c.height = 128;
+  const x = c.getContext("2d");
+  const gr = x.createRadialGradient(64, 64, 10, 64, 64, 64);
+  gr.addColorStop(0, "rgba(0,0,0,0.85)");
+  gr.addColorStop(0.6, "rgba(0,0,0,0.55)");
+  gr.addColorStop(1, "rgba(0,0,0,0)");
+  x.fillStyle = gr;
+  x.fillRect(0, 0, 128, 128);
+  const t = new THREE.CanvasTexture(c);
+  texCache.set("ao", t);
   return t;
 }
 
@@ -256,7 +310,9 @@ function wheel(r, width, rimColor = 0xb8bcc2) {
   return g;
 }
 
-export function car(type = "hatchback", { color = 0x9aa3ad, rimColor = 0xb8bcc2, lightsOn = false } = {}) {
+export function car(type = "hatchback", { color = 0x9aa3ad, rimColor = 0xb8bcc2, lightsOn = false, dirt = 1 } = {}) {
+  // real paint is a touch greyer than pure picker colours
+  color = new THREE.Color(color).lerp(new THREE.Color(0x8a8c8e), 0.12).getHex();
   const spec = TYPES[type];
   if (!spec) throw new Error(`car(): unknown type "${type}" — use ${Object.keys(TYPES).join(", ")}`);
   const g = new THREE.Group();
@@ -266,7 +322,7 @@ export function car(type = "hatchback", { color = 0x9aa3ad, rimColor = 0xb8bcc2,
 
   const paint = new THREE.MeshPhysicalMaterial({
     map: bodyTexture(spec, color),
-    metalness: 0.55, roughness: 0.32, clearcoat: 1, clearcoatRoughness: 0.04,
+    metalness: 0.35, roughness: 0.5, roughnessMap: roughTexture(), clearcoat: 0.6, clearcoatRoughness: 0.12,
     normalMap: paintTextures(), normalScale: new THREE.Vector2(0.06, 0.06),
   });
   const glass = new THREE.MeshPhysicalMaterial({ map: glassTexture(spec, color), metalness: 0.35, roughness: 0.08, clearcoat: 1, clearcoatRoughness: 0.02 });
@@ -361,16 +417,17 @@ export function car(type = "hatchback", { color = 0x9aa3ad, rimColor = 0xb8bcc2,
   for (const ax of spec.axles) {
     for (const s of [-1, 1]) {
       const wh = wheel(R, tw, rimColor);
-      wh.position.set((ax - 0.5) * L, R, s * (W / 2 - tw / 2 - 0.02));
+      wh.position.set((ax - 0.5) * L, R - 0.012, s * (W / 2 - tw / 2 - 0.02)); // tyres settle into the road
       if (s < 0) wh.rotation.y = Math.PI;
       g.add(wh);
       g.wheels.push(wh);
     }
   }
   // shadow catcher under the car
-  const under = new THREE.Mesh(new THREE.PlaneGeometry(L * 0.9, W * 0.85), new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.35, depthWrite: false }));
+  const under = new THREE.Mesh(new THREE.PlaneGeometry(L * 1.12, W * 1.3), new THREE.MeshBasicMaterial({ map: contactShadowTexture(), transparent: true, opacity: 0.9, depthWrite: false }));
   under.rotation.x = -Math.PI / 2;
-  under.position.y = 0.01;
+  under.position.y = 0.012;
+  under.renderOrder = 1;
   g.add(under);
 
   g.traverse((o) => {

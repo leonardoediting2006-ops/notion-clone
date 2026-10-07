@@ -115,6 +115,29 @@ export function useEnvironment(renderer, scene, intensity = 0.6) {
   pmrem.dispose();
 }
 
+// Reflections taken from the real scene: a cube camera at `position` photographs
+// the surroundings (sky, houses, trees…) so cars/glass reflect what is around them.
+// Call after everything is loaded (e.g. on the first onUpdate frame).
+export function captureEnvironment(renderer, scene, position, { size = 128, far = 600 } = {}) {
+  const rt = new THREE.WebGLCubeRenderTarget(size, { type: THREE.HalfFloatType });
+  const cam = new THREE.CubeCamera(0.1, far, rt);
+  cam.position.copy(position);
+  scene.add(cam);
+  const prev = scene.environment;
+  const prevShadow = renderer.shadowMap.autoUpdate;
+  scene.environment = null;
+  renderer.shadowMap.autoUpdate = false; // reuse the current shadow map for all 6 faces
+  cam.update(renderer, scene);
+  renderer.shadowMap.autoUpdate = prevShadow;
+  scene.environment = prev;
+  scene.remove(cam);
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  const env = pmrem.fromCubemap(rt.texture).texture;
+  pmrem.dispose();
+  rt.dispose();
+  return env;
+}
+
 // ---------------------------------------------------------------- code-built props
 const std = (color, o = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.6, ...o });
 // fabric/leather look without blotchy colour: solid colour + fine weave bump

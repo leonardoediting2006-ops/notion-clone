@@ -2,7 +2,7 @@ import { createShort, THREE, gsap } from "../../js/engine.js";
 import * as T from "../../js/textures.js";
 import { createForest } from "../../js/trees.js";
 import { loadAvatar } from "../../js/avatar.js";
-import { loadProp, mailbox, useEnvironment } from "../../js/props.js";
+import { loadProp, mailbox, useEnvironment, captureEnvironment } from "../../js/props.js";
 import { car } from "../../js/vehicles.js";
 
 // "What your dog thinks the mail carrier is" — pet-POV short.
@@ -640,13 +640,34 @@ const SHOTS = [
   }],
 ];
 
+// reflections photographed from the real scene (street, living room, red sky)
+const studioEnv = scene.environment;
+const ENV = {};
+function captureEnvs() {
+  setEnv("day");
+  dogPose({ z: -30 });
+  carrier.position.set(0, 0, 40);
+  ENV.street = captureEnvironment(renderer, scene, new THREE.Vector3(0, 1.4, 12.5));
+  ENV.room = captureEnvironment(renderer, scene, new THREE.Vector3(0.5, 1.5, -4));
+  setEnv("red");
+  ENV.red = captureEnvironment(renderer, scene, new THREE.Vector3(0, 1.4, 12.5));
+}
+function pickEnv() {
+  if (scene.background === SPACE) scene.environment = studioEnv;
+  else if (scene.fog === RED_FOG) scene.environment = ENV.red;
+  else scene.environment = camera.position.z < 0.05 ? ENV.room : ENV.street;
+  scene.environmentIntensity = camera.position.z < 0.05 ? 0.55 : 0.8;
+}
+
 let lastCaption = null;
 onUpdate((t) => {
   t = Math.min(t, DURATION - 1e-6);
   let i = SHOTS.length - 1;
   while (i > 0 && t < SHOTS[i][0]) i--;
+  if (!ENV.street) captureEnvs();
   resetWorld();
   SHOTS[i][1](t - SHOTS[i][0]);
+  pickEnv();
   carrier.update();
   for (const f of family) {
     f.sit();
