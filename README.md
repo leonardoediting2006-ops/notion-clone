@@ -176,3 +176,16 @@ m_cell_phone_textmessage, f_cell_phone_textmessage, m_sit_chair_idle_neutral_01,
 The Rocketbox library has 471 more (dancing, cheering, laughing, sitting down, door opening…).
 
 Credits for CC-BY models: see `assets/CREDITS.md` (copy its block into video descriptions).
+
+## Everyday cars (`js/vehicles.js`)
+
+Generic, unbranded family & utility vehicles built in code with clear-coat paint, tinted glass,
+alloy wheels and lights (call `useEnvironment()` once for reflections):
+
+```js
+import { car, CAR_TYPES } from "../../js/vehicles.js"; // hatchback, sedan, suv, minivan, pickup
+const c = car("suv", { color: 0x23364f, rimColor: 0x9aa0a6, lightsOn: false });
+c.position.set(4, 0, 14); c.rotation.y = Math.PI; scene.add(c);
+c.spinWheels(distance); // when driving
+```
+Cars face +x. Preview: `characters/props/?group=family` (`&close` for a close-up).

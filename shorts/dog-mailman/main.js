@@ -3,6 +3,7 @@ import * as T from "../../js/textures.js";
 import { createForest } from "../../js/trees.js";
 import { loadAvatar } from "../../js/avatar.js";
 import { loadProp, mailbox, useEnvironment } from "../../js/props.js";
+import { car } from "../../js/vehicles.js";
 
 // "What your dog thinks the mail carrier is" — pet-POV short.
 // Every shot is a pure function of time, so scrubbing and rendering are exact.
@@ -272,11 +273,17 @@ flowers.position.set(4.4, 0.55, -7.4);
 world.add(flowers);
 box(0.6, 0.55, 0.45, T.paintedWood(0x5a3d28), 4.4, 0.275, -7.4, world); // side table
 // curbside mailbox by the gate
-// realistic car parked across the street
-const parked = loadProp(short, "CarConcept", { length: 4.5, paint: 0x1f3550 });
-parked.position.set(4.2, 0, 14.7);
-parked.rotation.y = -Math.PI / 2;
-world.add(parked);
+// everyday cars parked across the street (generic, code-built)
+const parked = [
+  [car("suv", { color: 0x23364f }), 4.6, 14.7],
+  [car("hatchback", { color: 0xb3262a }), -3.4, 14.75],
+  [car("minivan", { color: 0xe6e6e2 }), -10.5, 14.7],
+];
+for (const [c, x, z] of parked) {
+  c.position.set(x, 0, z);
+  c.rotation.y = Math.PI; // facing -x along the kerb
+  world.add(c);
+}
 const mbox = mailbox();
 mbox.position.set(1.15, 0, 8.45);
 mbox.setFlag(1);

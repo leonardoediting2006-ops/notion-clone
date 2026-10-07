@@ -3,6 +3,7 @@
 import { createShort, THREE } from "../../js/engine.js";
 import { loadProp, mailbox, handbag, hat, picketFence, useEnvironment } from "../../js/props.js";
 import { loadAvatar } from "../../js/avatar.js";
+import { car } from "../../js/vehicles.js";
 import * as T from "../../js/textures.js";
 
 const group = new URLSearchParams(location.search).get("group") ?? "furniture";
@@ -42,6 +43,15 @@ if (group === "furniture") {
   const cars = ["sedan", "hatchback", "suv", "van", "delivery-truck", "taxi", "police-car"];
   cars.forEach((c, i) => place(loadProp(short, c, { length: c === "delivery-truck" ? 5.5 : 4.4 }), (i % 2 - 0.5) * 3.4, i * -3.2 + 6, 0.5));
   cam = [[0, 10, 22], [0, 0.5, -3]];
+} else if (group === "family") {
+  const lineup = [["hatchback", 0xb3262a], ["sedan", 0x9aa3ad], ["suv", 0x23364f], ["minivan", 0xe9e9e6], ["pickup", 0x5b6a4a]];
+  lineup.forEach(([t, c], i) => {
+    const v = car(t, { color: c });
+    v.position.set(0, 0, i * -3.2 + 6);
+    v.rotation.y = 0.55;
+    scene.add(v);
+  });
+  cam = new URLSearchParams(location.search).has("close") ? [[5.2, 1.5, 9.4], [0, 0.7, 5.6]] : [[3.5, 6.5, 17], [0, 0.6, -0.5]];
 } else if (group === "cars") {
   place(loadProp(short, "CarConcept", { length: 4.5 }), -1.5, 1.2, 0.7);
   place(loadProp(short, "CarConcept", { length: 4.5, paint: 0x1f3550 }), 1.6, -1.6, 0.7);
