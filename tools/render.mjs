@@ -44,8 +44,8 @@ const browser = await chromium.launch({
 try {
   const page = await browser.newPage({ viewport: { width: 1080, height: 1920 }, deviceScaleFactor: 1 });
   page.on("pageerror", (e) => console.error("[page error]", e.message));
-  await page.goto(`http://localhost:${opts.port}/${shortDir}/?render`);
-  await page.waitForFunction(() => window.__shortReady === true, null, { timeout: 30000 });
+  await page.goto(`http://localhost:${opts.port}/${shortDir}/?render`, { waitUntil: "domcontentloaded", timeout: 180000 });
+  await page.waitForFunction(() => window.__shortReady === true, null, { timeout: 180000 });
   await page.evaluate(() => document.fonts.ready);
   const { fps, frames } = await page.evaluate(() => ({ fps: window.__short.fps, frames: window.__short.frames }));
   const stage = page.locator("#stage");

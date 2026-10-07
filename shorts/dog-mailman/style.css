@@ -1,0 +1,52 @@
+/* "Pet POV" look: yellow typewriter captions with a heavy black outline. */
+.tw-caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 1060px;
+  padding: 0 60px;
+  text-align: center;
+  font-family: "Courier New", "Courier Prime", "Courier 10 Pitch", "Liberation Mono", monospace;
+  font-weight: 700;
+  font-size: 76px;
+  letter-spacing: -1px;
+  color: #ffe93b;
+  -webkit-text-stroke: 14px #000;
+  paint-order: stroke fill;
+  text-shadow: 0 4px 0 #000;
+  white-space: nowrap;
+}
+
+.qmark {
+  position: absolute;
+  font-family: "Arial Black", "Inter", Impact, sans-serif;
+  font-weight: 900;
+  font-size: 260px;
+  line-height: 1;
+  color: #e3161b;
+  -webkit-text-stroke: 10px #fff;
+  paint-order: stroke fill;
+  text-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  transform: translate(-50%, -100%);
+  display: none;
+}
+
+.scoreboard {
+  position: absolute;
+  left: 90px;
+  right: 90px;
+  top: 260px;
+  padding: 36px 40px 30px;
+  background: #121212;
+  border: 10px solid #3a3a3a;
+  border-radius: 28px;
+  box-shadow: 0 0 0 6px #000, 0 0 80px rgba(255, 170, 0, 0.35);
+  font-family: "Courier New", "Courier 10 Pitch", "Liberation Mono", monospace;
+  font-weight: 700;
+  color: #ffb300;
+  transform-origin: 50% 0;
+  display: none;
+}
+.sb-title { text-align: center; font-size: 46px; color: #fff; letter-spacing: 4px; margin-bottom: 18px; }
+.sb-row { display: flex; justify-content: space-between; align-items: baseline; font-size: 64px; }
+.sb-num { font-size: 120px; color: #ff4d1a; text-shadow: 0 0 24px rgba(255, 77, 26, 0.8); font-variant-numeric: tabular-nums; }

@@ -62,13 +62,33 @@ export function createShort({
   const updaters = [];
   const onUpdate = (fn) => updaters.push(fn);
 
+  // Assets (textures, models...) the first frame must wait for.
+  const pending = [];
+  const track = (promise) => (pending.push(promise), promise);
+  const textureLoader = new THREE.TextureLoader();
+  const maxAniso = renderer.capabilities.getMaxAnisotropy();
+  function loadTexture(url, { repeat = [1, 1], color = true } = {}) {
+    let done;
+    track(new Promise((ok) => (done = ok)));
+    const tex = textureLoader.load(url, done, undefined, (e) => {
+      console.error("Failed to load texture", url, e);
+      done();
+    });
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(...repeat);
+    tex.anisotropy = maxAniso;
+    if (color) tex.colorSpace = THREE.SRGBColorSpace;
+    return tex;
+  }
+
   function render() {
     const t = tl.time();
     for (const fn of updaters) fn(t);
     renderer.render(scene, camera);
   }
 
-  function start() {
+  async function start() {
+    await Promise.all(pending);
     // Exposed for tools/render.mjs
     window.__short = {
       fps,
@@ -91,7 +111,7 @@ export function createShort({
     window.__shortReady = true;
   }
 
-  return { THREE, gsap, scene, camera, renderer, tl, stage, onUpdate, start, duration, fps };
+  return { THREE, gsap, scene, camera, renderer, tl, stage, onUpdate, start, track, loadTexture, duration, fps };
 }
 
 // Split a caption element into <span class="word"> pieces so GSAP can stagger them.
