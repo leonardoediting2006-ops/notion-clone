@@ -1,7 +1,7 @@
 import { createShort, THREE, gsap } from "../../js/engine.js";
 import * as T from "../../js/textures.js";
 import { createForest } from "../../js/trees.js";
-import { createHuman, PRESETS } from "../../js/human.js";
+import { loadAvatar } from "../../js/avatar.js";
 
 // "What your dog thinks the mail carrier is" — pet-POV short.
 // Every shot is a pure function of time, so scrubbing and rendering are exact.
@@ -265,28 +265,23 @@ mesh(new THREE.CylinderGeometry(0.2, 0.3, 0.35, 16, 1, true), mat(0xfff1c9, { em
 mesh(new THREE.CylinderGeometry(0.18, 0.18, 0.03, 16), mat(0x2a2a2a), 0, 0.015, 0, lamp);
 
 // mail carrier (generic uniform)
-const carrier = createHuman(PRESETS.mailCarrier);
-const bagM = T.fabric(0x6e4a2a, { key: "bag", weave: 2 });
-box(0.11, 0.3, 0.36, bagM, 0.225, 0.98, 0.0, carrier); // satchel
-// cross-body strap: a flattened ring from the left shoulder to the right hip
-const strapPivot = group(0.04, 1.225, -0.005, carrier);
-strapPivot.rotation.z = Math.atan2(0.49, -0.32);
-const strap = mesh(new THREE.TorusGeometry(1, 0.035, 6, 40), bagM, 0, 0, 0, strapPivot);
-strap.rotation.x = Math.PI / 2;
-strap.scale.set(0.3, 0.125, 0.3);
+// realistic premade people (Microsoft Rocketbox, MIT licence)
+const carrier = loadAvatar(short, "Delivery_Male_01");
 const letters = [];
 for (let i = 0; i < 3; i++) letters.push(box(0.24, 0.006, 0.13, M.paper, 0, 0, 0, world));
 world.add(carrier);
 
 // family on the sofa
-const family = [createHuman(PRESETS.dad), createHuman(PRESETS.mom)];
-family.forEach((f, i) => {
-  f.sit();
-  f.position.set(0.9 + i * 1.2, -0.41, -6.85);
-  box(0.075, 0.15, 0.012, mat(0x111111, { roughness: 0.2 }), 0, -0.1, 0.04, f.handR).rotation.x = -0.4; // phone
-  f.head.rotation.x = 0.45; // staring at the phone
+const family = [loadAvatar(short, "Male_Adult_08"), loadAvatar(short, "Female_Adult_01")];
+const phones = family.map((f, i) => {
+  f.position.set(0.9 + i * 1.2, 0, -6.62);
   world.add(f);
+  const phone = box(0.075, 0.15, 0.01, mat(0x111111, { roughness: 0.2 }), 0, 0, 0, world);
+  box(0.066, 0.135, 0.002, new THREE.MeshBasicMaterial({ color: 0x9fc6ff }), 0, 0, 0.006, phone); // lit screen
+  return phone;
 });
+const _hl = new THREE.Vector3(), _hr = new THREE.Vector3(), _hd = new THREE.Vector3();
+const SEAT_HIP_Y = 0.52; // hip height when sitting on the sofa
 
 // ---------- the dog (original blocky character, faces +z, fur-textured) ----------
 const dog = group(0, 0, 0, scene);
@@ -622,6 +617,32 @@ onUpdate((t) => {
   while (i > 0 && t < SHOTS[i][0]) i--;
   resetWorld();
   SHOTS[i][1](t - SHOTS[i][0]);
+  carrier.update();
+  for (const f of family) {
+    f.sit();
+    f.head.rotation.x = 0.5; // staring at the phone
+    f.spine.rotation.x = -0.12; // leaning back into the sofa
+    // both hands together in front of the chest, holding the phone
+    f.armL.rotation.set(-0.4, 0, -0.1);
+    f.armR.rotation.set(-0.4, 0, 0.1);
+    f.elbowL.rotation.set(-1.3, -1.15, 0);
+    f.elbowR.rotation.set(-1.3, 1.15, 0);
+    f.position.y = SEAT_HIP_Y - f.hipHeight;
+    f.update();
+  }
+  // phone held between both hands, screen facing the face
+  family.forEach((f, i) => {
+    if (!f.ready) return;
+    f.updateMatrixWorld(true);
+    f.bones.Bip01_R_Hand.getWorldPosition(_hl);
+    f.bones.Bip01_R_Finger2.getWorldPosition(_hr);
+    f.bones.Bip01_Head.getWorldPosition(_hd);
+    const ph = phones[i];
+    ph.position.copy(_hl).lerp(_hr, 0.6); // palm centre
+    ph.position.y += 0.025;
+    world.worldToLocal(ph.position);
+    ph.lookAt(_hd);
+  });
 
   let c = "";
   for (const [ct, text] of CAPTIONS) if (t >= ct) c = text;

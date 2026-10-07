@@ -51,7 +51,10 @@ shorts/
   hello-3d/           example: spinning knot, orbiting cubes, star field, word-pop captions
   dog-mailman/        "What your dog thinks the mail carrier is" (pet-POV style)
 characters/           Character Lab: preview every human preset (?only=dad, &face for a close-up)
-js/human.js           reusable realistic human template + PRESETS
+js/avatar.js          photorealistic premade people (Rocketbox) with walk/run/sit in code
+js/human.js           code-built stylised human template + PRESETS (fallback)
+assets/rocketbox/     downloaded Rocketbox avatars + their MIT licence
+lib/jsm/              three.js FBX loader
 js/textures.js        procedural textures (fur, fabric, denim, plaster, bark, sky…)
 js/trees.js           procedural trees and bushes with leaf cards
 tools/
@@ -124,3 +127,25 @@ Options (all optional):
 Joints for custom poses: `pelvis, spine, head, armL/armR, elbowL/R, handL/R, legL/legR, kneeL/R, ankleL/R`.
 Helpers: `walk(phase, amount)`, `sit()`, `resetPose()`, `blink(0..1)`, `look(yaw, pitch)`.
 Presets: `mailCarrier`, `dad`, `mom`, `teen`, `grandpa`. Preview them at `characters/`.
+
+## Photorealistic people (`js/avatar.js`)
+
+Real artist-made characters from the [Microsoft Rocketbox Avatar Library](https://github.com/microsoft/Microsoft-Rocketbox)
+(MIT licence, free for commercial use; licence kept in `assets/rocketbox/LICENSE.md`).
+
+```js
+import { loadAvatar } from "../../js/avatar.js";
+const carrier = loadAvatar(short, "Delivery_Male_01");
+scene.add(carrier);
+onUpdate((t) => {
+  carrier.walk(t * 7, 0.5);   // or .sit(), .resetPose(), or set carrier.armR.rotation etc.
+  carrier.update();           // push the pose onto the skeleton (once per frame)
+});
+```
+
+Included: `Delivery_Male_01`, `Male_Adult_08`, `Female_Adult_01`. The library has 115 more
+(adults, children, business, medical, police, chefs, construction, pilots…). To add one, download
+`Assets/Avatars/<Group>/<Name>/Export/<Name>.fbx` plus its `Textures/*_color.tga`, `*_normal.tga`
+(and `*_opacity_color.tga` if present) into `assets/rocketbox/<Name>/`, converting the TGAs to
+`.jpg` (`.png` for opacity) — e.g. `ffmpeg -i x.tga -vf scale=2048:-1 x.jpg`.
+Preview them at `characters/real/?only=<Name>` (`&face`, `&walk`, `&walk=run`, `&sit`).
