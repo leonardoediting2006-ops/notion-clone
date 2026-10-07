@@ -22,6 +22,9 @@ const TYPES = {
   ".hdr": "application/octet-stream",
   ".mp3": "audio/mpeg",
   ".wav": "audio/wav",
+  ".ogg": "audio/ogg",
+  ".flac": "audio/flac",
+  ".m4a": "audio/mp4",
   ".mp4": "video/mp4",
   ".woff2": "font/woff2",
 };

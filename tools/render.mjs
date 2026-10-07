@@ -4,6 +4,8 @@
 //   node tools/render.mjs shorts/hello-3d --audio music.mp3 --out out/final.mp4
 //   node tools/render.mjs shorts/hello-3d --frame 60      → out/hello-3d.png (single still)
 //   --headed  render in a visible window (forces the GPU)   --cpu  no GPU available (slow)
+//   Sound: the short's sound effects (js/sfx.js) + its voiceover file are mixed in automatically.
+//   --audio voice.wav  use this voiceover   --no-sfx  voiceover only   --audio-only  just out/<name>-audio.wav
 //
 // Needs: ffmpeg on PATH, and `npm install` + `npx playwright install chromium` once.
 // Set CHROMIUM_PATH to use an existing Chrome/Chromium binary instead.
@@ -14,6 +16,8 @@ import { basename, dirname } from "node:path";
 import { parseArgs } from "node:util";
 import { chromium } from "playwright";
 import { startServer } from "./server.mjs";
+import { mixCues } from "./mix.mjs";
+import { resolve as resolvePath } from "node:path";
 
 const { values: opts, positionals } = parseArgs({
   allowPositionals: true,
@@ -25,6 +29,8 @@ const { values: opts, positionals } = parseArgs({
     port: { type: "string", default: "5174" },
     cpu: { type: "boolean", default: !!process.env.SOFTWARE_GL }, // no GPU (cloud/CI): software WebGL
     headed: { type: "boolean", default: false }, // render in a visible window (always uses the GPU)
+    "no-sfx": { type: "boolean", default: false }, // leave the sound effects out
+    "audio-only": { type: "boolean", default: false }, // just mix the soundtrack WAV (seconds, no video)
   },
 });
 
@@ -54,7 +60,23 @@ try {
   await page.goto(`http://localhost:${opts.port}/${shortDir}/?render`, { waitUntil: "domcontentloaded", timeout: 180000 });
   await page.waitForFunction(() => window.__shortReady === true, null, { timeout: 180000 });
   await page.evaluate(() => document.fonts.ready);
-  const { fps, frames } = await page.evaluate(() => ({ fps: window.__short.fps, frames: window.__short.frames }));
+  const { fps, frames, duration } = await page.evaluate(() => ({ fps: window.__short.fps, frames: window.__short.frames, duration: window.__short.duration }));
+
+  // soundtrack: sound-effect cues + voiceover, mixed sample-accurately
+  let cues = await page.evaluate(() => window.__sfx ?? []);
+  if (opts["no-sfx"]) cues = cues.filter((c) => c.voice);
+  if (opts.audio) cues = [...cues.filter((c) => !c.voice), { t: 0, url: resolvePath(opts.audio), gain: 1, voice: true }];
+  let audioFile = null;
+  if (cues.length && !still) {
+    audioFile = out.replace(/\.mp4$/i, "") + "-audio.wav";
+    await mixCues(cues, duration, audioFile);
+    const nv = cues.filter((c) => c.voice).length;
+    console.log(`Soundtrack: ${cues.length - nv} sound effects${nv ? " + voiceover" : " (no voiceover found)"} → ${audioFile}`);
+  }
+  if (opts["audio-only"]) {
+    if (!audioFile) console.log("This short has no sound cues.");
+    process.exit(0);
+  }
   const gpu = await page.evaluate(() => {
     const gl = document.querySelector("#stage canvas")?.getContext("webgl2");
     const info = gl?.getExtension("WEBGL_debug_renderer_info");
@@ -73,7 +95,7 @@ try {
     console.log(`Saved frame ${f} → ${out}`);
   } else {
     const ffArgs = ["-y", "-loglevel", "error", "-f", "image2pipe", "-framerate", String(fps), "-i", "-"];
-    if (opts.audio) ffArgs.push("-i", opts.audio, "-c:a", "aac", "-b:a", "192k", "-shortest");
+    if (audioFile) ffArgs.push("-i", audioFile, "-c:a", "aac", "-b:a", "192k");
     ffArgs.push("-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", opts.crf, "-preset", "medium", "-movflags", "+faststart", out);
     const ff = spawn("ffmpeg", ffArgs, { stdio: ["pipe", "inherit", "inherit"] });
     const ffDone = new Promise((ok, fail) => {

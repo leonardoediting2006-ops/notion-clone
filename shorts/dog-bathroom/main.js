@@ -8,6 +8,7 @@ import {
 } from "../../js/props.js";
 import { createDog, DOG_COLORS } from "../../js/dog.js";
 import { loadSrt, cues, wordCaptions } from "../../js/voiceover.js";
+import { createSfx } from "../../js/sfx.js";
 
 // "Why your dog follows you into the bathroom" — pet-POV short with a voiceover.
 // Every cut and every action is keyed to a word of voiceover.srt (at("word")), so a
@@ -452,6 +453,96 @@ scene.traverse((o) => {
 });
 
 // ---------- overlays ----------
+// ---------- sound: footsteps, dog sounds, bushes, ambience ----------
+// Keyed to the same word cues and to the animation maths, so every step and lap lands on
+// the frame it is seen. The render mixes this under the voiceover.
+const sfx = createSfx(short);
+// times in [t0, t1) where a periodic event happens: phaseOf(t) grows by 1 per cycle,
+// events at the given fractions of the cycle
+function events(t0, t1, phaseOf, at = [0]) {
+  const out = [];
+  let prev = phaseOf(t0);
+  for (let t = t0 + 1 / 240; t < t1; t += 1 / 240) {
+    const ph = phaseOf(t);
+    for (const f of at) if (Math.floor(prev - f) !== Math.floor(ph - f)) out.push(t);
+    prev = ph;
+  }
+  return out;
+}
+// your footsteps: the walk clip loops every 1.2 s, right heel lands at 0.33 s, left at 0.93 s
+const WALK = 1.2, HEELS = [0.33 / 1.2, 0.93 / 1.2];
+const STEPS = ["step_1", "step_2", "step_3", "step_4"];
+const footsteps = (t0, t1, clipTime, gain = 1) => sfx.steps(events(t0, t1, (t) => clipTime(t) / WALK, HEELS), STEPS, { gain });
+// dog paws: the trot swings with sin(lt * speed); each half cycle a diagonal pair lands
+function paws(t0, t1, speed, gain = 0.5) {
+  const ts = events(t0, t1, (t) => ((t - t0) * speed) / Math.PI, [0.5]);
+  sfx.steps(ts, ["paw_1", "paw_2", "paw_3"], { gain });
+  sfx.steps(ts.map((t) => t + 0.035), ["paw_2", "paw_3", "paw_1"], { gain: gain * 0.7 });
+}
+// the drinking wolf laps with max(0, sin(t * 15)) on absolute time
+const laps = (t0, t1, gain) => sfx.steps(events(t0, t1, (t) => (t * 15) / (2 * Math.PI), [0.25]), ["lap_1", "lap_2"], { gain });
+
+// ambience beds
+const indoors = [[0, C.mind], [C.theyre, C.wild], [C.whenever, DURATION]];
+for (const [a, b] of indoors) sfx.loop(a, b, "room_tone", { gain: 0.6, fadeIn: 0.05, fadeOut: 0.1 });
+for (const [a, b] of [[C.you2, C.separation], [C.theyre, C.wild], [C.whenever, C.dont], [C.youd, DURATION]]) {
+  sfx.loop(a, b, "tap_water", { gain: 0.22, fadeIn: 0.05, fadeOut: 0.08 }); // the tap is running
+}
+sfx.loop(C.mind, C.theyre, "ambi_drone", { gain: 0.3, fadeIn: 0.1, fadeOut: 0.15 }); // inside the dog's mind
+sfx.loop(C.wild, C.whenever, "forest_dusk", { gain: 0.9, fadeIn: 0.15, fadeOut: 0.15 });
+sfx.loop(C.is2, C.a, "ambi_haunted_hum", { gain: 0.45, fadeIn: 0.4, fadeOut: 0.3 }); // something is watching
+
+// "When your dog" — you walk past, its tail thumps the floor as its head comes up
+footsteps(0, C.insists, (t) => t, 0.4);
+sfx.add(C.dog + 0.12, "thump", { gain: 0.35 }).add(C.dog + 0.4, "thump", { gain: 0.3, rate: 1.1 });
+// "insists on following you into the bathroom" — steps + claws right behind you
+footsteps(C.insists, C.bathroom, (t) => t - C.insists + 1 / 7, 0.8);
+paws(C.insists, C.bathroom, 11);
+sfx.loop(C.insists, C.every, "pant", { gain: 0.25, fadeIn: 0.1 });
+footsteps(C.bathroom, C.every, (t) => t - C.bathroom + 3 / 7, 0.8);
+paws(C.bathroom, C.every, 11, 0.6);
+// "every / single / time"
+sfx.add(C.every + 0.05, "thump", { gain: 0.3 }).add(C.every + 0.2, "thump", { gain: 0.25 });
+sfx.add(C.single + 0.02, "whimper", { gain: 0.25, rate: 1.25, dur: 0.35, fadeOut: 0.08 });
+sfx.add(C.time + 0.02, "sniff", { gain: 0.45 });
+// "you probably think they just have" — sitting behind you, tail going
+sfx.add(C.you2 + 0.3, "thump", { gain: 0.25 }).add(C.you2 + 0.75, "thump", { gain: 0.22 });
+// "separation anxiety." — a whine at the closed door, then the big sigh
+sfx.add(C.separation + 0.08, "whimper", { gain: 0.45 });
+sfx.add(C.anxiety - 0.05, "sigh", { gain: 0.6 });
+// "They're running security." — a low warning rumble as the shades go on
+sfx.add(C.security + 0.08, "growl", { gain: 0.3, rate: 0.9, dur: 0.6, fadeOut: 0.15 });
+// the wild
+laps(C.wild, C.relieving, 0.15);
+for (let t = C.relieving; t < C.or - 0.3; t += 0.42) sfx.add(t, "rustle", { gain: 0.4, rate: 0.9 + (t % 0.3), dur: 0.5, fadeOut: 0.15 });
+laps(C.or, C.is1, 0.6);
+laps(C.is1, C.is2, 0.7);
+laps(C.is2, C.to, 0.35);
+sfx.add(C.vulnerable + 0.05, "growl", { gain: 0.25, rate: 0.75 }); // from inside the bush
+sfx.add(C.vulnerable + 0.1, "rustle", { gain: 0.2, rate: 0.8 });
+laps(C.to, C.ambush - 0.2, 0.35);
+sfx.add(C.ambush - 0.25, "rustle", { gain: 0.8, rate: 1.3 }); // it bursts out
+sfx.add(C.ambush - 0.15, "snarl", { gain: 0.8 });
+sfx.add(C.ambush + 0.1, "whimper", { gain: 0.45, rate: 1.5, dur: 0.3, fadeOut: 0.1 }); // startled yelp
+sfx.add(C.a + 0.35, "sniff", { gain: 0.35 }); // the lookout scents the air
+laps(C.a, C.stand, 0.15);
+sfx.steps(events(C.stand, C.stand + 0.3, (t) => (t - C.stand) * 3.5, [0.5]), ["rustle"], { gain: 0.25 });
+sfx.add(C.guard - 0.1, "snarl", { gain: 0.7, rate: 0.85 }).add(C.guard + 0.3, "growl", { gain: 0.45 });
+sfx.add(C.guard + 0.25, "rustle", { gain: 0.5, rate: 0.85 }); // the thing in the bush backs off
+// "whenever a pack member lets their defenses down." — scrubbing, splashing
+sfx.add(C.whenever + 0.15, "splash", { gain: 0.35 }).add(C.defenses + 0.05, "splash", { gain: 0.5 });
+sfx.add(C.pack + 0.1, "sniff", { gain: 0.3 });
+// "They don't follow you because they can't be alone." — sofa, lazy tail, big yawn
+sfx.add(C.dont + 0.35, "sigh", { gain: 0.4, rate: 0.9 });
+sfx.steps(events(C.dont, C.follow2, (t) => (t * 6) / (2 * Math.PI), [0.25]), ["thump"], { gain: 0.18 });
+sfx.add(C.alone - 0.15, "yawn", { gain: 0.6, rate: 1.15 });
+// "They follow you because they think" — slow-motion escort
+footsteps(C.follow2, C.youd, (t) => ((t - C.follow2) * 4) / 7, 0.9);
+paws(C.follow2, C.youd, 6.5, 0.5);
+// "you'd be defenseless without them." — the towel delivery
+sfx.add(C.without + 0.05, "paw_1", { gain: 0.5 }).add(C.without + 0.1, "paw_3", { gain: 0.4 });
+sfx.add(C.them + 0.2, "pant", { gain: 0.3, dur: 0.75, fadeOut: 0.2 });
+
 const captions = wordCaptions(document.getElementById("caption"), words, { lines: LINES });
 const flashEl = document.getElementById("flash");
 const vignetteEl = document.getElementById("vignette");
@@ -860,5 +951,5 @@ onUpdate((t) => {
   captions(t);
 });
 
-window.__dbg = { scene, camera, renderer, C, SHOTS };
+window.__dbg = { scene, camera, renderer, C, SHOTS, owner };
 short.start();

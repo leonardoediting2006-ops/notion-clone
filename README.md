@@ -232,3 +232,23 @@ onUpdate((t) => captions(t));   // each word pops in exactly when it is spoken
 
 Re-record the voiceover, export a new `.srt`, and the whole edit re-times itself. Render with the
 audio: `npm run render -- shorts/dog-bathroom --audio voiceover.wav`.
+
+## Sound effects (`js/sfx.js`)
+
+A cue sheet on the timeline. It plays live in the preview (click once to enable audio) and is
+mixed sample-accurately into the render, under the voiceover:
+
+```js
+import { createSfx } from "../../js/sfx.js";
+const sfx = createSfx(short);
+sfx.add(at("anxiety"), "sigh", { gain: 0.6 });            // one-shot on a word
+sfx.loop(9.5, 17.4, "forest_dusk", { gain: 0.9 });        // ambience bed
+sfx.steps([1.2, 1.8, 2.4], ["step_1", "step_2"]);          // footsteps with natural variation
+```
+
+Options: `gain`, `rate` (speed/pitch), `pan` (-1..1), `offset`, `dur`, `fadeIn`, `fadeOut`.
+The library is in `assets/sfx/` (see its README for sources and how to drop in real recordings).
+Put `voiceover.wav` (or .mp3) in the short's folder and it is mixed in automatically.
+`npm run render -- shorts/<name> --audio-only` mixes just the soundtrack (`out/<name>-audio.wav`) in
+seconds, handy for checking the sound or for importing it into your editor as a separate track.
+`--no-sfx` renders with the voiceover only.
