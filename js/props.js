@@ -437,3 +437,180 @@ export function bathMat({ color = 0x9fb8c8, w = 0.8, d = 0.5 } = {}) {
   mesh(new THREE.BoxGeometry(w, 0.018, d, 4, 1, 4), fabricMat(color, { roughness: 1, kind: "knit", sheen: 0.8 }), g, 0, 0.009, 0);
   return g;
 }
+
+// ---------------------------------------------------------------- living room
+const woodMat = (c = 0x6b4a2e) => T.paintedWood(c);
+const BOOK_COLORS = [0x7a2e2e, 0x2e4a7a, 0x2f6b4a, 0xc9a24a, 0x3b3b3b, 0x8a5a9a, 0xd8d0c0, 0xb5532f, 0x1f5f6b, 0x6b6b2f];
+// Bookcase full of books (open front faces +z), origin at the floor centre of its back.
+export function bookshelf({ w = 1.2, h = 1.9, d = 0.34, shelves = 5, color = 0x5a3d28, seed = 3 } = {}) {
+  let s = seed * 7919 + 1;
+  const r = () => ((s = (s * 16807) % 2147483647) / 2147483647);
+  const g = new THREE.Group();
+  const wood = woodMat(color);
+  for (const x of [-w / 2, w / 2]) mesh(new THREE.BoxGeometry(0.03, h, d), wood, g, x, h / 2, d / 2);
+  mesh(new THREE.BoxGeometry(w, h, 0.015), wood, g, 0, h / 2, 0.008);
+  const step = (h - 0.04) / shelves;
+  for (let i = 0; i <= shelves; i++) mesh(new THREE.BoxGeometry(w, 0.025, d), wood, g, 0, 0.012 + i * step, d / 2);
+  for (let i = 0; i < shelves; i++) {
+    const y0 = 0.025 + i * step;
+    let x = -w / 2 + 0.03;
+    while (x < w / 2 - 0.08) {
+      if (r() < 0.12) { x += 0.06 + r() * 0.1; continue; } // gaps
+      if (r() < 0.08 && x < w / 2 - 0.25) { // a small potted plant or vase
+        const pot = mesh(new THREE.CylinderGeometry(0.05, 0.04, 0.09, 14), std([0xd8d0c4, 0x8a5a3a, 0x3d5a6b][Math.floor(r() * 3)], { roughness: 0.4 }), g, x + 0.06, y0 + 0.045, d / 2);
+        mesh(new THREE.SphereGeometry(0.065, 10, 8), std(0x3f7a3a, { roughness: 0.9 }), g, pot.position.x, y0 + 0.13, d / 2).scale.y = 0.8;
+        x += 0.14;
+        continue;
+      }
+      const bw = 0.025 + r() * 0.025, bh = step * (0.62 + r() * 0.3), bd = d * (0.7 + r() * 0.2);
+      const book = mesh(new THREE.BoxGeometry(bw, bh, bd), std(BOOK_COLORS[Math.floor(r() * BOOK_COLORS.length)], { roughness: 0.7 }), g, x + bw / 2, y0 + bh / 2, d - bd / 2 - 0.01);
+      if (r() < 0.06) { book.rotation.z = -0.25; book.position.x += 0.02; }
+      x += bw + 0.002;
+    }
+  }
+  return g;
+}
+
+// Low TV cabinet with a flat-screen TV, soundbar and a little plant. Faces +z.
+export function tvUnit({ w = 1.6, screen = 1.25 } = {}) {
+  const g = new THREE.Group();
+  const wood = woodMat(0x3a2a20);
+  mesh(new THREE.BoxGeometry(w, 0.45, 0.42), wood, g, 0, 0.27, 0.21);
+  for (const x of [-w / 2 + 0.08, w / 2 - 0.08]) mesh(new THREE.BoxGeometry(0.05, 0.05, 0.05), std(0x222222), g, x, 0.025, 0.21);
+  for (let i = 0; i < 3; i++) {
+    mesh(new THREE.BoxGeometry(w / 3 - 0.02, 0.38, 0.01), woodMat(0x4a3628), g, -w / 3 + i * (w / 3), 0.27, 0.425);
+    mesh(new THREE.BoxGeometry(0.08, 0.012, 0.012), std(0xb9a27a, { metalness: 0.9, roughness: 0.3 }), g, -w / 3 + i * (w / 3), 0.42, 0.435);
+  }
+  const sh = screen * 9 / 16;
+  const tv = new THREE.Group();
+  tv.position.set(0, 0.5 + 0.06 + sh / 2, 0.2);
+  g.add(tv);
+  mesh(new THREE.BoxGeometry(screen + 0.02, sh + 0.02, 0.04), std(0x101010, { roughness: 0.4 }), tv);
+  const glass = mesh(new THREE.PlaneGeometry(screen - 0.01, sh - 0.01), new THREE.MeshPhysicalMaterial({ color: 0x050608, roughness: 0.08, clearcoat: 1, clearcoatRoughness: 0.05 }), tv, 0, 0, 0.021);
+  glass.castShadow = false;
+  mesh(new THREE.BoxGeometry(0.3, 0.02, 0.18), std(0x151515), g, 0, 0.51, 0.2);
+  mesh(new THREE.BoxGeometry(0.06, 0.06, 0.04), std(0x151515), g, 0, 0.53, 0.2);
+  mesh(new THREE.BoxGeometry(0.75, 0.06, 0.08), fabricMat(0x222222), g, 0, 0.53, 0.37); // soundbar
+  const pot = mesh(new THREE.CylinderGeometry(0.07, 0.055, 0.14, 16), std(0xe8e2d6, { roughness: 0.35 }), g, w / 2 - 0.15, 0.57, 0.2);
+  for (let i = 0; i < 7; i++) {
+    const leaf = mesh(new THREE.ConeGeometry(0.025, 0.28, 5), std(0x356b36, { roughness: 0.8 }), g, pot.position.x, 0.72, 0.2);
+    leaf.rotation.set(Math.cos(i * 2.4) * 0.35, 0, Math.sin(i * 2.4) * 0.35);
+  }
+  return g;
+}
+
+// Wooden coffee table with a mug, magazines and a remote. Top at ~0.42 m.
+export function coffeeTable({ w = 1.05, d = 0.55 } = {}) {
+  const g = new THREE.Group();
+  const wood = woodMat(0x7a5536);
+  mesh(new THREE.BoxGeometry(w, 0.05, d), wood, g, 0, 0.4, 0);
+  mesh(new THREE.BoxGeometry(w - 0.1, 0.025, d - 0.1), wood, g, 0, 0.12, 0);
+  for (const [x, z] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) mesh(new THREE.BoxGeometry(0.05, 0.38, 0.05), wood, g, x * (w / 2 - 0.05), 0.19, z * (d / 2 - 0.05));
+  const mug = mesh(new THREE.CylinderGeometry(0.04, 0.036, 0.09, 18), std(0xc8463a, { roughness: 0.35 }), g, w / 2 - 0.2, 0.47, 0.05);
+  mesh(new THREE.TorusGeometry(0.025, 0.007, 6, 14), mug.material, g, mug.position.x + 0.045, 0.47, 0.05).rotation.y = Math.PI / 2;
+  for (let i = 0; i < 3; i++) {
+    const mag = mesh(new THREE.BoxGeometry(0.21, 0.008, 0.28), std([0x2c6fb0, 0xe0d4b0, 0xb03a5a][i], { roughness: 0.5 }), g, -w / 4, 0.43 + i * 0.008, 0);
+    mag.rotation.y = i * 0.25 - 0.2;
+  }
+  mesh(new THREE.BoxGeometry(0.045, 0.02, 0.17), std(0x1b1b1b, { roughness: 0.5 }), g, 0.05, 0.435, -0.12).rotation.y = 0.4; // remote
+  // lower shelf: a basket of blankets
+  mesh(new THREE.BoxGeometry(0.35, 0.12, 0.28), fabricMat(0xd9cfbd, { kind: "knit" }), g, 0.2, 0.19, 0);
+  return g;
+}
+
+// Floor lamp with a fabric shade that glows; add the returned .light to the scene yourself if wanted.
+export function floorLamp({ h = 1.6, color = 0xf3e6cc } = {}) {
+  const g = new THREE.Group();
+  const metal = std(0x2b2b2b, { metalness: 0.7, roughness: 0.4 });
+  mesh(new THREE.CylinderGeometry(0.16, 0.18, 0.03, 24), metal, g, 0, 0.015, 0);
+  mesh(new THREE.CylinderGeometry(0.012, 0.012, h, 10), metal, g, 0, h / 2, 0);
+  const shade = mesh(new THREE.CylinderGeometry(0.16, 0.24, 0.3, 28, 1, true), new THREE.MeshStandardMaterial({ color, emissive: 0xffc98a, emissiveIntensity: 0.6, side: THREE.DoubleSide, roughness: 0.9 }), g, 0, h, 0);
+  shade.castShadow = false;
+  const light = new THREE.PointLight(0xffd29a, 3, 4, 1.6);
+  light.position.set(0, h - 0.05, 0);
+  g.add(light);
+  g.light = light;
+  return g;
+}
+
+// Round wall clock (face +z). Pass the time of day in hours to set the hands.
+export function wallClock({ r = 0.17, hours = 17.2 } = {}) {
+  const g = new THREE.Group();
+  mesh(new THREE.CylinderGeometry(r, r, 0.04, 40).rotateX(Math.PI / 2), std(0x222222, { roughness: 0.4 }), g, 0, 0, 0.02);
+  mesh(new THREE.CircleGeometry(r * 0.9, 40), std(0xf6f2ea, { roughness: 0.6 }), g, 0, 0, 0.041);
+  for (let i = 0; i < 12; i++) {
+    const a = (i / 12) * Math.PI * 2;
+    mesh(new THREE.BoxGeometry(0.008, i % 3 ? 0.02 : 0.035, 0.003), std(0x222222), g, Math.sin(a) * r * 0.78, Math.cos(a) * r * 0.78, 0.043).rotation.z = -a;
+  }
+  const hand = (len, wdt, a, z) => {
+    const m = mesh(new THREE.BoxGeometry(wdt, len, 0.004).translate(0, len / 2, 0), std(0x111111), g, 0, 0, z);
+    m.rotation.z = -a;
+  };
+  hand(r * 0.5, 0.012, ((hours % 12) / 12) * Math.PI * 2, 0.046);
+  hand(r * 0.75, 0.008, ((hours % 1)) * Math.PI * 2, 0.05);
+  return g;
+}
+
+// Throw pillow (soft box), lying with its face toward +z.
+export function cushion({ color = 0xc9783a, w = 0.42, h = 0.42 } = {}) {
+  const geo = new THREE.BoxGeometry(w, h, 0.14, 8, 8, 2);
+  const p = geo.attributes.position;
+  for (let i = 0; i < p.count; i++) {
+    const x = p.getX(i) / (w / 2), y = p.getY(i) / (h / 2);
+    p.setZ(i, p.getZ(i) * (1 - 0.75 * Math.max(Math.abs(x), Math.abs(y)) ** 3));
+  }
+  geo.computeVertexNormals();
+  const g = new THREE.Group();
+  mesh(geo, fabricMat(color, { kind: "knit", sheen: 0.6 }), g);
+  return g;
+}
+
+// Picture frame with a canvas painted in code (abstract / landscape / sunset), face +z.
+export function wallArt({ w = 0.6, h = 0.8, style = "abstract", frame = 0x2a1d14, seed = 1 } = {}) {
+  let s = seed * 104729 + 7;
+  const r = () => ((s = (s * 16807) % 2147483647) / 2147483647);
+  const c = document.createElement("canvas");
+  c.width = 256; c.height = Math.round(256 * h / w);
+  const x = c.getContext("2d");
+  if (style === "sunset") {
+    const gr = x.createLinearGradient(0, 0, 0, c.height);
+    gr.addColorStop(0, "#f2a65a"); gr.addColorStop(0.55, "#e2604a"); gr.addColorStop(0.56, "#2d3e5c"); gr.addColorStop(1, "#18223a");
+    x.fillStyle = gr; x.fillRect(0, 0, c.width, c.height);
+    x.fillStyle = "#ffe0a0"; x.beginPath(); x.arc(c.width / 2, c.height * 0.55, 40, Math.PI, 0); x.fill();
+  } else if (style === "landscape") {
+    x.fillStyle = "#bcd7e6"; x.fillRect(0, 0, c.width, c.height);
+    for (let i = 0; i < 4; i++) {
+      x.fillStyle = ["#7c9a8a", "#5e7e6b", "#45634f", "#2f4a3a"][i];
+      x.beginPath(); x.moveTo(0, c.height);
+      for (let k = 0; k <= 8; k++) x.lineTo((k / 8) * c.width, c.height * (0.35 + i * 0.15) + Math.sin(k * 1.7 + i) * 18);
+      x.lineTo(c.width, c.height); x.fill();
+    }
+  } else {
+    x.fillStyle = "#efe7da"; x.fillRect(0, 0, c.width, c.height);
+    for (let i = 0; i < 7; i++) {
+      x.fillStyle = ["#d9643a", "#2f5d7c", "#e8b44a", "#1f2a33", "#9bb7a8"][Math.floor(r() * 5)];
+      x.globalAlpha = 0.85;
+      if (r() < 0.5) { x.beginPath(); x.arc(r() * c.width, r() * c.height, 20 + r() * 50, 0, Math.PI * 2); x.fill(); }
+      else x.fillRect(r() * c.width * 0.7, r() * c.height * 0.8, 30 + r() * 90, 10 + r() * 70);
+    }
+    x.globalAlpha = 1;
+  }
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  const g = new THREE.Group();
+  mesh(new THREE.BoxGeometry(w + 0.06, h + 0.06, 0.035), woodMat(frame), g, 0, 0, 0.018);
+  mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshStandardMaterial({ map: tex, roughness: 0.85 }), g, 0, 0, 0.037);
+  return g;
+}
+
+// A pair of shoes on the floor (toes toward +z)
+export function shoes({ color = 0x3b2a20 } = {}) {
+  const g = new THREE.Group();
+  const lea = fabricMat(color, { roughness: 0.45, kind: "leather", sheen: 0 });
+  for (const s of [-1, 1]) {
+    const shoe = mesh(new THREE.CapsuleGeometry(0.045, 0.17, 6, 12).rotateX(Math.PI / 2), lea, g, s * 0.07, 0.04, 0);
+    shoe.scale.set(1, 0.75, 1);
+    mesh(new THREE.BoxGeometry(0.09, 0.015, 0.27), std(0x1a1a1a), g, s * 0.07, 0.008, 0);
+  }
+  return g;
+}

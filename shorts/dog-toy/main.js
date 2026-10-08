@@ -2,7 +2,10 @@ import { createShort, THREE, gsap } from "../../js/engine.js";
 import * as T from "../../js/textures.js";
 import { createForest } from "../../js/trees.js";
 import { loadAvatar } from "../../js/avatar.js";
-import { loadProp, useEnvironment, captureEnvironment } from "../../js/props.js";
+import {
+  loadProp, useEnvironment, captureEnvironment,
+  bookshelf, tvUnit, coffeeTable, floorLamp, wallClock, cushion, wallArt, shoes,
+} from "../../js/props.js";
 import { createDog } from "../../js/dog.js";
 import { createToy } from "./toy.js";
 import { tennisBall, ropeToy } from "../../js/toys.js";
@@ -224,8 +227,24 @@ box(0.95, 0.015, 0.6, M.doormat, DOOR_X, 0.008, -0.45, house);
 
 // furniture
 place(loadProp(short, "SheenWoodLeatherSofa", { width: 2.5 }), 0.4, 0, -5.55);
-place(loadProp(short, "DiffuseTransmissionPlant", { height: 1.3 }), -3.0, 0, -5.5);
-place(loadProp(short, "SpecularSilkPouf", { height: 0.42 }), 2.75, 0, -2.6);
+place(loadProp(short, "DiffuseTransmissionPlant", { height: 1.3 }), -3.05, 0, -5.55);
+place(loadProp(short, "SpecularSilkPouf", { height: 0.42 }), 2.35, 0, -2.25);
+place(loadProp(short, "ChairDamaskPurplegold", { height: 0.95 }), -2.6, 0, -1.05, 2.3);
+place(bookshelf({ w: 1.15, h: 1.95 }), -1.8, 0, -5.99);
+place(floorLamp(), -0.95, 0, -5.65);
+place(coffeeTable(), -1.15, 0, -4.45, 0.08);
+place(tvUnit(), 3.48, 0, -3.7, -Math.PI / 2);
+place(wallArt({ w: 0.95, h: 0.6, style: "landscape", seed: 2 }), 3.5, 1.8, -3.7, -Math.PI / 2);
+place(wallArt({ w: 0.5, h: 0.7, style: "abstract", seed: 4 }), -3.5, 1.6, -5.15, Math.PI / 2);
+place(wallArt({ w: 0.45, h: 0.6, style: "sunset", seed: 5 }), -3.5, 1.55, -0.85, Math.PI / 2);
+place(wallArt({ w: 0.4, h: 0.5, style: "abstract", seed: 9 }), 3.5, 1.5, -1.6, -Math.PI / 2);
+place(wallClock({ hours: 17.35 }), -1.4, 2.0, -0.01, Math.PI);
+place(shoes(), 2.75, 0, -0.35, Math.PI - 0.3);
+place(shoes({ color: 0xd8d2c8 }), 2.95, 0, -0.75, Math.PI + 0.4);
+for (const [x, c, r] of [[-0.45, 0xc9783a, 0.15], [0.05, 0x3d6b7a, -0.1], [1.25, 0xe2d5bd, 0.2]]) {
+  const cu = place(cushion({ color: c }), x, 0.66, -5.78);
+  cu.rotation.set(-0.3, 0, r);
+}
 box(0.5, 0.52, 0.42, T.paintedWood(0x5a3d28), 2.35, 0.26, -5.65, house);
 place(loadProp(short, "GlassVaseFlowers", { height: 0.42 }), 2.35, 0.52, -5.65);
 box(1.5, 0.95, 0.04, T.paintedWood(0x2e2018), 0.4, 1.75, -5.99, house);
@@ -487,6 +506,30 @@ function ownerStand({ x = DOOR_X - 0.2, z = -1.1, ry = Math.PI + 0.35, reach = 0
     owner.elbowL.rotation.set(-0.35, -0.3, 0);
   }
 }
+// sitting on the sofa, looking down at the dog in front of you
+const SEAT = V(0.2, 0, -5.38), SEAT_HIP_Y = 0.56;
+function ownerSofa({ pat = 0, reach = 0, t = 0 } = {}) {
+  owner.sit();
+  owner.position.set(SEAT.x, SEAT_HIP_Y - owner.hipHeight, SEAT.z);
+  owner.rotation.set(0, 0, 0);
+  owner.spine.rotation.x = 0.12 + 0.15 * reach;
+  owner.head.rotation.x = 0.38;
+  // hands resting on the thighs
+  owner.armL.rotation.set(-0.45, 0, -0.05);
+  owner.armR.rotation.set(-0.45, 0, 0.05);
+  owner.elbowL.rotation.set(-0.75, -0.2, 0);
+  owner.elbowR.rotation.set(-0.75, 0.2, 0);
+  if (pat > 0) {
+    // left hand on the dog's head, stroking slowly
+    owner.armL.rotation.set(-1.0 - Math.sin(t * 3.2) * 0.07 * pat, 0, -0.18);
+    owner.elbowL.rotation.set(-0.45 + Math.sin(t * 3.2) * 0.06, -0.35, 0);
+  }
+  if (reach > 0) {
+    // right hand reaching out, palm open, for the toy
+    owner.armR.rotation.set(lerp(-0.45, -1.2, reach), 0, lerp(0.05, -0.1, reach));
+    owner.elbowR.rotation.set(lerp(-0.75, -0.2, reach), 0.3, 0);
+  }
+}
 const ownerHand = (side = "R") => {
   owner.updateMatrixWorld(true);
   return owner.bones?.[`Bip01_${side}_Hand`].getWorldPosition(V()) ?? V();
@@ -741,51 +784,51 @@ const SHOTS = [
     setEnv("house", { exposure: 1.0, warm: 0.3 });
     doorHit(1);
     const soft = ease.inOut(prog(t, C.control - 0.1, C.control + 0.35));
-    ownerStand({ x: 0.15, z: -1.95, ry: Math.PI + 0.25, reach: 0.35, pat: 1, t });
-    dog.pose({ x: -0.15, z: -2.95, ry: 0.25, sit: 1, t: lt, wag: 0.6, wagSpeed: 10, earUp: 0.3, closed: soft * 0.45, cute: 0.7, headPitch: -0.25 });
+    ownerSofa({ pat: soft, t });
+    dog.pose({ x: SEAT.x + 0.02, z: -4.3, ry: Math.PI - 0.35, sit: 1, t: lt, wag: 0.6, wagSpeed: 10, earUp: 0.3, closed: soft * 0.45, cute: 0.7, headPitch: -0.1 });
     toyIn("mouth");
     toy.squish(0.4);
     toy.flop(0, 0.8);
     energy(t, { burst: 1, suck: 1, fade: prog(t, C.so2, C.so2 + 0.5) });
-    frame2(face(), owner.position.clone().setY(1.0), -0.95, 3.1, 0.15, 44, -0.15, 0.38);
+    frame2(face(), V(SEAT.x, 1.0, SEAT.z), Math.PI / 2 + 0.05, 2.7, 0.05, 44, -0.1, 0.45);
   }],
   // "They aren't teasing you with a toy." — you crouch; it offers the toy but keeps hold
   [C.they4, (lt, t) => {
     setEnv("house", { exposure: 1.05, warm: 0.4 });
     doorHit(1);
-    const crouch = ease.inOut(prog(t, C.they4, C.teasing + 0.3));
-    ownerStand({ x: 0.55, z: -1.6, ry: Math.PI + 0.55, crouch, reach: 0.4 + crouch * 0.3 });
-    dog.pose({ x: -0.85, z: -3.4, ry: 0.65, t: lt, wag: 1, wagSpeed: 14, earUp: 0.5, cute: 1, headPitch: -0.05, tilt: 0.15 * Math.sin(lt * 2.5) });
+    const reach = ease.inOut(prog(t, C.they4, C.teasing + 0.3));
+    ownerSofa({ reach });
+    const offer = ease.inOut(prog(t, C.teasing, C.toy3));
+    dog.pose({ x: SEAT.x - 0.6, z: -3.75 - offer * 0.15, ry: 2.86, t: lt, wag: 1, wagSpeed: 14, earUp: 0.5, cute: 1, headPitch: -0.2 + offer * 0.1, tilt: 0.15 * Math.sin(lt * 2.5) });
     toyIn("mouth");
     toy.squish(0.45);
     toy.flop(Math.sin(lt * 5) * 0.15, 0.6);
-    W.front.visible = false;
-    frame2(face(), owner.position.clone().setY(0.75), -0.95, 3.7, 0.1, 42, -0.05, 0.38);
+    frame2(face(), V(SEAT.x, 0.9, SEAT.z), -Math.PI / 2 - 0.1, 3.0, 0.1, 44, -0.05, 0.12);
   }],
   // "They're literally holding onto something" — lying down, hugging the toy, eyes closed
   [C.theyre, (lt, t) => {
     setEnv("house", { exposure: 1.05, warm: 0.6 });
     doorHit(1);
     const hug = ease.inOut(prog(t, C.holding, C.holding + 0.4));
-    dog.pose({ x: -0.3, z: -2.9, ry: 0.5, lie: 1, closed: 0.3 + hug * 0.7, cute: 0.8, t: lt, wag: 0.4, wagSpeed: 6, headPitch: 0.25 + hug * 0.15, tilt: hug * 0.15 });
+    ownerSofa({});
+    dog.pose({ x: SEAT.x + 0.1, z: -4.15, ry: 0.6, lie: 1, closed: 0.3 + hug * 0.7, cute: 0.8, t: lt, wag: 0.4, wagSpeed: 6, headPitch: 0.25 + hug * 0.15, tilt: hug * 0.15 });
     toyIn("mouth");
     toy.squish(0.4 + hug * 0.3);
     toy.flop(0, 1);
-    orbit(face(), 0.5 + 0.35, 2.1 - lt * 0.25, 0.2, 40, -0.15);
+    orbit(face(), 0.6 + 0.5, 1.9 - lt * 0.25, 0.25, 40, -0.15);
   }],
   // "so their love for you doesn't overwhelm them." — leaning on your legs, a hand on its head
   [C.so3, (lt, t) => {
     setEnv("house", { exposure: 1.1, warm: 0.8 });
     doorHit(1);
-    ownerStand({ x: 0.05, z: -2.05, ry: Math.PI + 0.25, reach: 0.25, pat: 1, t });
+    ownerSofa({ pat: 1, t });
     const look2 = ease.inOut(prog(t, C.overwhelm + 0.3, C.overwhelm + 0.7));
-    dog.pose({ x: -0.2, z: -2.95, ry: 0.25 + look2 * 0.35, sit: 1, t: lt, wag: 0.8, wagSpeed: 9, closed: 0.6 * (1 - look2), cute: 1, headPitch: -0.3 + look2 * 0.15, tilt: 0.25 * (1 - look2) + 0.1 * look2 });
-    dog.rotation.z = -0.08 * (1 - look2); // leaning into your legs
+    dog.pose({ x: SEAT.x + 0.02, z: -4.3, ry: Math.PI - 0.35 - look2 * 0.7, sit: 1, t: lt, wag: 0.8, wagSpeed: 9, closed: 0.6 * (1 - look2), cute: 1, headPitch: 0.15 - look2 * 0.25, tilt: 0.25 * (1 - look2) + 0.1 * look2 });
     toyIn("mouth");
     toy.squish(0.4);
     toy.flop(0, 0.8);
     const pull = ease.inOut(prog(t, C.so3, DURATION));
-    frame2(face(), owner.position.clone().setY(0.9), -0.75 - pull * 0.15, 2.5 + pull * 0.7, 0.1 + pull * 0.2, 44, -0.15, 0.38);
+    frame2(face(), V(SEAT.x, 0.95, SEAT.z), Math.PI / 2 + 0.05 - pull * 0.2, 2.6 + pull * 0.25, 0.1 + pull * 0.25, 44, -0.12, 0.45);
   }],
 ];
 
