@@ -1,0 +1,49 @@
+/* Same channel look: yellow typewriter captions with a heavy black outline, word by word. */
+.tw-caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 1060px;
+  padding: 0 50px;
+  text-align: center;
+  font-family: "Courier New", "Courier Prime", "Courier 10 Pitch", "Liberation Mono", monospace;
+  font-weight: 700;
+  font-size: 76px;
+  letter-spacing: -1px;
+  color: #ffe93b;
+  -webkit-text-stroke: 14px #000;
+  paint-order: stroke fill;
+  text-shadow: 0 4px 0 #000;
+  white-space: nowrap;
+}
+
+/* the 3D canvas gets a per-scene colour grade (set from main.js via style.filter) */
+#stage canvas { will-change: filter; }
+
+/* film grain (the flashback is old, cold and grainy) */
+.grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background-size: 256px 256px;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+
+/* dark, soft edges */
+.vignette {
+  position: absolute;
+  inset: 0;
+  opacity: 0.6;
+  background: radial-gradient(ellipse 75% 60% at 50% 45%, rgba(0, 0, 0, 0) 55%, rgba(0, 0, 0, 0.85) 100%);
+  pointer-events: none;
+}
+
+.flash, .fade {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background: #fff;
+  pointer-events: none;
+}
+.fade { background: #000; }

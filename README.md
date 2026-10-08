@@ -58,6 +58,7 @@ shorts/
   dog-mailman/        "What your dog thinks the mail carrier is" (pet-POV style)
   dog-bathroom/       "Why your dog follows you into the bathroom" (voiceover-synced, voiceover.srt)
   dog-toy/            "Why your dog grabs a toy when you come home" (60 fps, rubber-duck hero toy)
+  dog-leash/          "He slept by the door holding his leash" (60 fps story: night hall, winter flashback)
 characters/           Character Lab: preview every human preset (?only=dad, &face for a close-up)
 js/avatar.js          photorealistic premade people (Rocketbox) with walk/run/sit in code
 js/human.js           code-built stylised human template + PRESETS (fallback)

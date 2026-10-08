@@ -208,3 +208,53 @@ save("yawn", env(voice(1.1, (t) => (t < 0.35 ? 500 + t * 2600 : 1410 - (t - 0.35
   const x = voice(0.32, (t) => 1500 + 900 * Math.sin(Math.min(1, t / 0.32) * Math.PI) - t * 900, { formants: [2200, 3600], breath: 0.25, vib: 30, vibAmt: 0.02, harmonics: 5 });
   save("squeak", env(x, (t, p) => Math.min(1, p * 12) * (1 - p) ** 0.6));
 }
+
+// ---------------------------------------------------------------- winter + night (dog-leash)
+// (appended last so the sounds above keep their exact random sequence)
+// winter wind: gusty, howling band-passed noise (loop)
+{
+  const sec = 12, x = buf(sec);
+  const gust = (t) => 0.55 + 0.3 * Math.sin(t * 0.7) + 0.15 * Math.sin(t * 1.9 + 1);
+  mixInto(x, env(lp(white(sec), 500), (t) => gust(t)), 0, 1);
+  mixInto(x, env(bp(white(sec), (t) => 520 + 260 * Math.sin(t * 0.55) + 90 * Math.sin(t * 1.7), 9), (t) => gust(t) ** 2), 0, 0.9);
+  mixInto(x, env(bp(white(sec), (t) => 1100 + 300 * Math.sin(t * 0.43 + 2), 12), (t) => gust(t + 3) ** 3), 0, 0.35);
+  save("winter_wind", x, 0.7);
+}
+// footsteps in snow: a soft squeaky crunch
+for (let k = 1; k <= 3; k++) {
+  const x = buf(0.32);
+  for (let g = 0; g < 26; g++) mixInto(x, env(bp(white(0.012), 1800 + rnd() * 2500, 2), ad(0.001, 0.004)), 0.02 + rnd() * 0.18, 0.4 + rnd() * 0.6);
+  mixInto(x, env(lp(white(0.25), 600), (t, p) => Math.min(1, t / 0.02) * (1 - p) ** 2), 0, 0.8);
+  save(`snow_step_${k}`, x, 0.75);
+}
+// car engine idling (loop) and pulling away (rev up, then fading into the distance)
+{
+  const sec = 4;
+  const rumble = (f, sec) => {
+    const x = osc(sec, f, "saw");
+    const y = lp(x, 260, 1.5);
+    mixInto(y, lp(white(sec), 180), 0, 0.25);
+    return y;
+  };
+  save("engine_idle", env(rumble(() => 32, sec), (t) => 0.8 + 0.2 * Math.sin(t * 2 * Math.PI * 7.5)), 0.6);
+  const away = rumble((t) => 32 + 40 * Math.min(1, t / 1.2) - Math.max(0, t - 1.6) * 6, 5);
+  save("car_away", env(lp(away, 900), (t) => Math.min(1, t / 0.1) * Math.exp(-Math.max(0, t - 1.2) * 0.9)), 0.7);
+}
+// car door shutting: dull body thud + latch click
+{
+  const x = env(lp(white(0.4), 160), ad(0.002, 0.07));
+  mixInto(x, env(osc(0.3, () => 58), ad(0.002, 0.09)), 0, 0.8);
+  mixInto(x, env(bp(white(0.03), 3200, 3), ad(0.0005, 0.006)), 0.01, 0.35);
+  save("car_door", x, 0.8);
+}
+// hallway clock: tick ... tock (1 s loop)
+{
+  const x = buf(1);
+  mixInto(x, env(bp(white(0.02), 4200, 6), ad(0.0005, 0.004)), 0, 1);
+  mixInto(x, env(bp(white(0.02), 3300, 6), ad(0.0005, 0.004)), 0.5, 0.8);
+  save("clock_tick", x, 0.5);
+}
+// clothes rustling as someone sits down
+save("cloth", env(bp(white(0.8), (t) => 1500 + 900 * Math.sin(t * 9), 0.8), (t, p) => Math.sin(p * Math.PI) * (0.6 + 0.4 * Math.abs(Math.sin(t * 13)))), 0.5);
+// long, lonely whine (abandoned)
+save("whine", env(voice(1.6, (t) => 1050 + 260 * Math.sin(Math.min(1, t / 1.6) * Math.PI * 1.5) - t * 160, { formants: [1200, 2800], breath: 0.12, vib: 6, vibAmt: 0.025 }), (t, p) => Math.min(1, p * 6) * (1 - p) ** 0.8));
