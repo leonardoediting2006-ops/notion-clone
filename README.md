@@ -58,9 +58,11 @@ shorts/
   dog-mailman/        "What your dog thinks the mail carrier is" (pet-POV style)
   dog-bathroom/       "Why your dog follows you into the bathroom" (voiceover-synced, voiceover.srt)
   dog-toy/            "Why your dog grabs a toy when you come home" (60 fps, rubber-duck hero toy)
+  dog-hero/           "This dog took a bullet for a girl" (60 fps story, realistic beagle, real recorded SFX)
   dog-leash/          "He slept by the door holding his leash" (60 fps story: night hall, winter flashback)
 characters/           Character Lab: preview every human preset (?only=dad, &face for a close-up)
 js/avatar.js          photorealistic premade people (Rocketbox) with walk/run/sit in code
+js/beagle.js          realistic beagle (Rocketbox) posed in code: sit, lie, side, leap, crouch, walk, run, wag
 js/human.js           code-built stylised human template + PRESETS (fallback)
 assets/rocketbox/     downloaded Rocketbox avatars + their MIT licence
 lib/jsm/              three.js FBX / glTF / Draco loaders
@@ -71,6 +73,7 @@ js/trees.js           procedural trees and bushes with leaf cards
 tools/
   server.mjs          tiny static dev server
   render.mjs          headless frame-by-frame MP4 / PNG exporter
+  fetch-sfx.mjs       downloads REAL recorded sound effects (CC0/CC-BY, ESC-50) and cuts them for a short
 ```
 
 ## Making a new short
@@ -154,7 +157,8 @@ onUpdate((t) => {
 });
 ```
 
-Included: `Delivery_Male_01`, `Male_Adult_08`, `Female_Adult_01`. The library has 115 more
+Included: `Delivery_Male_01`, `Male_Adult_08`, `Female_Adult_01`, `Female_Child_01`, `Female_Child_02`,
+`Medical_Female_01` and the `Dog_Beagle_01` (posed by `js/beagle.js`). The library has 110 more
 (adults, children, business, medical, police, chefs, construction, pilots…). To add one, download
 `Assets/Avatars/<Group>/<Name>/Export/<Name>.fbx` plus its `Textures/*_color.tga`, `*_normal.tga`
 (and `*_opacity_color.tga` if present) into `assets/rocketbox/<Name>/`, converting the TGAs to
@@ -253,6 +257,8 @@ sfx.steps([1.2, 1.8, 2.4], ["step_1", "step_2"]);          // footsteps with nat
 
 Options: `gain`, `rate` (speed/pitch), `pan` (-1..1), `offset`, `dur`, `fadeIn`, `fadeOut`.
 The library is in `assets/sfx/` (see its README for sources and how to drop in real recordings).
+`node tools/fetch-sfx.mjs dog-hero` downloads real field recordings (CC0 / CC-BY, from the ESC-50
+dataset of freesound.org clips) and cuts them into `shorts/dog-hero/sfx/` with a `CREDITS.md`.
 Put `voiceover.wav` (or .mp3) in the short's folder and it is mixed in automatically.
 `npm run render -- shorts/<name> --audio-only` mixes just the soundtrack (`out/<name>-audio.wav`) in
 seconds, handy for checking the sound or for importing it into your editor as a separate track.

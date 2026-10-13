@@ -4,7 +4,7 @@ import { loadAvatar } from "../../js/avatar.js";
 import * as T from "../../js/textures.js";
 
 const params = new URLSearchParams(location.search);
-const NAMES = ["Delivery_Male_01", "Male_Adult_08", "Female_Adult_01"];
+const NAMES = ["Delivery_Male_01", "Male_Adult_08", "Female_Adult_01", "Female_Child_01", "Female_Child_02", "Medical_Female_01"];
 const names = params.get("only") ? [params.get("only")] : NAMES;
 const short = createShort({ duration: 8, lights: false, fov: 30, background: "#cfd3d8" });
 const { scene, camera, renderer, onUpdate } = short;
@@ -43,7 +43,7 @@ onUpdate((t) => {
   });
   if (face) { camera.position.set(0.15, 1.62, 0.9); camera.lookAt(0, 1.6, 0); }
   else if (names.length === 1) { camera.position.set(0, 1.0, 4.8); camera.lookAt(0, 0.92, 0); }
-  else { camera.position.set(0, 1.0, 7.5); camera.lookAt(0, 0.9, 0); }
+  else { camera.position.set(0, 1.0, 11); camera.lookAt(0, 0.9, 0); }
 });
 window.__dbg = { scene, camera, renderer, people };
 short.start();

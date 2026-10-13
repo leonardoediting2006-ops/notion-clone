@@ -81,7 +81,10 @@ export function loadAvatar(short, name, { height = null, facing = 0 } = {}) {
 
     // materials: PBR, proper colour spaces, cut-out hair/lashes
     model.traverse((o) => {
-      if (o.isBone) bones[o.name] = o;
+      if (o.isBone) {
+        o.name = o.name.replace(/^Bip0\d/, "Bip01"); // children's skeletons are named Bip02
+        bones[o.name] = o;
+      }
       if (!o.isMesh) return;
       o.castShadow = o.receiveShadow = true;
       o.frustumCulled = false;
