@@ -250,10 +250,15 @@ export function loadAvatar(short, name, { height = null, facing = 0 } = {}) {
         const parentQ = bones.Bip01.parent.getWorldQuaternion(new THREE.Quaternion()).invert();
         const up = new THREE.Vector3(0, 1, 0).applyQuaternion(parentQ).normalize();
         const v = rootT.values, first = new THREE.Vector3(v[0], v[1], v[2]);
-        const v0h = first.clone().addScaledVector(up, -first.dot(up));
+        let v0h = first.clone().addScaledVector(up, -first.dot(up));
+        // a clip recorded on a taller body (an adult clip on a child): scale the hip height to fit
+        const restP = bones.Bip01.position;
+        const ratio = restP.dot(up) / first.dot(up);
+        const fit = Math.abs(ratio - 1) > 0.05 ? ratio : 1;
+        if (fit !== 1) v0h = restP.clone().addScaledVector(up, -restP.dot(up));
         for (let i = 0; i < v.length; i += 3) {
           const cur = new THREE.Vector3(v[i], v[i + 1], v[i + 2]);
-          const height = cur.dot(up);
+          const height = cur.dot(up) * fit;
           const out = v0h.clone().addScaledVector(up, height);
           v[i] = out.x; v[i + 1] = out.y; v[i + 2] = out.z;
         }

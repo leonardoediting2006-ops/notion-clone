@@ -15,7 +15,7 @@ const X = new THREE.Vector3(1, 0, 0), Y = new THREE.Vector3(0, 1, 0), Z = new TH
 const _q = new THREE.Quaternion();
 const lerp = (a, b, p) => a + (b - a) * p;
 
-export function createBeagle(short, { scale = 1 } = {}) {
+export function createBeagle(short, { scale = 1, cute = 0 } = {}) {
   const dog = new THREE.Group();
   dog.name = "beagle";
   const body = new THREE.Group(); // pitch/roll the whole dog around the hips
@@ -42,6 +42,12 @@ export function createBeagle(short, { scale = 1 } = {}) {
       axes.set(b, { x: X.clone().applyQuaternion(inv), y: Y.clone().applyQuaternion(inv), z: Z.clone().applyQuaternion(inv) });
     }
     dog.bones = B;
+    // "cute" proportions (0..1): a bigger head, big eyes, bigger paws — reads as young and sweet
+    if (cute) {
+      B.Head.scale.setScalar(1 + 0.16 * cute);
+      for (const k of ["L_Hand", "R_Hand", "L_Foot", "R_Foot"]) B[k]?.scale.setScalar(1 + 0.1 * cute);
+      for (const k of ["Neck1", "Neck2"]) B[k]?.scale.setScalar(1 - 0.04 * cute);
+    }
     return true;
   }
   // rotate a bone on top of its pose so far, about the dog's own axes (x: left, y: up, z: forward)
@@ -115,7 +121,8 @@ export function createBeagle(short, { scale = 1 } = {}) {
       add("LR", "Thigh", -0.6 * sit, 0, 0.15 * sit);
       add("LR", "Calf", 1.83 * sit);
       add("LR", "Foot", -2.26 * sit);
-      neck -= 0.45 * sit;
+      neck += 0.42 * sit;
+      headPitch += 0.18 * sit;
     }
     // ---- lying down like a sphinx: front legs forward, hind legs folded under
     if (lie) {
@@ -219,7 +226,8 @@ export function createBeagle(short, { scale = 1 } = {}) {
       add("LR", "Thigh", -0.01 * beg, 0, 0.15 * beg);
       add("LR", "Calf", 1.75 * beg);
       add("LR", "Foot", -2.18 * beg);
-      neck -= 0.9 * beg;
+      neck += 0.7 * beg;
+      headPitch += 0.3 * beg;
     }
     // a raised front paw (resting it on something / offering it)
     if (paw) {
@@ -248,8 +256,10 @@ export function createBeagle(short, { scale = 1 } = {}) {
     const flap = earFlap ? Math.sin(t * 9) * 0.25 * earFlap : 0;
     turn("Ear_L", -0.35 * Math.min(0, ears) + flap * 0.5, 0, 0.45 * Math.max(0, ears) + 0.35 * Math.max(0, -ears) + flap);
     turn("EarR", -0.35 * Math.min(0, ears) - flap * 0.5, 0, -(0.45 * Math.max(0, ears) + 0.35 * Math.max(0, -ears)) - flap);
-    turn("Xtra_Eye_L", eyes[1], eyes[0], 0);
-    turn("Xtra_Eye_R", eyes[1], eyes[0], 0);
+    // the eyeballs can only move a little before the sockets show
+    const ey = Math.max(-0.06, Math.min(0.06, eyes[0])), ep = Math.max(-0.04, Math.min(0.04, eyes[1]));
+    turn("Xtra_Eye_L", ep, ey, 0);
+    turn("Xtra_Eye_R", ep, ey, 0);
     // legs
     for (const s of ["L", "R"]) for (const [j, [ex, ey, ez]] of Object.entries(legs[s])) turn(`${s}_${j}`, ex, ey, ez);
     // tail: base angle + wag travelling down the tail

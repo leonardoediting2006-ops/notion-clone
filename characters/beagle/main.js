@@ -22,7 +22,7 @@ floor.rotation.x = -Math.PI / 2;
 floor.receiveShadow = true;
 scene.add(floor);
 
-const dog = createBeagle(short);
+const dog = createBeagle(short, { cute: +(params.get("cute") ?? 0) });
 scene.add(dog);
 const tests = (params.get("test") ?? "").split(",").filter(Boolean).map((s) => s.split(":"));
 const pose = params.get("pose") ?? "stand";
@@ -37,7 +37,12 @@ onUpdate((t) => {
   for (const [b, x, y, z] of tests) dog.turn(b, +x || 0, +y || 0, +z || 0);
   const c = { side: [3.6, 0.42, 0.08], front: [0.15, 0.5, 2.2], top: [0.6, 2.2, 0.6], face: [0.15, 0.5, 1.0], back: [-1.2, 0.6, -1.6] }[view];
   camera.position.set(...c);
-  camera.lookAt(0, view === "face" ? 0.42 : 0.3, view === "face" ? 0.2 : 0.08);
+  camera.lookAt(0, 0.3, 0.08);
+  if (view === "face" && dog.ready()) {
+    const h = dog.point("Head", [0, 0, 0.07]);
+    camera.position.set(h.x + 0.12, h.y + 0.03, h.z + 0.85);
+    camera.lookAt(h.x, h.y - 0.02, h.z);
+  }
 });
 window.__dbg = { scene, camera, renderer, dog };
 short.start();

@@ -2,7 +2,7 @@ import { createShort, THREE, gsap } from "../../js/engine.js";
 import * as T from "../../js/textures.js";
 import { createForest } from "../../js/trees.js";
 import { loadAvatar } from "../../js/avatar.js";
-import { createBeagle } from "../../js/beagle.js";
+import { createDog, DOG_COLORS } from "../../js/dog.js";
 import { loadProp, useEnvironment, bookshelf, floorLamp, wallArt, cushion, coffeeTable, picketFence, hat, shoes, wallClock } from "../../js/props.js";
 import { car } from "../../js/vehicles.js";
 import { plushToy } from "../../js/toys.js";
@@ -49,15 +49,15 @@ const C = {
   everyone: at("everyone"), walked: at("walked"), past: at("past"), cage: at("cage"),
   then: at("then"), little: at("little"), girl2: at("girl", 2), stopped: at("stopped"), sat: at("sat"), floor: at("floor"),
   and: at("and"), came: at("came"), bars: at("bars"),
-  her: at("her"), dad: at("dad"), no: at("no"), she: at("she"), cried: at("cried"), until: at("until"), yes: at("yes"),
-  on2: at("on", 2), second: at("second"), night: at("night"), wouldnt: at("wouldn't"), growling: at("growling"), window: at("window"),
+  her: at("her"), dad: at("dad"), said2: at("said", 2), stop: at("stop"), no: at("no"), she: at("she"), cried: at("cried"), until: at("until"), yes: at("yes"),
+  on2: at("on", 2), second: at("second"), night: at("night"), wouldnt: at("wouldn't"), growling: at("growling"), at: at("at"), window: at("window"),
   they: at("they"), almost: at("almost"), back: at("back"),
   on3: at("on", 3), third: at("third"), night2: at("night", 2), someone: at("someone"), broke: at("broke"), in: at("in"),
-  he3: at("he", 3), didnt: at("didn't"), hesitate: at("hesitate"),
-  vet: at("the", 4), might: at("might"), make: at("make"),
+  he3: at("he", 4), didnt: at("didn't"), hesitate: at("hesitate"),
+  vet: at("the", 6), might: at("might"), make: at("make"),
   she2: at("she", 2), slept: at("slept"), clinic: at("clinic"), holding: at("holding"), paw: at("paw"), all: at("all"), night3: at("night", 3),
-  shelter: at("the", 7), called: at("called"), dangerous: at("dangerous"),
-  hejust: at("he", 5), hadnt: at("hadn't"), found: at("found"), protect: at("protect"), yet: at("yet"),
+  shelter: at("the", 8), called: at("called"), dangerous: at("dangerous"),
+  hejust: at("he", 6), hadnt: at("hadn't"), found: at("found"), protect: at("protect"), yet: at("yet"),
 };
 const LINES = [
   "This dog took", "a bullet", "for a girl", "he'd met three", "days earlier.",
@@ -226,11 +226,11 @@ const skyDay = canvasTex(1024, 512, (x, w, h) => {
 });
 const skyNight = canvasTex(2048, 1024, (x, w, h) => {
   const g = x.createLinearGradient(0, 0, 0, h);
-  g.addColorStop(0, "#0b1a3c");
-  g.addColorStop(0.4, "#1f3a6b");
-  g.addColorStop(0.5, "#3c5d8f");
-  g.addColorStop(0.53, "#1a2433");
-  g.addColorStop(1, "#0d1219");
+  g.addColorStop(0, "#040915");
+  g.addColorStop(0.4, "#0c1a36");
+  g.addColorStop(0.5, "#1d3260");
+  g.addColorStop(0.53, "#0b111b");
+  g.addColorStop(1, "#06090e");
   x.fillStyle = g;
   x.fillRect(0, 0, w, h);
   for (let i = 0; i < 900; i++) {
@@ -404,13 +404,13 @@ for (const [x, h] of [[0.0, 0.22], [0.35, 0.28], [0.65, 0.18]]) {
 // ceiling light fixture + a pendant
 mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.05, 24), new THREE.MeshBasicMaterial({ color: 0xfff1dc }), 0, H - 0.02, -0.9, house);
 // his new dog bed by the picture window
-const DOGBED = V(-1.0, 0, -3.25);
+const DOGBED = V(-2.15, 0, -2.75);
 {
   const g = group(DOGBED.x, 0, DOGBED.z, house);
-  const rim = mesh(new THREE.TorusGeometry(0.4, 0.11, 14, 36), T.fabric(0x5f7f95, { key: 'bed', weave: 4 }), 0, 0.1, 0, g);
+  const rim = mesh(new THREE.TorusGeometry(0.4, 0.11, 14, 36), T.fabric(0x6f93b0, { key: 'dogbed', weave: 4 }), 0, 0.1, 0, g);
   rim.rotation.x = Math.PI / 2;
   rim.scale.set(1.15, 1, 1);
-  mesh(new THREE.CylinderGeometry(0.4, 0.4, 0.06, 36), T.fabric(0xe9e1d2, { key: 'bedin', weave: 5 }), 0, 0.04, 0, g).scale.set(1.15, 1, 1);
+  mesh(new THREE.CylinderGeometry(0.4, 0.4, 0.06, 36), T.fabric(0xefe6d6, { key: 'dogbedin', weave: 5 }), 0, 0.04, 0, g).scale.set(1.15, 1, 1);
 }
 // kitchen side: fridge on the right wall (the adoption card goes on it)
 const FRIDGE = V(RX - 0.4, 0, -2.6);
@@ -662,7 +662,7 @@ function kennelCard(stamp = 1) {
     x.fillStyle = "#222";
     x.textAlign = "left";
     x.font = "34px Georgia, serif";
-    x.fillText("Breed:  Beagle mix", 36, 170);
+    x.fillText("Breed:  Mixed", 36, 170);
     x.fillText("Age:  2 years", 36, 220);
     x.fillText("Here since:", 36, 280);
     x.font = "bold 58px Georgia, serif";
@@ -783,41 +783,79 @@ dawnLight.target.position.set(VX - 0.6, 0, 0.5);
 scene.add(dawnLight, dawnLight.target);
 
 // ================= cast =================
-const dog = createBeagle(short, { scale: 1.05 });
+// The hero: the studio's cartoon dog with the big glossy puppy eyes (js/dog.js), driven through
+// the same pose options as the shots use (sit, lie, side, leap, crouch, walk, run, wag, mouth...).
+const DOG_SCALE = 0.7;
+function heroDog(colors, key, scale = DOG_SCALE) {
+  const d = createDog({ colors, key, collar: false });
+  d.scale.setScalar(scale);
+  const toonPose = d.pose;
+  d.pose = ({
+    t = 0, x = 0, y = 0, z = 0, ry = 0,
+    sit = 0, lie = 0, side = 0, leap = 0, crouch = 0, beg = 0, walk = 0, run = 0,
+    headPitch = 0, headYaw = 0, headTilt = 0, neck = 0, mouth = 0, ears = 0, tail = 0,
+    wag = 0, wagSpeed = 14, pitch = 0, lift = 0, sideFlip = 1, paw = 0, shiver = 0,
+    walkPhase, runPhase, eyes, breathe, earFlap, ...expr
+  } = {}) => {
+    const moving = run > 0 ? 1 : walk;
+    toonPose({
+      t, x, y, z, ry, sit, lie: Math.max(lie, side), rear: beg * 0.9, bow: crouch * 0.45,
+      headPitch: headPitch + neck * 0.6 + crouch * 0.15, headYaw, tilt: headTilt, jawOpen: mouth,
+      wag, wagSpeed, trot: run > 0 ? run : walk * 0.55, trotSpeed: run > 0 ? 24 : 9,
+      earBack: Math.max(0, -ears), earUp: Math.max(0, ears), shiver, cute: 1, ...expr,
+    });
+    void moving;
+    // leaping: forelegs reaching forward, hind legs stretched back, body level
+    if (leap) {
+      d.legs.fl.rotation.x = d.legs.fr.rotation.x = lerp(d.legs.fl.rotation.x, -1.25, leap);
+      d.legs.bl.rotation.x = d.legs.br.rotation.x = lerp(d.legs.bl.rotation.x, 1.15, leap);
+      d.ears.forEach((e, i) => (e.rotation.x = -0.9 * leap));
+    }
+    if (paw) d.legs.fl.rotation.x -= 1.1 * paw;
+    d.tail.rotation.x += tail * 0.55;
+    d.pivot.rotation.x += pitch;
+    d.position.y += lift * scale;
+    // lying on his side: roll over, legs out
+    if (side) {
+      d.rotation.z = -1.4 * side * sideFlip;
+      d.position.y += 0.14 * scale * side;
+      for (const k of ["fl", "fr", "bl", "br"]) d.legs[k].rotation.x = lerp(d.legs[k].rotation.x, k[0] === "f" ? -0.5 : 0.4, side);
+      d.pivot.position.y = lerp(d.pivot.position.y, 0.08, side);
+      d.hips.position.y = lerp(d.hips.position.y, -0.28, side);
+    } else d.rotation.z = 0;
+  };
+  // points on the dog (names kept from the realistic rig; offsets in metres)
+  const PTS = {
+    Head: ["head", [0, 0.1, 0.12]], Neck2: ["neck", [0, -0.02, 0.0]], Spine1: ["pivot", [0, 0.2, 0.55]],
+    Spine2: ["pivot", [0, 0.2, 0.62]], Body: ["pivot", [0, 0.2, 0.3]], Pelvis: ["pivot", [0, 0.25, 0.0]], L_Hand: ["fl", [0, -0.33, 0.05]], R_Hand: ["fr", [0, -0.33, 0.05]],
+  };
+  d.point = (name, off = [0, 0, 0]) => {
+    const [part, base] = PTS[name] ?? ["pivot", [0, 0.2, 0.35]];
+    const o = part.length === 2 ? d.legs[part] : d[part];
+    d.updateMatrixWorld(true);
+    return o.localToWorld(V(base[0] + off[0] / scale, base[1] + off[1] / scale, base[2] + off[2] / scale));
+  };
+  return d;
+}
+const dog = heroDog(DOG_COLORS.golden, "hero");
 scene.add(dog);
-// other dogs at the shelter (same model, different coats)
-const tint = (d, color) => {
-  const apply = () => d.avatar.traverse((o) => o.isMesh && [].concat(o.material).forEach((m) => m.color?.setHex(color)));
-  short.track(new Promise((ok) => {
-    const wait = () => (d.avatar.ready ? (apply(), ok()) : setTimeout(wait, 50));
-    wait();
-  }));
-};
-const dogB = createBeagle(short, { scale: 1.12 });
-const dogC = createBeagle(short, { scale: 0.95 });
+// other dogs at the shelter
+const dogB = heroDog(DOG_COLORS.wolf, "wolf", 0.78);
+const dogC = heroDog({ body: 0x2b2420, light: 0xd9cfc2, dark: 0x16110e }, "black", 0.62);
 scene.add(dogB, dogC);
-tint(dogB, 0x8a7f78);
-tint(dogC, 0xd8c2a6);
 const DOGS = [dog, dogB, dogC];
 // his new red collar (from the day he's adopted) and, after that night, a bandage round his chest
-const collar = group(0, 0, 0);
+const collar = group(0, 0, 0, dog.neck);
+box(0.44, 0.08, 0.14, M.collar, 0, -0.04, -0.02, collar);
+box(0.07, 0.08, 0.02, M.brass, 0, -0.1, 0.06, collar);
+const bandage = group(0, 0.22, 0.52, dog.pivot);
 {
-  const ring = mesh(new THREE.TorusGeometry(0.07, 0.011, 8, 32), M.collar, 0, 0, 0, collar);
-  ring.scale.set(1.05, 1.15, 1);
-  const tag = mesh(new THREE.CylinderGeometry(0.018, 0.018, 0.004, 16).rotateX(Math.PI / 2), M.brass, 0, -0.085, 0.012, collar);
-  tag.rotation.z = 0.1;
-}
-dog.attach("Neck1", collar, [0, -0.005, 0.0]);
-collar.rotation.x = -1.0;
-const bandage = group(0, 0, 0);
-{
-  const wrap = mesh(new THREE.CylinderGeometry(1, 1, 0.13, 32, 1, true).rotateX(Math.PI / 2), M.bandage, 0, 0, 0, bandage);
-  wrap.scale.set(0.112, 0.128, 1);
+  const wrap = mesh(new THREE.CylinderGeometry(1, 1, 0.2, 4, 1, true).rotateX(Math.PI / 2).rotateZ(Math.PI / 4), M.bandage, 0, 0, 0, bandage);
+  wrap.scale.set(0.335, 0.305, 1);
   wrap.material.side = THREE.DoubleSide;
-  const pad = box(0.05, 0.07, 0.11, M.bandage, 0.105, 0.03, 0, bandage);
-  pad.rotation.z = -0.3;
+  const pad = box(0.02, 0.16, 0.16, M.bandage, 0.24, 0.02, 0.02, bandage);
+  pad.rotation.z = 0.05;
 }
-dog.attach("Spine1", bandage, [0, -0.045, 0.02]);
 
 const girl = loadAvatar(short, "Female_Child_01");
 girl.loadClip("m_walk_neutral_01");
@@ -1066,12 +1104,15 @@ function setEnv(kind, { exposure = 1.0, grain = 0.03, vignette = 0.45, gray = 0,
     skyMat.map = skyNight;
     moon.visible = true;
     moon.position.set(-60, 120, -260);
-    hemi.color.set(0xffe2c0);
-    hemi.groundColor.set(0x3a2e24);
-    hemi.intensity = 0.75;
+    hemi.color.set(0x8a9cc8);
+    hemi.groundColor.set(0x1a1612);
+    hemi.intensity = 0.28;
     roomLamp.visible = hallLamp.visible = sofaLamp.visible = nightLight.visible = true;
+    roomLamp.intensity = 26;
+    hallLamp.intensity = 9;
+    sofaLamp.intensity = 7;
     moonLight.visible = true;
-    moonLight.intensity = 1.2;
+    moonLight.intensity = 0.5;
     moonLight.position.set(-6, 9, -16);
     moonLight.target.position.set(-1, 0, -3);
     streetLamp.visible = true;
@@ -1083,11 +1124,14 @@ function setEnv(kind, { exposure = 1.0, grain = 0.03, vignette = 0.45, gray = 0,
     skyMat.map = skyNight;
     moon.visible = true;
     moon.position.set(40, 110, 260);
-    hemi.color.set(0x8fa8d8);
-    hemi.groundColor.set(0x1c2230);
-    hemi.intensity = 0.9;
+    hemi.color.set(0x6f86b8);
+    hemi.groundColor.set(0x10141c);
+    hemi.intensity = 0.45;
     moonLight.visible = true;
-    moonLight.intensity = 2.4;
+    moonLight.intensity = 1.3;
+    roomLamp.intensity = 26;
+    hallLamp.intensity = 9;
+    sofaLamp.intensity = 7;
     moonLight.position.set(5, 10, 6);
     moonLight.target.position.set(0, 0, -6);
     roomLamp.visible = hallLamp.visible = sofaLamp.visible = true;
@@ -1314,7 +1358,7 @@ function leapAt(u, t) {
   dog.pose({
     t, x: p.x, y: yy, z: p.z, ry: LEAP_RY,
     leap: takeoff, crouch: 1 - takeoff,
-    pitch: lerp(-0.35, 0.3, u) * takeoff, mouth: 0.55, ears: -0.6, tail: 0.6, headPitch: -0.1, breathe: 0,
+    pitch: lerp(-0.35, 0.3, u) * takeoff, mouth: 0.55, ears: -0.6, angry: 0.5, tail: 0.6, headPitch: -0.1, breathe: 0,
   });
   return p.setY(yy);
 }
@@ -1378,13 +1422,13 @@ function resetWorld(t) {
 const K = (x, y, z) => V(SX + x, y, KZ + z); // kennel-corridor coordinates
 const MAXBED = { x: -0.3, z: -1.55 };
 function maxInKennel(t, o = {}) {
-  dog.pose({ t, x: SX + MAXBED.x, z: KZ + MAXBED.z, ry: 0.15, lie: 1, headPitch: 0.42, eyes: [0, -0.18], ears: -0.15, tail: 1.3, ...o });
+  dog.pose({ t, x: SX + MAXBED.x, z: KZ + MAXBED.z, ry: 0.15, lie: 1, headPitch: 0.42, ears: -0.15, tail: 1.3, sad: 1, ...o });
 }
 function otherDogs(t) {
   dogB.pose({ t, x: SX - KW + 0.1, z: KZ - 0.9, ry: 0.4, sit: 1, headPitch: -0.1, headYaw: -0.3, wag: 0.4, wagSpeed: 10, tail: -0.2 });
   dogC.pose({ t, x: SX + KW - 0.2, z: KZ - 1.2, ry: -0.6, lie: 1, headPitch: 0.25, tail: 1.2 });
 }
-const GIRL_K = { x: 0.12, z: 0.78, ry: Math.PI }; // where she sits, facing the bars
+const GIRL_K = { x: 0.12, z: 0.36, ry: Math.PI }; // where her feet are when she sits, facing the bars
 const DAD_K = { x: 0.78, z: 1.55 };
 const DAD_K_RY = yawTo(V(DAD_K.x, 0, DAD_K.z), V(0.2, 0, 0));
 
@@ -1395,11 +1439,11 @@ const SHOTS = [
     setEnv("night", { exposure: 1.15, vignette: 0.5 });
     hookPeople(t, { gunUp: 0.3 });
     const coil = ease.in(prog(t, 0.35, C.took));
-    dog.pose({ t, x: P0.x, z: P0.z, ry: LEAP_RY, crouch: 1, lift: -0.03 * coil, mouth: 0.22 + 0.06 * Math.sin(t * 30), ears: -0.35, tail: 0.2, headPitch: 0.05 - 0.15 * coil, eyes: [0, 0.05] });
+    dog.pose({ t, x: P0.x, z: P0.z, ry: LEAP_RY, crouch: 1, lift: -0.03 * coil, mouth: 0.22 + 0.06 * Math.sin(t * 30), ears: -0.35, angry: 0.7, snarl: 0.7, tail: 0.2, headPitch: 0.05 - 0.15 * coil, eyes: [0, 0.05] });
     const f = dogHead(dog, [0, 0.0, 0.1]);
     const side = V(Math.cos(LEAP_RY), 0, -Math.sin(LEAP_RY));
     const push = ease.inOut(prog(t, 0, C.took));
-    const cam = f.clone().add(V(Math.sin(LEAP_RY), 0, Math.cos(LEAP_RY)).multiplyScalar(lerp(0.72, 0.6, push))).addScaledVector(side, 0.22).add(V(0, 0.02, 0));
+    const cam = f.clone().add(V(Math.sin(LEAP_RY), 0, Math.cos(LEAP_RY)).multiplyScalar(lerp(1.3, 1.1, push))).addScaledVector(side, 0.38).add(V(0, 0.05, 0));
     lookAt(cam, f.clone().add(V(0, -0.02, 0)), 34);
     fill.visible = true;
     fill.position.copy(cam).add(V(0.1, 0.4, 0));
@@ -1415,8 +1459,11 @@ const SHOTS = [
     muzzleAt(t, C.bullet + 0.02, 0.12);
     flash(t, C.bullet + 0.02, 0.25, "#fff2d8", 0.55);
     const [jx, jy] = jolt(t, C.bullet + 0.02, 0.025);
-    const g = local(girl, -0.25, 1.22, -0.25);
-    look(g.x + jx, g.y + jy, g.z, THIEF_AT.x, 1.0, THIEF_AT.z, 44);
+    // side profile, travelling with him: the man and his gun ahead of him in the frame
+    const c = dog.point("Body");
+    const fwd = V(Math.sin(LEAP_RY), 0, Math.cos(LEAP_RY)), side = V(Math.cos(LEAP_RY), 0, -Math.sin(LEAP_RY)).negate();
+    const cam = c.clone().addScaledVector(side, 3.0).addScaledVector(fwd, 0.15).add(V(jx, 0.05 + jy, 0));
+    lookAt(cam, c.clone().addScaledVector(fwd, 0.2), 46);
   }],
   // "for a girl" — the reverse, from behind his gun: the dog in mid-air, the girl behind him
   [C.for, (lt, t) => {
@@ -1437,10 +1484,10 @@ const SHOTS = [
     const g = prog(t, C.hed, C.earlier);
     setEnv("night", { exposure: 1.15, vignette: 0.6, gray: 0.75 * g, grain: 0.06 * g });
     hookPeople(t, { gunUp: 1 });
-    const p = leapAt(0.5, C.hed);
-    const tgt = p.clone().add(V(0, 0.35, 0));
+    leapAt(0.5, C.hed);
+    const tgt = dog.point("Body");
     const a = ease.inOut(g);
-    orbit(tgt, LEAP_RY + 1.9 - a * 1.2, lerp(1.25, 1.0, a), lerp(0.05, 0.2, a), 36, -0.02);
+    orbit(tgt, LEAP_RY - 1.55 + a * 0.6, lerp(2.9, 2.4, a), lerp(0.05, 0.2, a), 40, 0.0);
     fill.visible = true;
     fill.position.copy(camera.position).add(V(0, 0.6, 0));
     fill.intensity = 2.5;
@@ -1452,8 +1499,8 @@ const SHOTS = [
     hookPeople(t, { gunUp: 1 - r });
     const u = lerp(0.5, 0.0, ease.inOut(r));
     leapAt(u, t);
-    const tgt = P0.clone().lerp(P1, u).add(V(0, 0.5, 0));
-    orbit(tgt, LEAP_RY + 0.7 + r * 0.5, 1.8 + r * 0.8, 0.3, 40, -0.1);
+    const tgt = dog.point("Body");
+    orbit(tgt, LEAP_RY - 0.95 - r * 0.5, 2.4 + r * 0.8, 0.25, 40, -0.05);
     rewindEl.style.opacity = "1";
     rewindEl.style.backgroundPosition = `0 ${Math.floor(t * 3000) % 1920}px`;
     fade(prog(t, C.three2 - 0.12, C.three2), "#fff");
@@ -1517,7 +1564,7 @@ const SHOTS = [
     const lift = ease.inOut(prog(t, C.stopped - 0.1, C.stopped + 0.3));
     maxInKennel(t, { headPitch: 0.42 - 0.45 * lift, eyes: [0.1, -0.1 * (1 - lift)], ears: -0.15 + 0.3 * lift });
     otherDogs(t);
-    const x = lerp(1.1, GIRL_K.x, ease.out(stopP));
+    const x = lerp(1.25, GIRL_K.x, ease.out(stopP));
     const turn = ease.inOut(prog(t, C.stopped, C.sat));
     girl.position.copy(K(x, 0, GIRL_K.z));
     girl.rotation.set(0, lerp(-Math.PI / 2, -Math.PI, turn), 0);
@@ -1529,7 +1576,7 @@ const SHOTS = [
     dad.rotation.set(0, -Math.PI / 2, 0);
     if (t < C.stopped + 0.2) walkClip(dad, lt * 1.0);
     else stand(dad, { x: dad.position.x, z: dad.position.z, ry: -Math.PI / 2 - 0.4, head: 0.1 });
-    lookAt(K(-0.25, 0.42, -1.25), K(0.3, 0.95, 1.0), 48);
+    lookAt(K(-0.15, 0.42, -1.25), K(0.55, 0.85, 1.0), 50);
   }],
   // "sat on the floor," — she sits down on the concrete in front of his bars
   [C.sat, (lt, t) => {
@@ -1541,7 +1588,7 @@ const SHOTS = [
     floorSit(girl, s, { x: gp.x, z: gp.z, ry: GIRL_K.ry });
     stand(dad, { x: SX + DAD_K.x, z: KZ + DAD_K.z, ry: DAD_K_RY, head: 0.2 });
     const p = ease.inOut(prog(t, C.sat, C.and));
-    lookAt(K(1.75, lerp(0.75, 0.6, p), 1.45), K(-0.05, 0.45, -0.2), 44);
+    lookAt(K(1.75, lerp(0.85, 0.72, p), lerp(1.35, 1.2, p)), K(0.05, 0.45, 0.35), 46);
   }],
   // "and he came to the bars." — he gets up, comes slowly to her hand through the bars
   [C.and, (lt, t) => {
@@ -1552,34 +1599,34 @@ const SHOTS = [
     const p = K(MAXBED.x, 0, MAXBED.z).lerp(K(0.1, 0, -0.42), go);
     dog.pose({
       t, x: p.x, z: p.z, ry: lerp(0.15, 0.05, go), lie: 1 - up, walk: up * (1 - prog(t, C.bars - 0.05, C.bars + 0.1)), walkPhase: (t - C.came) * 1.5,
-      headPitch: lerp(0.0, 0.32, prog(t, C.bars - 0.1, C.bars + 0.2)), tail: lerp(1.0, 0.6, go), wag: 0.25 * prog(t, C.bars, C.her), wagSpeed: 9, ears: -0.2, eyes: [0, -0.1],
+      headPitch: lerp(0.0, 0.32, prog(t, C.bars - 0.1, C.bars + 0.2)), headTilt: 0.18 * prog(t, C.bars, C.her), tail: lerp(1.0, 0.6, go), wag: 0.25 * prog(t, C.bars, C.her), wagSpeed: 9, ears: -0.2, eyes: [0, -0.1],
     });
     const gp = K(GIRL_K.x, 0, GIRL_K.z);
     floorSit(girl, 1, { x: gp.x, z: gp.z, ry: GIRL_K.ry });
     girl.spine.rotation.x = 0.4;
     reachTo(girl, "R", K(0.14, 0.33, -0.06).lerp(K(0.16, 0.36, 0.08), 1 - ease.inOut(prog(t, C.and, C.came))), ARM_R);
     stand(dad, { x: SX + DAD_K.x, z: KZ + DAD_K.z, ry: DAD_K_RY, head: 0.25 });
-    lookAt(K(-0.42, 0.7, 1.32), K(0.0, 0.32, -0.55), 40);
+    lookAt(K(-0.8, 0.9, 1.8), K(0.05, 0.35, -0.45), 44);
   }],
   // "Her dad said no." — looking up at him through the bars: arms folded, shaking his head
   [C.her, (lt, t) => {
     setEnv("kennel", { exposure: 1.05 });
     otherDogs(t);
-    dog.pose({ t, x: SX + 0.1, z: KZ - 0.42, ry: 0.05, sit: 1, headPitch: -0.25, eyes: [0, -0.2], ears: -0.3, tail: 0.6 });
+    dog.pose({ t, x: SX + 0.1, z: KZ - 0.42, ry: 0.05, sit: 1, headPitch: -0.25, headTilt: 0.25, ears: -0.3, tail: 0.6, sad: 1 });
     const gp = K(GIRL_K.x, 0, GIRL_K.z);
     floorSit(girl, 1, { x: gp.x, z: gp.z, ry: GIRL_K.ry });
     girl.head.rotation.set(-0.35, -0.5, 0);
     stand(dad, { x: SX + DAD_K.x, z: KZ + DAD_K.z, ry: DAD_K_RY, head: 0.3 });
     armsCrossed(dad);
     dad.head.rotation.y = Math.sin((t - C.no) * 11) * 0.28 * prog(t, C.no - 0.1, C.no + 0.05) * (1 - prog(t, C.no + 0.4, C.she));
-    lookAt(K(0.15, 0.4, -0.3), K(0.65, 1.55, 1.6), 46);
+    lookAt(K(-0.6, 0.42, -0.65), K(0.6, 1.45, 1.55), 48);
   }],
   // "She cried" — close on her: face in her hand, her other hand still through the bars; he licks it
   [C.she, (lt, t) => {
     setEnv("kennel", { exposure: 1.05, warm: 0.2 });
     otherDogs(t);
     const lick = Math.max(0, Math.sin(t * 9));
-    dog.pose({ t, x: SX + 0.12, z: KZ - 0.38, ry: 0.0, sit: 1, headPitch: 0.45 + lick * 0.08, mouth: 0.35 * lick, ears: -0.25, tail: 0.5, wag: 0.3, wagSpeed: 8 });
+    dog.pose({ t, x: SX + 0.12, z: KZ - 0.38, ry: 0.0, sit: 1, headPitch: 0.45 + lick * 0.08, mouth: 0.35 * lick, ears: -0.25, tail: 0.5, wag: 0.3, wagSpeed: 8, sad: 0.6 });
     const gp = K(GIRL_K.x, 0, GIRL_K.z);
     floorSit(girl, 1, { x: gp.x, z: gp.z, ry: GIRL_K.ry });
     girl.spine.rotation.x = 0.55 + Math.sin(t * 13) * 0.025;
@@ -1590,7 +1637,7 @@ const SHOTS = [
     stand(dad, { x: SX + DAD_K.x, z: KZ + DAD_K.z, ry: DAD_K_RY, head: 0.35 });
     armsCrossed(dad);
     const p = ease.inOut(prog(t, C.she, C.until + 0.27));
-    lookAt(K(0.95, lerp(0.62, 0.58, p), lerp(0.85, 0.7, p)), K(0.0, 0.48, 0.15), 38);
+    lookAt(K(lerp(0.62, 0.55, p), 0.5, lerp(-0.62, -0.55, p)), K(0.1, 0.55, 0.55), 40);
   }],
   // "until he said yes." — her dad crouches beside her, a hand on her head... and nods
   [C.until + 0.27, (lt, t) => {
@@ -1600,26 +1647,26 @@ const SHOTS = [
     const gp = K(GIRL_K.x, 0, GIRL_K.z);
     floorSit(girl, 1, { x: gp.x, z: gp.z, ry: GIRL_K.ry });
     girl.spine.rotation.x = 0.45;
-    girl.head.rotation.set(-0.2, -0.6 * prog(t, C.said2 ?? C.yes - 0.2, C.yes), 0);
+    girl.head.rotation.set(-0.2, -0.6 * prog(t, C.said2, C.yes), 0);
     const c = ease.inOut(prog(t, C.until + 0.27, C.yes - 0.05));
     stand(dad, { x: SX + DAD_K.x - 0.15 * c, z: KZ + DAD_K.z - 0.45 * c, ry: DAD_K_RY - 0.4 * c, crouch: 0.85 * c, head: 0.3 });
     if (c > 0.3) reachTo(dad, "R", headOf(girl, 0.04, -0.02), ARM_R);
     dad.head.rotation.x = 0.3 + 0.15 * Math.max(0, Math.sin((t - C.yes) * 12)) * prog(t, C.yes - 0.1, C.yes);
-    lookAt(K(1.25, 0.95, 2.0), K(0.3, 0.6, 0.6), 42);
+    lookAt(K(-0.62, 0.6, -1.05), K(0.4, 0.75, 0.95), 50);
   }],
   // "yes." — the gate swings open and he runs straight into her arms
   [C.yes, (lt, t) => {
     setEnv("kennel", { exposure: 1.1, warm: 0.4 });
     otherDogs(t);
     kennelOpen(1);
-    const gp = K(GIRL_K.x + 0.05, 0, GIRL_K.z + 0.1);
+    const gp = K(GIRL_K.x + 0.05, 0, GIRL_K.z + 0.42);
     kneel(girl, 1, { x: gp.x, z: gp.z, ry: Math.PI - 0.15, lean: 0.35 });
     const hug = ease.out(prog(t, C.yes, C.yes + 0.25));
-    dog.pose({ t, x: SX + 0.18, z: KZ + lerp(0.05, 0.42, hug), ry: 0.1, beg: 0.6 * hug, sit: 0.4 * hug, headPitch: -0.3, headTilt: 0.2, mouth: 0.3, ears: 0.3, tail: -0.3, wag: 1, wagSpeed: 16 });
+    dog.pose({ t, x: SX + 0.16, z: KZ + lerp(-0.05, 0.16, hug), ry: 0.1, beg: 0.6 * hug, sit: 0.4 * hug, headPitch: -0.3, headTilt: 0.2, mouth: 0.3, ears: 0.3, tail: -0.3, wag: 1, wagSpeed: 16 });
     const n = dog.point("Neck2", [0, 0.0, 0.0]);
     both(girl, n.clone().add(V(-0.12, -0.02, -0.05)), n.clone().add(V(0.12, -0.02, -0.05)));
     stand(dad, { x: SX + DAD_K.x + 0.2, z: KZ + DAD_K.z, ry: DAD_K_RY - 0.3, head: 0.3 });
-    lookAt(K(-0.35, 0.95, 2.05), K(0.15, 0.6, 0.45), 40);
+    lookAt(K(1.95, 1.0, 1.55), K(0.12, 0.5, 0.35), 42);
     collar.visible = false;
   }],
   // ===== HOME =====
@@ -1635,12 +1682,13 @@ const SHOTS = [
   [C.wouldnt, (lt, t) => {
     setEnv("night", { exposure: 1.2 });
     const go = ease.inOut(prog(t, C.wouldnt, C.stop + 0.1));
-    const p = V(DOGBED.x, 0, DOGBED.z).lerp(V(-1.3, 0, -3.62), go);
+    const p = V(DOGBED.x, 0, DOGBED.z).lerp(V(-1.35, 0, -3.15), go);
     const g = Math.sin(t * 34) * 0.04;
-    dog.pose({ t, x: p.x, z: p.z, ry: Math.PI + 0.12, crouch: go, walk: go < 1 ? 0.6 : 0, walkPhase: t * 1.6, headPitch: 0.12, mouth: 0.18 + g * go, ears: -0.45 * go, tail: -0.4, shiver: 0.4 * go });
+    dog.pose({ t, x: p.x, z: p.z, ry: Math.PI + 0.12, crouch: go, walk: go < 1 ? 0.6 : 0, walkPhase: t * 1.6, headPitch: 0.12, mouth: 0.18 + g * go, ears: -0.45 * go, tail: -0.4, shiver: 0.4 * go, angry: 0.8 * go, snarl: 0.8 * go });
     const f = dogHead(dog, [0, 0, 0.05]);
-    const cam = V(lerp(-0.45, -0.55, go), 0.5, lerp(-2.95, -3.15, go));
-    lookAt(cam, f.clone().add(V(-0.12, -0.03, 0)), 36);
+    // behind him, low: his stiff, growling silhouette against the dark window
+    const cam = V(lerp(0.0, -0.2, go), lerp(0.95, 0.8, go), lerp(-0.7, -1.0, go));
+    lookAt(cam, V(-1.5, 0.55, -3.7), 38);
     fill.visible = true;
     fill.position.set(-0.4, 1.0, -2.8);
     fill.color.set(0xffc898);
@@ -1649,13 +1697,13 @@ const SHOTS = [
   // "at the window." — what he sees: a man by the fence under the streetlamp, watching the house
   [C.at, (lt, t) => {
     setEnv("night", { exposure: 1.25 });
-    dog.pose({ t, x: -1.3, z: -3.62, ry: Math.PI + 0.12, crouch: 1, headPitch: 0.12, mouth: 0.2 + Math.sin(t * 34) * 0.04, ears: -0.45, tail: -0.4 });
+    dog.pose({ t, x: -1.35, z: -3.15, ry: Math.PI + 0.12, crouch: 1, headPitch: 0.12, mouth: 0.2 + Math.sin(t * 34) * 0.04, ears: -0.45, tail: -0.4, angry: 0.8, snarl: 0.8 });
     const back = ease.in(prog(t, C.at + 0.35, C.they));
     thief.position.set(-2.25, 0, -11.55 - back * 0.9);
     thief.rotation.set(0, back > 0 ? Math.PI * back : 0, 0);
     stand(thief, { x: thief.position.x, z: thief.position.z, ry: Math.PI * back * 0.6, head: 0.05 });
     const p = ease.inOut(prog(t, C.at, C.they));
-    look(-1.15, 0.72, -3.55, -2.2, lerp(1.25, 1.2, p), -11.4, lerp(30, 26, p));
+    look(-1.0, 1.0, -3.95, -2.2, lerp(1.25, 1.2, p), -11.4, lerp(30, 26, p));
   }],
   // "They almost took him back." — the next morning: dad by the door with the leash and the papers;
   // she holds on to her dog... and he hangs the leash back on its hook
@@ -1690,7 +1738,7 @@ const SHOTS = [
     thief.rotation.set(0, yawTo(V(-2.6, 0, -6.8), V(0.6, 0, -5.2)), 0);
     walkClip(thief, lt * 0.8);
     const e = ease.inOut(p);
-    look(lerp(1.5, 1.2, e), lerp(1.3, 1.25, e), lerp(-10.8, -10.0, e), 0.2, 1.55, -4.2, 44);
+    look(lerp(2.4, 2.0, e), lerp(1.45, 1.35, e), lerp(-12.6, -11.8, e), 0.0, 1.4, -4.6, 46);
   }],
   // "someone broke in." — inside: his fist through the glass, a hand on the lock, the door swings open
   [C.someone, (lt, t) => {
@@ -1747,7 +1795,7 @@ const SHOTS = [
   [C.vet, (lt, t) => {
     setEnv("clinic", { exposure: 1.1 });
     drawEcg(t, 92, 0.6);
-    dog.pose({ t, x: VX + TABLE.x - 0.08, y: TABLE.y, z: TABLE.z + 0.05, ry: Math.PI / 2, side: 1, headPitch: 0.25, breathe: 0.6, tail: 0.6, ears: -0.2 });
+    dog.pose({ t, x: VX + TABLE.x - 0.08, y: TABLE.y, z: TABLE.z + 0.05, ry: Math.PI / 2, side: 1, headPitch: 0.25, breathe: 0.6, tail: 0.6, ears: -0.2, closed: 1 });
     stand(vet, { x: VX + 0.05, z: -1.45, ry: 0.15, head: 0.25 });
     vet.head.rotation.y = Math.sin((t - C.might) * 6) * 0.2 * prog(t, C.might - 0.1, C.might + 0.1) * (1 - prog(t, C.make + 0.3, C.she2));
     vet.armL.rotation.set(-0.7, 0, -0.1);
@@ -1768,7 +1816,7 @@ const SHOTS = [
     hemi.color.set(0xc8d6ff);
     hemi.intensity = 0.9;
     drawEcg(t, 84, 0.5);
-    dog.pose({ t, x: VX + RECOV.x + 0.15, z: RECOV.z - 0.1, ry: 0, side: 1, headPitch: 0.2, breathe: 0.7, tail: 0.6, ears: -0.2 });
+    dog.pose({ t, x: VX + RECOV.x + 0.15, z: RECOV.z - 0.1, ry: 0, side: 1, headPitch: 0.2, breathe: 0.7, tail: 0.6, ears: -0.2, closed: 1 });
     lieSide(girl, { x: VX + RECOV.x - 0.55, z: RECOV.z - 0.95, ry: Math.PI / 2 });
     reachTo(girl, "R", pawR(dog), ARM_R);
     const p = ease.inOut(prog(t, C.she2, C.holding));
@@ -1785,12 +1833,14 @@ const SHOTS = [
     hemi.intensity = lerp(0.9, 1.2, dawn);
     drawEcg(t, lerp(84, 104, dawn), 0.5 - dawn * 0.5);
     const wake = ease.inOut(prog(t, C.all + 0.1, C.shelter));
-    dog.pose({ t, x: VX + RECOV.x + 0.15, z: RECOV.z - 0.1, ry: 0, side: 1, headPitch: 0.2 - 0.35 * wake, headYaw: -0.25 * wake, neck: -0.2 * wake, breathe: 0.8, tail: 0.6, wag: 0.25 * wake, wagSpeed: 7, ears: -0.2 + 0.2 * wake, eyes: [-0.2 * wake, 0] });
+    dog.pose({ t, x: VX + RECOV.x + 0.15, z: RECOV.z - 0.1, ry: 0, side: 1, headPitch: 0.2 - 0.35 * wake, headYaw: -0.25 * wake, neck: -0.2 * wake, breathe: 0.8, tail: 0.6, wag: 0.25 * wake, wagSpeed: 7, ears: -0.2 + 0.2 * wake, closed: 1 - ease.inOut(prog(t, C.all, C.night3 + 0.2)) });
     lieSide(girl, { x: VX + RECOV.x - 0.55, z: RECOV.z - 0.95, ry: Math.PI / 2 });
     const pw = pawR(dog);
     reachTo(girl, "R", pw.clone().add(V(-0.02, 0.03, 0)), ARM_R);
     const p = ease.inOut(prog(t, C.holding, C.shelter));
-    lookAt(pw.clone().add(V(lerp(-0.55, -0.48, p), lerp(0.25, 0.3, p), lerp(0.5, 0.42, p))), pw.clone().add(V(0.02, 0.05, -0.08)), 36);
+    const fc = dogHead(dog, [0, 0, 0.05]);
+    const mid = pw.clone().lerp(fc, 0.45);
+    lookAt(mid.clone().add(V(lerp(-1.35, -1.15, p), lerp(0.65, 0.55, p), lerp(0.9, 0.75, p))), mid, 42);
   }],
   // "The shelter called him dangerous." — his old kennel card, now on the fridge at home...
   // and she covers it with her drawing: MY HERO
@@ -1805,7 +1855,7 @@ const SHOTS = [
     drawing.rotation.set(0, -Math.PI / 2, -0.04 + (1 - cover) * 0.15);
     const punch = ease.out(prog(t, C.dangerous, C.dangerous + 0.25));
     const p = ease.inOut(prog(t, C.shelter, C.hejust));
-    lookAt(c.clone().add(V(lerp(-0.62, -0.5, p) + punch * 0.06, 0.02, 0.0)), c.clone().add(V(0, lerp(0.0, -0.03, punch), 0)), 34);
+    lookAt(c.clone().add(V(lerp(-1.1, -0.95, p) + punch * 0.06, 0.03, 0.0)), c.clone().add(V(0, lerp(0.0, -0.03, punch), 0)), 36);
     fill.visible = true;
     fill.position.copy(c).add(V(-0.8, 0.4, 0.3));
     fill.intensity = 1.2;
@@ -1818,7 +1868,7 @@ const SHOTS = [
     floorSit(girl, 1, { x: GP.x, z: GP.z, ry: Math.PI });
     girl.spine.rotation.set(0.35, 0.25, 0.12);
     const lick = Math.max(0, Math.sin((t - C.found) * 8)) * prog(t, C.found, C.found + 0.2) * (1 - prog(t, C.protect + 0.4, C.protect + 0.6));
-    dog.pose({ t, x: GP.x - 0.4, z: GP.z - 0.3, ry: Math.PI + 0.35, sit: 1, headYaw: -0.55 * prog(t, C.hadnt, C.found), headPitch: -0.15, headTilt: 0.15, mouth: 0.15 + 0.35 * lick, ears: 0.2, wag: 1, wagSpeed: 13, tail: -0.4, eyes: [-0.15, -0.1] });
+    dog.pose({ t, x: GP.x - 0.4, z: GP.z - 0.3, ry: Math.PI + 0.35, sit: 1, headYaw: -0.45 * prog(t, C.hadnt, C.found), headPitch: 0.05, headTilt: 0.2, mouth: 0.15 + 0.35 * lick, ears: 0.2, wag: 1, wagSpeed: 13, tail: -0.4, eyes: [-0.15, -0.1] });
     const n = dog.point("Neck2", [0, 0.0, 0.0]);
     reachTo(girl, "L", n.clone().add(V(0.05, 0.04, -0.12)), ARM_L);
     reachTo(girl, "R", n.clone().add(V(0.1, -0.02, 0.1)), ARM_R);
@@ -1827,7 +1877,7 @@ const SHOTS = [
     armsCrossed(dad);
     const rise = ease.inOut(prog(t, C.protect - 0.2, DURATION));
     const tg = V(GP.x - 0.2, lerp(0.55, 0.9, rise), GP.z - 0.1);
-    look(lerp(0.15, -0.6, rise), lerp(0.75, 2.6, rise), lerp(-7.55, -9.6, rise), tg.x, tg.y, tg.z, lerp(38, 46, rise));
+    look(lerp(0.1, -0.6, rise), lerp(0.85, 2.6, rise), lerp(-8.5, -10.2, rise), tg.x, tg.y, tg.z, lerp(40, 46, rise));
     fade(prog(t, DURATION - 1.0, DURATION - 0.05));
   }],
 ];
@@ -1885,10 +1935,13 @@ sfx.add(C.yet + 0.55, "bark_3", { gain: 0.4, rate: 1.1 });
 
 // ---------- frame ----------
 const shotStarts = SHOTS.map((s) => s[0]);
+shotStarts.forEach((v, i) => {
+  if (!(v >= 0) || (i && v < shotStarts[i - 1])) throw new Error(`shot ${i} starts at ${v}`);
+});
 onUpdate((t) => {
   t = Math.min(t, DURATION - 1e-6);
   // the character FBX files carry their own ambient lights; our scenes light them instead
-  for (const p of [...PEOPLE, ...DOGS.map((d) => d.avatar)]) p.traverse((o) => o.isLight && (o.visible = false));
+  for (const p of PEOPLE) p.traverse((o) => o.isLight && (o.visible = false));
   let i = SHOTS.length - 1;
   while (i > 0 && t < shotStarts[i]) i--;
   resetWorld(t);
