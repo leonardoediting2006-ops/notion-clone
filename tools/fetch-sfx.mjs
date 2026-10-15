@@ -37,6 +37,8 @@ const SRC = {
   "4-198962-A-25": ["footsteps on wood", "Mydo1", "CC0", 198962],
   "4-164243-A-26": ["Young girl laughing uncontrollably.mp3", "caculo", "CC0", 164243],
   "2-70936-A-42": ["police.wav", "guitarguy1985", "CC0", 70936],
+  "3-117504-A-16": ["winter wind 01a.aiff", "klangfabrik", "CC0", 117504],
+  "5-186924-A-12": ["Fire_Loop.wav", "ReadeOnly", "CC0", 186924],
 };
 
 // name → inputs [{clip, ss (s), t (s), gain, delay (s), af (extra filters)}], post-filters, loop
@@ -87,6 +89,16 @@ const SETS = {
     monitor_beep: { gen: "sine=frequency=1000:duration=0.13", post: "volume=0.5,afade=t=in:d=0.005,afade=t=out:st=0.1:d=0.03" },
   },
 };
+
+// "Puppy eyes" short: the same dogs and rooms, plus wind for the wolf and a campfire
+{
+  const h = SETS["dog-hero"];
+  SETS["dog-eyes"] = {
+    ...Object.fromEntries(["bark_3", "whimper", "shelter_dogs", "birds", "birds_2", "clock", "giggle", "steps_wood"].map((k) => [k, h[k]])),
+    wind: { in: [{ clip: "3-117504-A-16", ss: 0, t: 5 }], post: "afade=t=in:d=0.03,afade=t=out:st=4.97:d=0.03" },
+    fire: { in: [{ clip: "5-186924-A-12", ss: 0, t: 5 }], post: "afade=t=in:d=0.03,afade=t=out:st=4.97:d=0.03" },
+  };
+}
 
 const run = (args) => new Promise((ok, fail) => {
   const p = spawn("ffmpeg", ["-y", "-loglevel", "error", ...args], { stdio: ["ignore", "inherit", "inherit"] });

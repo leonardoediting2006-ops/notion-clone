@@ -58,6 +58,7 @@ shorts/
   dog-mailman/        "What your dog thinks the mail carrier is" (pet-POV style)
   dog-bathroom/       "Why your dog follows you into the bathroom" (voiceover-synced, voiceover.srt)
   dog-toy/            "Why your dog grabs a toy when you come home" (60 fps, rubber-duck hero toy)
+  dog-eyes/           "Your dog evolved a muscle just to manipulate you" (60 fps fact short, big labels)
   dog-hero/           "This dog took a bullet for a girl" (60 fps story, real recorded SFX)
   dog-leash/          "He slept by the door holding his leash" (60 fps story: night hall, winter flashback)
 characters/           Character Lab: preview every human preset (?only=dad, &face for a close-up)
