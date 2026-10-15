@@ -1605,13 +1605,13 @@ function tag(id, html, t, t0, t1, x, y, { cls = "", to = null, size = 1 } = {}) 
   }
   el.className = "tag " + cls;
   shown.add(id);
-  const pin = ease.back(prog(t, t0, t0 + 0.22));
-  const out = 1 - prog(t, t1 - 0.12, t1);
+  const pin = ease.out(prog(t, t0, t0 + 0.35));
+  const out = 1 - prog(t, t1 - 0.25, t1);
   el.style.display = "block";
   el.style.left = `${x}px`;
   el.style.top = `${y}px`;
-  el.style.opacity = String(out);
-  el.style.transform = `translate(-50%, -50%) scale(${pin * size})`;
+  el.style.opacity = String(out * pin);
+  el.style.transform = `translate(-50%, -50%) scale(${(0.92 + 0.08 * pin) * size})`;
   if (to) {
     const [tx, ty] = toScreen(to);
     const sy = y + (ty > y ? 60 : -60);
@@ -1688,8 +1688,7 @@ const SHOTS = [
     dog.pose({ t, x: LIVING.x, z: LIVING.z, ry: 0, sit: 1, headPitch: -0.22, headTilt: 0.22 * tilt, wag: 0.3, wagSpeed: 8, ...pupFace(k) });
     const p = ease.inOut(prog(t, 0, C.wolves));
     faceCam(dog, lerp(1.6, 1.3, p), { up: 0.12, fov: 34, lookUp: -0.02 });
-    tag("pe", "🥺 PUPPY EYES", t, C.muscle, C.manipulate, 540, 430, { cls: "yellow", to: browPt() });
-    tag("trick", "😏 ON PURPOSE", t, C.manipulate, C.wolves, 540, 430, { cls: "red" });
+    tag("pe", "🥺 PUPPY EYES", t, C.muscle, C.wolves, 540, 430, { cls: "yellow", to: browPt() });
     fade(1 - prog(t, 0, 0.12));
   }],
   // "Wolves don't have it." — a wolf on a rock at dusk: the same face, but flat, no eyebrow lift
@@ -1697,38 +1696,31 @@ const SHOTS = [
     setEnv("dusk", { exposure: 1.1 });
     wolf.pose({ t, x: ROCK.x, y: 0.42, z: ROCK.z, ry: 0, headPitch: 0.0, cute: 0, sad: 0, angry: 0.25, ears: 0.3 });
     const h = dogHead(wolf, [0, 0, 0]);
-    const p = ease.inOut(prog(t, C.wolves, C.its));
-    look(h.x + 0.25, h.y + 0.05, h.z + lerp(2.2, 1.8, p), h.x, h.y - 0.1, h.z, 34);
-    tag("wolf", "🐺 WOLF", t, C.wolves, C.its, 540, 400, { cls: "chip" });
-    tag("nom", "NO MUSCLE ✗", t, C.dont, C.its, 540, 1470, { cls: "red", to: browPt(wolf) });
+    const p = ease.inOut(prog(t, C.wolves, C.above));
+    look(h.x + 0.25, h.y + 0.05, h.z + lerp(2.1, 1.85, p), h.x, h.y - 0.1, h.z, 34);
+    tag("wolf", "🐺 WOLF", t, C.wolves, C.above, 540, 400, { cls: "chip" });
+    tag("nom", "NO MUSCLE ✗", t, C.dont, C.above, 540, 1470, { cls: "red", to: browPt(wolf) });
   }],
-  // "It's a tiny muscle above the eye that lifts the inner eyebrow" — close on his face; the muscle glows
-  [C.its, (lt, t) => {
+  // "above the eye that lifts the inner eyebrow and makes their eyes look bigger, sad, like a baby."
+  // one calm close-up: the muscle glows, lifts the brow; the eyes grow; then the baby beside him
+  [C.above, (lt, t) => {
     setEnv("day", { exposure: 1.05 });
-    const lift = ease.inOut(prog(t, C.lifts, C.lifts + 0.45));
-    const pulse = t > C.lifts ? 0.6 + 0.6 * Math.max(0, Math.sin((t - C.lifts) * 9)) : 0.6;
-    muscles.visible = true;
-    muscleMat.opacity = 0.95 * prog(t, C.tiny - 0.1, C.tiny + 0.2);
-    muscleMat.emissiveIntensity = pulse;
-    dog.pose({ t, x: LIVING.x, z: LIVING.z, ry: 0, sit: 1, headPitch: -0.2, cute: 0.15, sad: lift });
-    faceCam(dog, lerp(0.95, 0.82, ease.inOut(prog(t, C.its, C.makes))), { up: 0.02, fov: 30, lookUp: 0.02 });
+    const lift = ease.inOut(prog(t, C.lifts, C.lifts + 0.5));
+    const big = ease.inOut(prog(t, C.bigger - 0.1, C.sad + 0.3));
+    const glow = prog(t, C.above, C.above + 0.3) * (1 - prog(t, C.makes, C.makes + 0.4));
+    muscles.visible = glow > 0.01;
+    muscleMat.opacity = 0.95 * glow;
+    muscleMat.emissiveIntensity = t > C.lifts ? 0.6 + 0.3 * Math.max(0, Math.sin((t - C.lifts) * 5)) : 0.6;
+    dog.pose({ t, x: LIVING.x, z: LIVING.z, ry: 0, sit: 1, headPitch: -0.2, headTilt: 0.12 * big, cute: lerp(0.15, 1, big), sad: lift });
+    const p = ease.inOut(prog(t, C.above, C.scientists));
+    const baby = ease.inOut(prog(t, C.like - 0.15, C.like + 0.4));
+    faceCam(dog, lerp(0.85, 1.15, p), { up: 0.03, fov: 31, lookUp: lerp(0.02, -0.1, baby) });
     fill.visible = true;
     fill.position.copy(camera.position).add(V(0.3, 0.4, 0));
     fill.intensity = 1.4;
-    tag("tiny", "TINY MUSCLE", t, C.tiny, C.lifts, 540, 400, { cls: "red", to: musclePt() });
-    tag("lift", "⬆ LIFTS THE EYEBROW", t, C.lifts, C.makes, 540, 1470, { cls: "yellow", to: browPt() });
-  }],
-  // "and makes their eyes look bigger, sad, like a baby." — eyes grow, brows go sad... next to a baby
-  [C.makes, (lt, t) => {
-    setEnv("day", { exposure: 1.05 });
-    const big = ease.back(prog(t, C.bigger, C.bigger + 0.3));
-    const sad = ease.inOut(prog(t, C.sad, C.sad + 0.3));
-    dog.pose({ t, x: LIVING.x, z: LIVING.z, ry: 0, sit: 1, headPitch: -0.2, headTilt: 0.15 * sad, cute: lerp(0.15, 1, big), sad: lerp(0.6, 1, sad) });
-    const baby = prog(t, C.like - 0.05, C.like + 0.2);
-    faceCam(dog, lerp(0.9, 1.15, ease.inOut(prog(t, C.makes, C.scientists))), { up: 0.05, fov: 32, lookUp: lerp(0, -0.1, baby) });
-    tag("big", "👀 BIGGER EYES", t, C.bigger, C.sad, 540, 400, { cls: "yellow" });
-    tag("sad", "🥺 SADDER", t, C.sad, C.like, 540, 400, { cls: "yellow" });
-    tag("baby", `${BABY}<div style="text-align:center;margin-top:10px">👶 LIKE A BABY</div>`, t, C.like - 0.05, C.scientists, 540, 1500, { cls: "card" });
+    tag("tiny", "TINY MUSCLE", t, C.above, C.lifts, 540, 400, { cls: "red", to: musclePt() });
+    tag("lift", "⬆ LIFTS THE EYEBROW", t, C.lifts, C.makes + 0.2, 540, 400, { cls: "yellow", to: browPt() });
+    tag("baby", `${BABY}<div style="text-align:center;margin-top:10px">👶 LIKE A BABY</div>`, t, C.bigger, C.scientists + 0.2, 540, 1500, { cls: "card" });
   }],
   // "Scientists found it in 2019, and only in dogs." — the lab: a magnifying glass over his eye
   [C.scientists, (lt, t) => {
@@ -1744,7 +1736,6 @@ const SHOTS = [
     reachTo(vet, "R", lens.position.clone().add(V(0.0, -0.2, 0)), ARM_R);
     const p = ease.inOut(prog(t, C.scientists, C.appeared));
     lookAt(camP.clone().lerp(eye.clone().addScaledVector(toCam, 1.6), p * 0.25), eye.clone().add(V(0, -0.12, 0)), 42);
-    tag("sci", "🔬 SCIENTISTS", t, C.scientists, C.y2019, 540, 400, { cls: "chip" });
     tag("y", "2019", t, C.y2019, C.only, 540, 440, { cls: "big" });
     tag("only", `<div class="row">🐶 DOGS <span class="yes">✓</span></div><div class="row">🐺 WOLVES <span class="no">✗</span></div>`, t, C.only - 0.05, C.appeared, 540, 470, { cls: "card" });
   }],
@@ -1755,19 +1746,9 @@ const SHOTS = [
     floorSit(dad, 1, { x: FIRE.x - 0.95, z: FIRE.z + 0.25, ry: Math.PI / 2 - 0.3 });
     const k = ease.inOut(prog(t, C.thousands, C.thousands + 0.5));
     wolf.pose({ t, x: FIRE.x + 0.15, z: FIRE.z + 1.05, ry: -Math.PI / 2 - 0.5, lie: 1, headPitch: -0.2, headYaw: -0.2, cute: 0.4 * k, sad: 0.8 * k, ears: 0.2 });
-    const p = ease.inOut(prog(t, C.appeared, C.dogs2));
-    look(FIRE.x + 1.5, lerp(1.2, 1.0, p), FIRE.z + lerp(3.4, 3.0, p), FIRE.x - 0.1, 0.5, FIRE.z + 0.4, 42);
-    tag("ago", "⏳ 30,000 YEARS AGO", t, C.appeared, C.dogs2, 540, 400, { cls: "chip" });
-  }],
-  // "dogs lived with us" — today: the same look, on the living-room rug
-  [C.dogs2, (lt, t) => {
-    setEnv("day", { exposure: 1.05 });
-    sofaDad(t, { lean: 0.4 });
-    reachTo(dad, "L", dogHead(dog, [0, 0.12, -0.02]), ARM_L);
-    dog.pose({ t, x: 0.55, z: 1.3, ry: 0, sit: 1, headPitch: -0.35, wag: 0.6, wagSpeed: 10, ...pupFace(1) });
-    const hd = dogHead(dog, [0, 0, 0]);
-    look(0.95, 1.18, 2.3, hd.x, hd.y - 0.1, hd.z, 46);
-    tag("today", "🏠 TODAY", t, C.dogs2, C.because, 540, 400, { cls: "chip" });
+    const p = ease.inOut(prog(t, C.appeared, C.because));
+    look(FIRE.x + 1.5, lerp(1.2, 1.0, p), FIRE.z + lerp(3.4, 2.9, p), FIRE.x - 0.1, 0.5, FIRE.z + 0.4, 42);
+    tag("ago", "⏳ 30,000 YEARS AGO", t, C.appeared, C.because, 540, 400, { cls: "chip" });
   }],
   // "because every time a dog made that face, humans couldn't resist." — the cookie is his
   [C.because, (lt, t) => {
@@ -1780,8 +1761,7 @@ const SHOTS = [
     const p = ease.inOut(prog(t, C.because, C.shelters));
     const hd = dogHead(dog, [0, 0, 0]);
     look(lerp(1.0, 0.92, p), lerp(1.22, 1.15, p), 2.3, hd.x, hd.y - 0.1, hd.z, 46);
-    tag("face", "THAT FACE 🥺", t, C.face - 0.1, C.humans + 0.15, 540, 400, { cls: "yellow", to: browPt() });
-    tag("res", "❤️ CAN'T RESIST", t, C.humans + 0.15, C.shelters, 540, 400, { cls: "red" });
+    tag("res", "❤️ CAN'T RESIST", t, C.humans, C.shelters, 540, 400, { cls: "red" });
   }],
   // "In shelters, dogs that raised their eyebrows more got adopted faster."
   [C.shelters, (lt, t) => {
@@ -1818,13 +1798,13 @@ const SHOTS = [
 const sfx = createSfx(short);
 sfx.loop(0, C.wolves, "birds_2", { gain: 0.3, fadeIn: 0.1, fadeOut: 0.05 });
 sfx.add(C.manipulate + 0.1, "whimper", { gain: 0.3, dur: 0.6, fadeOut: 0.25 });
-sfx.loop(C.wolves, C.its, "wind", { gain: 0.7, fadeIn: 0.05, fadeOut: 0.05 });
-sfx.loop(C.its, C.scientists, "birds_2", { gain: 0.25, fadeIn: 0.05, fadeOut: 0.05 });
+sfx.loop(C.wolves, C.above, "wind", { gain: 0.7, fadeIn: 0.05, fadeOut: 0.05 });
+sfx.loop(C.above, C.scientists, "birds_2", { gain: 0.25, fadeIn: 0.05, fadeOut: 0.05 });
 sfx.add(C.sad + 0.05, "whimper", { gain: 0.3, rate: 1.1, dur: 0.6, fadeOut: 0.25 });
 sfx.loop(C.scientists, C.appeared, "clock", { gain: 0.3, fadeIn: 0.05, fadeOut: 0.05 });
-sfx.loop(C.appeared, C.dogs2, "fire", { gain: 0.8, fadeIn: 0.05, fadeOut: 0.05 });
-sfx.loop(C.appeared, C.dogs2, "wind", { gain: 0.2, fadeIn: 0.05, fadeOut: 0.05 });
-sfx.loop(C.dogs2, C.shelters, "birds_2", { gain: 0.3, fadeIn: 0.05, fadeOut: 0.05 });
+sfx.loop(C.appeared, C.because, "fire", { gain: 0.8, fadeIn: 0.05, fadeOut: 0.05 });
+sfx.loop(C.appeared, C.because, "wind", { gain: 0.2, fadeIn: 0.05, fadeOut: 0.05 });
+sfx.loop(C.because, C.shelters, "birds_2", { gain: 0.3, fadeIn: 0.05, fadeOut: 0.05 });
 sfx.add(C.resist + 0.15, "bark_3", { gain: 0.45, rate: 1.15 });
 sfx.loop(C.shelters, DURATION, "shelter_dogs", { gain: 0.35, fadeIn: 0.1, fadeOut: 0.6 });
 sfx.add(C.faster + 0.5, "giggle", { gain: 0.55 });
