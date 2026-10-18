@@ -13,17 +13,16 @@ the visual companion. It covers:
 4. [The visual system for this channel](#4-the-visual-system-for-this-channel)
 5. [Recipes for this engine (Three.js r170 + GSAP 3.15)](#5-recipes-for-this-engine-threejs-r170--gsap-315)
 6. [Shot-by-shot blueprints for the six scripts](#6-shot-by-shot-blueprints-for-the-six-scripts)
-7. [Script and caption fixes found during research](#7-script-and-caption-fixes-found-during-research)
-8. [Pre-render checklist and measuring after upload](#8-pre-render-checklist-and-measuring-after-upload)
-9. [Myths and unverified numbers](#9-myths-and-unverified-numbers)
-10. [Sources](#sources)
+7. [Pre-render checklist and measuring after upload](#7-pre-render-checklist-and-measuring-after-upload)
+8. [Myths and unverified numbers](#8-myths-and-unverified-numbers)
+9. [Sources](#sources)
 
 **Evidence tiers** used throughout:
 **O** official platform statement · **S** strong science (replicated / converging studies) ·
 **M** moderate (single study, lab-bound) · **T** third-party industry data (sample size given) ·
 **P** practitioner opinion · **I** our own inference.
 No peer-reviewed study measures Shorts retention directly, and YouTube publishes no
-benchmarks. Treat every rule as a hypothesis to confirm against your own analytics (§8).
+benchmarks. Treat every rule as a hypothesis to confirm against your own analytics (§7).
 
 ---
 
@@ -314,8 +313,7 @@ channel signature, with these rules:
 4. **Thin out at the peak.** On the final emotional line, drop to a smaller caption below
    the face or hold a beat with no text [R28][R29].
 5. **Add source chips for facts.** A small chip such as "Kaminski et al. · PNAS 2019" builds
-   credibility and adds the "educational value" signal YouTube names [Y7]. Only use chips
-   for claims that hold up (§7).
+   credibility and adds the "educational value" signal YouTube names [Y7].
 6. **Nothing in the top 288 px or the bottom 672 px** that must be read.
 
 ### 4.5 Sound and picture
@@ -590,7 +588,6 @@ Checked visually for dog-bathroom, dog-toy and dog-welcome. dog-hero, dog-leash 
 - **Emotional engine:** recognition ("my dog does this") → comic reframe → protective warmth.
 - **Curiosity gap:** "in their mind they aren't being clingy" (then what?).
 - **Strength:** the most relatable and funniest premise, so lean into comedy. Pace is fast.
-- **Fact risk:** the guarding explanation is folklore (§7). Frame it as a theory.
 
 | Time | VO | Picture | Look · Sound |
 |---|---|---|---|
@@ -609,8 +606,6 @@ Checked visually for dog-bathroom, dog-toy and dog-welcome. dog-hero, dog-leash 
 - **Curiosity gap:** "they aren't asking for a game" (then what?).
 - **Big visual opportunity:** *show the invisible*. Visualise the adrenaline as energy
   flowing into the jaw.
-- **Fact risk:** "sensory pacifier" and "not to play" are unsupported (§7). Soften the
-  wording.
 
 | Time | VO | Picture | Look · Sound |
 |---|---|---|---|
@@ -644,31 +639,7 @@ Checked visually for dog-bathroom, dog-toy and dog-welcome. dog-hero, dog-leash 
 
 ---
 
-## 7. Script and caption fixes found during research
-
-These matter for retention. Comments that call out an error ("that's not true") anchor the
-discussion and undercut the trust that source chips build. They also matter for the
-"educational value" signal YouTube rewards.
-
-| Short | Verdict | What the evidence says | Suggested change |
-|---|---|---|---|
-| **dog-eyes** | Core fact **supported**. Two phrases overstated. | Kaminski et al. 2019 (PNAS): the muscle "is uniformly present in dogs but not in wolves". They "hypothesize" the human-preference selection [R32]. Shelter adoption came from 27 dogs, was correlational and exploratory: "these exploratory findings should be taken with caution" [R33]. A 2024 study found the muscle in other canids, including coyotes: "not unique to domesticated dogs" [R35]. | Change "only in dogs" → "and not in wolves". Change "because every time… humans couldn't resist" → "scientists think it's because…". |
-| **dog-welcome** | **Partly supported** | Rehn & Keeling 2011 (12 dogs; 0.5 / 2 / 4 h): more activity, tail-wagging and owner contact after 2 h and 4 h than after 30 min [R36]. "Jumping, spinning" was not measured. The authors say they "cannot distinguish" whether dogs perceive the duration. | "He feels every minute you're gone" overclaims. Consider "the longer you're gone, the bigger the welcome". |
-| **dog-bathroom** | **Unsupported (folklore)** | Snopes rates the guarding claim "Unproven". Vets and behaviourists cite attachment, curiosity, routine and learned habit [R37][R39]. | Keep the comedy, but frame it as a theory: "One theory: they're running security." |
-| **dog-toy** | **Unsupported as stated** | No study supports a "sensory pacifier" or "adrenaline spike". Experts list excitement, play invitation, self-soothing and attention-seeking [R38]. "Not to play" contradicts them. | Use "Vets think it may help them handle the excitement" and drop "not to play". |
-| **dog-hero** | **Unverified** | No matching news story was found. The nearest real case (Rex, Des Moines 2018) differs, and that dog survived [R44]. | Label it a story ("Imagine…", or "Based on stories like Rex's"), or use a sourced case. |
-| **dog-leash** | **Unverified** | No source was found. The fear-of-abandonment reading is the script's interpretation. | Present it as a story (first-person), not as a documented case. |
-
-**Text bugs** (they appear in the word-by-word captions):
-
-- `dog-hero/voiceover.srt`: the last line reads "He just hadn't found anyone to protect **it**."
-  The intended word is "yet", and the line is also the loop seam.
-- `dog-toy/voiceover.srt`: "so their **lover you** doesn't overwhelm them" should read "so their
-  love for you doesn't overwhelm them".
-
----
-
-## 8. Pre-render checklist and measuring after upload
+## 7. Pre-render checklist and measuring after upload
 
 **Before rendering** (use the preview: `S` for the safe zone, `←/→` to step frames):
 
@@ -687,7 +658,6 @@ discussion and undercut the trust that source chips build. They also matter for 
 - [ ] **One** re-hook, **one** dolly zoom or freeze, **one** direct look into the lens.
 - [ ] **Sound-off test:** watch muted. Is the story still clear from picture plus captions?
 - [ ] **Last frame vs first frame** side by side: same composition?
-- [ ] **Facts:** any line marked in §7 updated, and source chips only on supported claims.
 
 **After uploading** (YouTube Studio → the Short → Analytics):
 
@@ -704,7 +674,7 @@ discussion and undercut the trust that source chips build. They also matter for 
 
 ---
 
-## 9. Myths and unverified numbers
+## 8. Myths and unverified numbers
 
 These circulate widely but have no primary source, or misread one [D13][D14]:
 
@@ -816,16 +786,8 @@ section shows how much weight each claim carries.
 - **[R30]** Szarkowska et al. (2024). Watching subtitled videos with the sound off. *PLOS ONE*. https://pmc.ncbi.nlm.nih.gov/articles/PMC11458047/
 - **[R31]** Wals et al. (2026). Visual complexity and scene cuts on viewer attention. *J Acad Mark Sci*. https://research.utwente.nl/en/publications/the-dynamic-effects-of-visual-complexity-and-scene-cuts-on-viewer/
 - **[R32]** Kaminski et al. (2019). Evolution of facial muscle anatomy in dogs. *PNAS*. doi:10.1073/pnas.1820653116
-- **[R33]** Waller et al. (2013). Paedomorphic facial expressions give dogs a selective advantage. *PLOS ONE*. doi:10.1371/journal.pone.0082686
-- **[R34]** Bremhorst et al. (2021). Evaluating the accuracy of facial expressions as emotion indicators. *Front Psychol*. doi:10.3389/fpsyg.2021.568935
-- **[R35]** Sexton et al. (2024). Raising an eye at facial muscle morphology in canids. *Biology*. doi:10.3390/biology13050290
-- **[R36]** Rehn & Keeling (2011). The effect of time left alone at home on dog welfare. *Appl Anim Behav Sci*. doi:10.1016/j.applanim.2010.11.015
-- **[R37]** Snopes, "Do dogs watch you in the bathroom to protect you?" https://www.snopes.com/fact-check/dogs-watch-bathroom/
-- **[R38]** PetMD, "Why do dogs bring you toys when you get home?" https://www.petmd.com/dog/behavior/why-do-dogs-bring-you-toys-when-you-get-home
-- **[R39]** Dogs Trust, "Why does my dog follow me?" https://www.dogstrust.org.uk/dog-advice/understanding-your-dog/following
 - **[R40]** Salimpoor et al. (2011). Dopamine release during anticipation and experience of peak emotion to music. *Nat Neurosci*. doi:10.1038/nn.2726
 - **[R41]** Fredrickson & Kahneman (1993). Duration neglect. *JPSP*. doi:10.1037/0022-3514.65.1.45
-- **[R44]** TODAY, "Family dog shot repeatedly by burglars while protecting teen" (Rex, 2018). https://www.today.com/pets/family-dog-shot-repeatedly-burglars-while-protecting-teen-t123935
 
 ### Animation, cinematography, rendering
 
