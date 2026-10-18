@@ -2,6 +2,7 @@ import { createShort, THREE, gsap } from "../../js/engine.js";
 import * as T from "../../js/textures.js";
 import { createForest } from "../../js/trees.js";
 import { createDog, DOG_COLORS } from "../../js/dog.js";
+import { mergeGeometries } from "../../lib/jsm/utils/BufferGeometryUtils.js";
 import { loadProp, useEnvironment, bookshelf, floorLamp, wallArt, cushion, coffeeTable, wallClock, shoes, picketFence, mailbox, mirror, handbag, hat } from "../../js/props.js";
 import { loadSrt, wordCaptions } from "../../js/voiceover.js";
 import { createSfx } from "../../js/sfx.js";
@@ -286,6 +287,7 @@ scene.add(tubeLights2);
 // back wall (z = -4.07): picture window (x -2.2..-0.6) and the glass-paned back door (x 1.2..2.1)
 // left wall (x = -3.27): the girl's bedroom door (z -1.5..-0.6); front wall (z = 2.67): front door
 const house = group(0, 0, 0, scene);
+house.name = "house";
 const H = 2.6;
 const BZ = -4.07, LX = -3.27, RX = 3.27, FZ = 2.67;
 const WIN = { x0: -2.2, x1: -0.6, y0: 0.55, y1: 2.15 };
@@ -537,6 +539,7 @@ for (const [x, c] of [[1.45, 0x3a7bd5], [1.7, 0x8a5a2b]]) {
 }
 // ================= THE BACK YARD (z < -4.2): lawn, fence, lane with a streetlamp, trees =================
 const yard = group(0, 0, 0, scene);
+yard.name = "yard";
 floorPlane(40, 30, M.grass, 0, -0.01, -16, yard);
 floorPlane(40, 40, M.grass, 0, -0.012, 22, yard); // in front of the house too
 floorPlane(1.2, 3.0, M.concrete, (BD.x0 + BD.x1) / 2, 0.0, BZ - 1.6, yard); // path from the back door
@@ -618,6 +621,7 @@ wallX(-2.85, LX - 2.3, LX - 0.07, [], M.siding, 0.04, house); // bedroom outside
 
 // ================= THE FRONT: a terrace, a fenced garden, the street and the neighbours =================
 const front = group(0, 0, 0, scene);
+front.name = "front";
 const FY = FZ + 0.09; // the front wall's outer face
 const whitePaint = T.paintedWood(0xf6f3ee);
 const dummy = new THREE.Object3D();
@@ -863,12 +867,13 @@ fence(-18.5, 11.5, 13, 0);
 fence(8.5, 11.5, 14.5, 0);
 fence(-26, 22.5, 52, 0);
 // trees: street trees, garden trees, a tree line and soft hills far away
-const frontTrees = createForest(front);
-for (const [x, z, h, s] of [[7.6, 4.2, 3.4, 1.7], [-4.6, 5.0, 3.0, 1.6], [6.2, 11.0, 3.2, 1.6], [-8.5, 12.6, 3.2, 1.6], [13, 12.6, 3.4, 1.7], [-1.0, 19.6, 3.2, 1.6], [5.0, 19.8, 3.2, 1.6], [17, 19.8, 3.2, 1.6], [-15, 19.8, 3.2, 1.6]]) frontTrees.tree(x, z, { height: h, scale: s });
-for (let i = 0; i < 12; i++) frontTrees.tree(-30 + i * 5.5 + rr(-1, 1), rr(34, 39), { height: rr(3.0, 3.8), scale: rr(1.5, 2.0) });
-for (let i = 0; i < 7; i++) frontTrees.bush(-5.2 + i * 1.5, 11.1, rr(0.9, 1.2)); // hedge inside the street fence (left of the gate)
-for (let i = 0; i < 4; i++) frontTrees.bush(9.2 + i * 1.2, FY + 4 + i * 1.5, rr(0.9, 1.2));
-frontTrees.build();
+// one small forest per tree, so the ones out of shot are skipped entirely (frustum culling) — much cheaper to render
+const oneTree = (x, z, h, s) => { const f = createForest(front); f.tree(x, z, { height: h, scale: s }); f.build(); };
+const oneBush = (x, z, s) => { const f = createForest(front); f.bush(x, z, s); f.build(); };
+for (const [x, z, h, s] of [[7.6, 4.2, 3.4, 1.7], [-4.6, 5.0, 3.0, 1.6], [6.2, 11.0, 3.2, 1.6], [-8.5, 12.6, 3.2, 1.6], [13, 12.6, 3.4, 1.7], [-1.0, 19.6, 3.2, 1.6], [5.0, 19.8, 3.2, 1.6], [17, 19.8, 3.2, 1.6], [-15, 19.8, 3.2, 1.6]]) oneTree(x, z, h, s);
+for (let i = 0; i < 5; i++) oneTree(-18 + i * 9 + rr(-1, 1), rr(34, 39), rr(3.0, 3.8), rr(1.5, 2.0)); // a tree line far behind the houses
+for (let i = 0; i < 7; i++) oneBush(-5.2 + i * 1.5, 11.1, rr(0.9, 1.2)); // hedge inside the street fence (left of the gate)
+for (let i = 0; i < 4; i++) oneBush(9.2 + i * 1.2, FY + 4 + i * 1.5, rr(0.9, 1.2));
 for (const [x, y, z, sx, sy, sz, c] of [[-45, -1.5, 72, 55, 9, 20, 0x8aa87a], [30, -2, 78, 70, 12, 22, 0x7f9e72], [90, -1, 60, 40, 7, 18, 0x93b083]]) {
   mesh(new THREE.SphereGeometry(1, 24, 12), mat(c, { roughness: 1 }), x, y, z, front).scale.set(sx, sy, sz);
 }
@@ -1082,7 +1087,7 @@ function setDay({ exposure = 1.05 } = {}) {
   scene.background = new THREE.Color(0xbcd6ee);
   hemi.color.set(0xfff4e6);
   hemi.groundColor.set(0x6b5a48);
-  hemi.intensity = 1.15;
+  hemi.intensity = 1.9;
   sun.intensity = 4.0;
   sun.position.set(7, 9, 9);
   sun.target.position.set(0, 0, -1);
@@ -1306,6 +1311,7 @@ function applyOwner(t) {
     return;
   }
   if (o.mode === "walk") {
+    owner.resetPose(); // clear the head/limb handles left by the last standing pose, so a frame never depends on the one before
     owner.position.set(o.x, 0, o.z);
     owner.rotation.set(0, o.ry, 0);
     walkClip(owner, o.phase);
@@ -1411,8 +1417,65 @@ grainEl.style.backgroundImage = `url(${(() => {
 grainEl.style.opacity = "0.03";
 document.getElementById("vignette").style.opacity = "0.3";
 
+// ---------- speed: once everything has loaded, fuse the static scenery into a few meshes per material ----------
+// (the house, the garden and the street are hundreds of tiny meshes; one draw call each is what makes a frame slow)
+let fused = false;
+function fuseStatic(roots, skip) {
+  scene.updateMatrixWorld(true);
+  const buckets = new Map(), meshes = [];
+  for (const root of roots) {
+    root.traverse((o) => {
+      if (!o.isMesh || o.isInstancedMesh || o.isSkinnedMesh || Array.isArray(o.material)) return;
+      for (let p = o; p; p = p.parent) if (skip.includes(p) || p.visible === false) return;
+      const g = o.geometry;
+      if (g.morphAttributes && Object.keys(g.morphAttributes).length) return;
+      const attrs = Object.keys(g.attributes).sort().map((k) => `${k}${g.attributes[k].itemSize}${g.attributes[k].normalized ? "n" : ""}`).join(",");
+      const key = [o.material.uuid, o.castShadow, o.receiveShadow, g.index ? "i" : "n", attrs].join("|");
+      if (!buckets.has(key)) buckets.set(key, []);
+      buckets.get(key).push(o);
+      meshes.push(o);
+    });
+  }
+  let before = 0, after = 0;
+  for (const list of buckets.values()) {
+    before += list.length;
+    if (list.length < 2) { after += 1; continue; }
+    const geos = list.map((o) => o.geometry.clone().applyMatrix4(o.matrixWorld));
+    const merged = mergeGeometries(geos, false);
+    if (!merged) { after += list.length; continue; }
+    const m = new THREE.Mesh(merged, list[0].material);
+    m.castShadow = list[0].castShadow;
+    m.receiveShadow = list[0].receiveShadow;
+    scene.add(m);
+    for (const o of list) o.removeFromParent();
+    after += 1;
+  }
+  console.log(`fused ${before} meshes into ${after}`);
+}
+
 // ---------- frame ----------
 onUpdate((t) => {
+  if (!fused) {
+    fused = true;
+    // real glass (transmission) re-renders the whole scene for every frame: swap it for a plain translucent look
+    scene.traverse((o) => {
+      if (!o.isMesh) return;
+      for (const m of Array.isArray(o.material) ? o.material : [o.material]) {
+        if (m.transmission > 0) Object.assign(m, { transmission: 0, transparent: true, opacity: 0.3, depthWrite: false, needsUpdate: true });
+      }
+    });
+    // image-based lighting is the priciest part of every pixel: keep it for the shiny metals only, and let the
+    // hemisphere light (a little stronger, see setDay) fill in everywhere else
+    const ENV = scene.environment;
+    scene.environment = null;
+    scene.traverse((o) => {
+      if (!o.isMesh) return;
+      for (const m of Array.isArray(o.material) ? o.material : [o.material]) {
+        if (m.metalness > 0.4 && !m.envMap) Object.assign(m, { envMap: ENV, envMapIntensity: 0.6, needsUpdate: true });
+      }
+    });
+    fuseStatic([house, yard, front], [frontDoor]);
+  }
   t = Math.min(t, DURATION - 1e-6);
   owner.traverse((o) => o.isLight && (o.visible = false)); // the character file carries its own ambient light
   setDay({ exposure: 1.1 });
