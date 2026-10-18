@@ -27,12 +27,12 @@ Written with the rules in [attention-research.md](attention-research.md). Every 
 > Your dog's guilty look **isn't** guilt.
 > A scientist set a trap to test it.
 > Owners told their dogs: don't eat that treat. Then they left the room.
-> While they were gone, the researcher either **fed** the dog the treat / or took it **away**.
+> While they were gone, the scientist either **fed** the dog the treat / or took it **away**.
 > Then she told the owners what happened. // But half the time, she **lied**.
-> Owners who thought their dog ate it scolded him. And there it was: ears back. Eyes down.
+> Owners who thought their dog ate it got angry at him. And there it was: ears back. Eyes down.
 > Even on dogs that **never** touched it.
-> The guiltiest faces of all? // The **innocent** dogs who got scolded anyway.
-> He's not confessing. //
+> The guiltiest faces of all? // The **innocent** dogs who got yelled at anyway.
+> He's not saying sorry. //
 > He's reading **you**.
 
 ### Beats
@@ -42,12 +42,12 @@ Written with the rules in [attention-research.md](attention-research.md). Every 
 | 0–2 s | "Your dog's guilty look isn't guilt." | Then what is it? | Confident, quick. Music bed in, low. |
 | 2–4 s | "A scientist set a trap to test it." | What trap? | Lean in. |
 | 4–8 s | Owners give the order, leave the room | Will he eat it? | Door closing. |
-| 8–13 s | Researcher feeds the treat or takes it away | What's the trick? | Matter-of-fact. |
+| 8–13 s | Scientist feeds the treat or takes it away | What's the trick? | Matter-of-fact. |
 | 13–17 s | "But half the time, she lied." | What happens when they're lied to? | Beat before "lied". Music drops out. |
-| 17–23 s | Scolding brings out the look | Did the guilty dogs look guiltier? | Slower on "ears back, eyes down". |
+| 17–23 s | Getting angry brings out the look | Did the guilty dogs look guiltier? | Slower on "ears back, eyes down". |
 | 23–25 s | "Even on dogs that never touched it." | So who looked guiltiest? | Stress "never". |
-| 25–29 s | "The innocent dogs who got scolded anyway." | What is the look, then? | Build for about 4 s; land on "anyway". |
-| 29–34 s | "He's not confessing. He's reading you." | — (end) | Quiet, close to the mic. Cut on "you". |
+| 25–29 s | "The innocent dogs who got yelled at anyway." | What is the look, then? | Build for about 4 s; land on "anyway". |
+| 29–34 s | "He's not saying sorry. He's reading you." | — (end) | Quiet, close to the mic. Cut on "you". |
 
 **Visuals:** a dog with `pose({ earBack, sad, headPitch })` beside an empty plate; owner avatar walking out and back in; at the twist, a split screen of a dog with an empty plate and a dog with a full plate, both making the same face.
 
@@ -69,8 +69,8 @@ Written with the rules in [attention-research.md](attention-research.md). Every 
 > The strips came back **wetter**.
 > But dogs get excited by lots of people. / So they tried someone the dog knew well. // Just not the owner.
 > The tears didn't rise the **same** way.
-> Then they showed people photos of dogs with a few drops of artificial tears added.
-> People felt more warmly toward the teary-eyed dogs.
+> Then they showed people photos of dogs with a few drops of fake tears added.
+> People liked the teary-eyed dogs more.
 > So when you walk through that door, it isn't just his **tail** saying hello. //
 > It's his **eyes**.
 > And they do it most / for **you**.
@@ -85,7 +85,7 @@ Written with the rules in [attention-research.md](attention-research.md). Every 
 | 14–16 s | "The strips came back wetter." | Is it just excitement? | Beat before "wetter". |
 | 16–23 s | The familiar-person test | Same result? | Brisk, a slight "gotcha" tone. |
 | 23–25 s | "The tears didn't rise the same way." | So it's about the owner. Why would tears matter? | Slow. |
-| 25–33 s | The artificial-tears photos | What does that mean for me? | Slight lift. |
+| 25–33 s | The fake-tears photos | What does that mean for me? | Slight lift. |
 | 33–42 s | "It's his eyes. And they do it most / for you." | — (end) | Slowest line of the script. Music swells, then cut on "you". |
 
 **Visuals:** close-up of a dog's eyes with a slow push-in; the paper strip as a small prop; front door opening with the owner avatar; at the end, a slight wet sheen on the eyes (raise the eye material's clearcoat).
@@ -110,7 +110,7 @@ Written with the rules in [attention-research.md](attention-research.md). Every 
 > Then **both** strangers hold out the same treat.
 > Which hand does the dog pick? //
 > When the man had **helped** the owner, dogs didn't care. Either treat was fine.
-> But when he'd **refused** her… //
+> But when he **wouldn't help** her… //
 > the dogs mostly went to the **other** hand.
 > Same treat. He got fed either way.
 > He just saw how that man treated you. //
@@ -127,7 +127,7 @@ Written with the rules in [attention-research.md](attention-research.md). Every 
 | 10–11 s | "He turns away." | How will the dog react? | Flat. Chair scrape. |
 | 11–17 s | Neutral stranger; both hold out a treat | Which hand? | Slow. Music drops out. |
 | 17–19 s | "Which hand does the dog pick?" | (the main question) | Full beat after. Silence. |
-| 19–23 s | Helper condition: no preference | So what about the refuser? | Brisk. |
+| 19–23 s | After he helped: no preference | So what about the refuser? | Brisk. |
 | 23–28 s | "…the dogs mostly went to the other hand." | Why would he care? | Build; stress "other". |
 | 28–33 s | "Same treat… how that man treated you." | — | Gentle. |
 | 33–37 s | "And he picked a side. // Yours." | — (end) | Music back in. Cut on "Yours." |
@@ -147,13 +147,13 @@ Written with the rules in [attention-research.md](attention-research.md). Every 
 ### Voiceover
 
 > A twelve-year-old dog saved a town. // Another dog got the **statue**.
-> Nome, Alaska. 1925. Diphtheria is spreading through the children, and the medicine is almost seven hundred miles away.
-> The only planes are taken apart for winter. / So twenty dog teams relay it.
+> Nome, Alaska. 1925. A deadly disease is spreading through the children, and the medicine is almost seven hundred miles away.
+> The only planes are taken apart for winter. / So twenty dog teams pass it hand to hand.
 > The longest, most dangerous run goes to **Togo**.
 > As a puppy, he was so sick his owner gave him away. / Togo jumped through a **window** to get back.
 > Now he's old for a sled dog. And he has to cross twenty miles of frozen sea. / In the dark. / At thirty below.
 > Togo finds the trail. They make it across.
-> That night, the ice they crossed **breaks away** and drifts out to sea.
+> That night, the ice they crossed **breaks away** and floats out to sea.
 > Togo runs two hundred and sixty miles in all.
 > But the last fifty-five go to a team led by **Balto**.
 > Reporters meet Balto. New York gives **him** a statue.
@@ -166,7 +166,7 @@ Written with the rules in [attention-research.md](attention-research.md). Every 
 | Time | Line | Open question | Delivery and sound |
 |---|---|---|---|
 | 0–4 s | "A twelve-year-old dog saved a town. Another dog got the statue." | Which dog? How? Why the injustice? | Firm. Wind ambience. |
-| 4–11 s | Nome, 1925, sick children, medicine 674 miles away | How will it get there? | Urgent, clear. |
+| 4–11 s | Nome, 1925, a deadly disease, medicine 674 miles away | How will it get there? | Urgent, clear. |
 | 11–15 s | Planes taken apart; twenty dog teams | Who's the hero? | Brisk. |
 | 15–18 s | "The longest, most dangerous run goes to Togo." | Can an old dog do it? | Stress "Togo". |
 | 18–24 s | Sick puppy, given away, jumps through a window | (you're on his side now) | Warmer, a slight smile. Glass crack. |
@@ -226,6 +226,7 @@ Written with the rules in [attention-research.md](attention-research.md). Every 
 ---
 
 ## Before recording
+- **Simple words:** if you wouldn't say a word to a 10-year-old, swap it. Listeners can't rewind.
 - **3-second check:** every opening line puts a specific question in the viewer's head by about 3 s.
 - **Pace:** scripts 1, 2, 3 and 5 sit at about 170–190 wpm; script 4 is denser, so keep it near 170 and never above 190.
 - **Last word:** cut the video within about a second of the final word. Script 5 ends on a question, which trades a loop for comments.
