@@ -10,11 +10,11 @@ Written with the rules in [attention-research.md](attention-research.md). Every 
 
 | # | Title | Structure | Length | Main emotion |
 |---|---|---|---|---|
-| 1 | The guilty look | Belief flip + experiment | ~33 s | Surprise → empathy |
-| 2 | Tears | Experiment reveal | ~38 s | Tenderness → joy |
-| 3 | The witness | Experiment with suspense | ~40 s | Loyalty |
+| 1 | The guilty look | Belief flip + experiment | ~34 s | Surprise → empathy |
+| 2 | Tears | Experiment reveal | ~42 s | Tenderness → joy |
+| 3 | The witness | Experiment with suspense | ~37 s | Loyalty |
 | 4 | Togo | True story, outcome first | ~57 s | Awe → injustice → pride |
-| 5 | The head tilt | Belief flip + challenge | ~38 s | Curiosity → fun |
+| 5 | The head tilt | Belief flip + challenge | ~39 s | Curiosity → fun |
 
 ---
 
@@ -47,7 +47,7 @@ Written with the rules in [attention-research.md](attention-research.md). Every 
 | 17–23 s | Scolding brings out the look | Did the guilty dogs look guiltier? | Slower on "ears back, eyes down". |
 | 23–25 s | "Even on dogs that never touched it." | So who looked guiltiest? | Stress "never". |
 | 25–29 s | "The innocent dogs who got scolded anyway." | What is the look, then? | Build for about 4 s; land on "anyway". |
-| 29–33 s | "He's not confessing. He's reading you." | — (end) | Quiet, close to the mic. Cut on "you". |
+| 29–34 s | "He's not confessing. He's reading you." | — (end) | Quiet, close to the mic. Cut on "you". |
 
 **Visuals:** a dog with `pose({ earBack, sad, headPitch })` beside an empty plate; owner avatar walking out and back in; at the twist, a split screen of a dog with an empty plate and a dog with a full plate, both making the same face.
 
@@ -85,8 +85,8 @@ Written with the rules in [attention-research.md](attention-research.md). Every 
 | 14–16 s | "The strips came back wetter." | Is it just excitement? | Beat before "wetter". |
 | 16–23 s | The familiar-person test | Same result? | Brisk, a slight "gotcha" tone. |
 | 23–25 s | "The tears didn't rise the same way." | So it's about the owner. Why would tears matter? | Slow. |
-| 25–31 s | The artificial-tears photos | What does that mean for me? | Slight lift. |
-| 31–38 s | "It's his eyes. And they do it most / for you." | — (end) | Slowest line of the script. Music swells, then cut on "you". |
+| 25–33 s | The artificial-tears photos | What does that mean for me? | Slight lift. |
+| 33–42 s | "It's his eyes. And they do it most / for you." | — (end) | Slowest line of the script. Music swells, then cut on "you". |
 
 **Visuals:** close-up of a dog's eyes with a slow push-in; the paper strip as a small prop; front door opening with the owner avatar; at the end, a slight wet sheen on the eyes (raise the eye material's clearcoat).
 
@@ -129,8 +129,8 @@ Written with the rules in [attention-research.md](attention-research.md). Every 
 | 17–19 s | "Which hand does the dog pick?" | (the main question) | Full beat after. Silence. |
 | 19–23 s | Helper condition: no preference | So what about the refuser? | Brisk. |
 | 23–28 s | "…the dogs mostly went to the other hand." | Why would he care? | Build; stress "other". |
-| 28–34 s | "Same treat… how that man treated you." | — | Gentle. |
-| 34–40 s | "And he picked a side. // Yours." | — (end) | Music back in. Cut on "Yours." |
+| 28–33 s | "Same treat… how that man treated you." | — | Gentle. |
+| 33–37 s | "And he picked a side. // Yours." | — (end) | Music back in. Cut on "Yours." |
 
 **Visuals:** owner avatar between two seated strangers, the owner struggling with a clear box; the refuser turning his shoulder; both strangers holding out flat palms; the dog looking from one hand to the other, then walking past the refuser. The dog's head yaw does the storytelling.
 
@@ -215,7 +215,7 @@ Written with the rules in [attention-research.md](attention-research.md). Every 
 | 17–19 s | "About twenty times the tilting." | What's going on in his head? | Punchy. |
 | 19–27 s | "The tilt shows up when a word means something." | Is that all? | Slower, wondering. |
 | 27–31 s | "Each dog tilted to the same side, month after month." | Which side is my dog? | Beat before "same". |
-| 31–38 s | "Say the word… Watch his head. Left… or right?" | (answer in the comments) | Smile in the voice. Music out before "Left". Cut on "right?" |
+| 31–39 s | "Say the word… Watch his head. Left… or right?" | (answer in the comments) | Smile in the voice. Music out before "Left". Cut on "right?" |
 
 **Visuals:** a dog with `pose({ tilt })` animated left and right; simple on-screen counters ("2%" and "43%") above the YouTube safe zone; at the end, the dog freezes mid-tilt, facing the camera.
 
