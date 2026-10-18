@@ -1,0 +1,124 @@
+/* "Zoomies" look: chunky white captions, cartoon speed lines, a race-HUD and a fact card. */
+.zcap {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 1190px;
+  padding: 0 90px;
+  text-align: center;
+  font-family: "Arial Black", "Inter", Impact, "DejaVu Sans", system-ui, sans-serif;
+  font-weight: 900;
+  font-size: 84px;
+  line-height: 1.08;
+  color: #fff;
+  -webkit-text-stroke: 14px #000;
+  paint-order: stroke fill;
+  text-shadow: 0 8px 0 #000;
+  text-wrap: balance;
+  transform-origin: 50% 60%;
+}
+.zcap .hl { color: #ffd23a; }
+
+/* big comic-book stamp */
+.stamp {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 330px;
+  text-align: center;
+  font-family: "Arial Black", Impact, "DejaVu Sans", sans-serif;
+  font-weight: 900;
+  font-size: 250px;
+  letter-spacing: -6px;
+  color: #ffd23a;
+  -webkit-text-stroke: 20px #000;
+  paint-order: stroke fill;
+  text-shadow: 0 16px 0 #000;
+  opacity: 0;
+}
+
+/* anime speed lines: two conic stripe layers with different spacing, masked to the edges */
+.speed {
+  position: absolute;
+  inset: -300px;
+  background:
+    repeating-conic-gradient(from 0deg at 50% 50%, transparent 0deg 4deg, rgba(255, 255, 255, 0.7) 4deg 4.5deg, transparent 4.5deg 9deg),
+    repeating-conic-gradient(from 2deg at 50% 50%, transparent 0deg 6.5deg, rgba(255, 255, 255, 0.45) 6.5deg 7.2deg, transparent 7.2deg 13deg);
+  -webkit-mask-image: radial-gradient(ellipse 48% 42% at 50% 46%, transparent 55%, #000 100%);
+  mask-image: radial-gradient(ellipse 48% 42% at 50% 46%, transparent 55%, #000 100%);
+  opacity: 0;
+}
+
+.vignette {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background: radial-gradient(ellipse at 50% 45%, rgba(0, 0, 0, 0) 40%, rgba(0, 0, 0, 0.8) 100%);
+}
+.dim { position: absolute; inset: 0; background: #07070f; opacity: 0; }
+.flash { position: absolute; inset: 0; background: #fff; opacity: 0; }
+
+/* race HUD for the overhead lap shot */
+.lap {
+  position: absolute;
+  left: 70px;
+  top: 230px;
+  padding: 22px 34px 18px;
+  background: rgba(10, 10, 18, 0.85);
+  border: 6px solid #ff3d7f;
+  border-radius: 24px;
+  font-family: "Courier New", "Liberation Mono", "DejaVu Sans Mono", monospace;
+  font-weight: 700;
+  font-size: 78px;
+  line-height: 1;
+  color: #fff;
+  display: none;
+}
+.lap b { color: #ff3d7f; }
+.lap-why { font-size: 38px; margin-top: 12px; color: #ffd23a; letter-spacing: 2px; }
+
+/* F.R.A.P. fact card */
+.frap {
+  position: absolute;
+  left: 70px;
+  right: 70px;
+  top: 250px;
+  padding: 36px 56px 32px;
+  background: rgba(12, 12, 22, 0.86);
+  border: 8px solid #ff3d7f;
+  border-radius: 40px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  color: #fff;
+  visibility: hidden;
+}
+.frap-head {
+  font-family: system-ui, "DejaVu Sans", sans-serif;
+  font-weight: 800;
+  font-size: 50px;
+  text-transform: uppercase;
+  letter-spacing: 4px;
+  color: #ffd23a;
+  margin-bottom: 14px;
+}
+.frap-row {
+  font-family: "Arial Black", Impact, "DejaVu Sans", sans-serif;
+  font-weight: 900;
+  font-size: 80px;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+.frap-row b {
+  display: inline-block;
+  width: 104px;
+  font-size: 118px;
+  color: #ff3d7f;
+  -webkit-text-stroke: 6px #000;
+  paint-order: stroke fill;
+}
+.frap-row span { display: inline-block; }
+.frap-src {
+  font-family: system-ui, "DejaVu Sans", sans-serif;
+  font-size: 30px;
+  opacity: 0.7;
+  margin-top: 20px;
+}
