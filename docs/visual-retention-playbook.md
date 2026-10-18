@@ -516,7 +516,22 @@ with frame 1.** Lenses refer to §4.2, and moods to §4.3.
 
 ### 6.0 What the current renders show (CPU contact sheets, 1 frame/s)
 
-Checked visually for dog-bathroom, dog-toy and dog-welcome. dog-hero, dog-leash and dog-eyes were not rendered in this pass.
+Checked visually for dog-bathroom, dog-toy and dog-welcome. dog-hero, dog-leash and dog-eyes
+were not rendered. Their notes below come from the shot comments and camera calls in each
+`main.js`, so they are code-derived and not visually confirmed.
+
+- **dog-hero (code):** 28 shots in 29 s (~1.0 s average). It already opens with a close-up
+  of the growling dog, a flash on "bullet", a grey bullet-time freeze and a rewind into
+  "three days earlier", so the cold open in §6.1 mostly exists. Fix: drop the 0.12 s
+  fade-in from black at frame 0.
+- **dog-leash (code):** ~25 shots in 31 s (~1.2 s average). Frame 1 is the house exterior
+  at night with a slow push toward the door, faded in from black over 0.45 s. The dog first
+  appears at ~1 s (leaving the shelter), and the curiosity image (leash in his mouth) not
+  until 4.1 s. Move that image to frame 1 (§6.2) and remove the fade.
+- **dog-eyes (code):** 8 shots in 21 s (~2.7 s average). Frame 1 already shows the
+  brow-raising face, which is the strongest hook frame of the six. The 4.5–8.5 s close-up
+  is the longest hold; give it the glowing-muscle and eye-scale beats to keep it moving.
+  Drop the 0.12 s fade-in.
 
 - **All shorts:** blocky dog next to photoreal Rocketbox humans (§4.1). Captions at `top: 1060px` often sit over the dog's muzzle or body in close-ups (bathroom 3 s and 6 s, toy 7 s).
 - **dog-welcome:** frame 1 is a static wide room with a small, distant dog, and nothing moves until ~2 s. One wide, mostly locked-off framing holds for ~26 s, and the first close-up arrives at ~27 s. Multi-word caption lines run off the right edge of the frame (e.g. "you walk in the door an…").
