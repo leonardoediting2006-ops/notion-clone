@@ -22,6 +22,7 @@ the description of any video that shows them.
 | `sfx/step_*` footsteps | [Kenney Starter Kit FPS](https://github.com/KenneyNL/Starter-Kit-FPS) | Kenney | MIT (`sfx/LICENSE-kenney.md`) |
 | `sfx/ambi_drone`, `sfx/ambi_haunted_hum` | [Sonic Pi samples](https://github.com/sonic-pi-net/sonic-pi/tree/dev/etc/samples) (from freesound: Autistic Lucario, kaligari) | — | CC0 |
 | `shorts/dog-hero/sfx/*` (barks, growl, shelter dogs, glass, gunshot, birds, crickets, clock, doors, footsteps, girl laughing, siren) | real field recordings from freesound.org via the [ESC-50 dataset](https://github.com/karolpiczak/ESC-50), cut by `tools/fetch-sfx.mjs` | see `shorts/dog-hero/sfx/CREDITS.md` | CC0, one CC-BY 3.0 (credit line in that file) |
+| `shorts/dog-welcome/sfx/*` (barks, door, footsteps, clock, whimper, birds, laugh) | real field recordings from freesound.org via the [ESC-50 dataset](https://github.com/karolpiczak/ESC-50), cut by `tools/fetch-sfx.mjs` | see `shorts/dog-welcome/sfx/CREDITS.md` | CC0, one CC-BY 3.0 (credit line in that file) |
 | `textures/*` (brick, hardwood, grass) | [three.js examples](https://github.com/mrdoob/three.js) | three.js authors | MIT |
 
 Code-built (no licence needed): all other sounds in `sfx/` (`tools/synth-sfx.mjs`), mailbox, handbag, hats, picket fence (`js/props.js`), trees, all procedural textures.

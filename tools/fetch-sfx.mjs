@@ -1,6 +1,7 @@
 // Download REAL recorded sound effects and cut them into ready-to-use files for a short.
 //
 //   node tools/fetch-sfx.mjs dog-hero          → shorts/dog-hero/sfx/*.ogg  (+ CREDITS.md)
+//   node tools/fetch-sfx.mjs dog-welcome       → shorts/dog-welcome/sfx/*.ogg (+ CREDITS.md)
 //
 // Source: the ESC-50 dataset on GitHub (github.com/karolpiczak/ESC-50), 5-second clips cut
 // from freesound.org field recordings. We only use clips whose ORIGINAL freesound licence is
@@ -98,6 +99,12 @@ const SETS = {
     wind: { in: [{ clip: "3-117504-A-16", ss: 0, t: 5 }], post: "afade=t=in:d=0.03,afade=t=out:st=4.97:d=0.03" },
     fire: { in: [{ clip: "5-186924-A-12", ss: 0, t: 5 }], post: "afade=t=in:d=0.03,afade=t=out:st=4.97:d=0.03" },
   };
+}
+
+// "Why your dog goes crazy when you come home": barks, doors, footsteps, a ticking clock, whimpers, a laugh
+{
+  const h = SETS["dog-hero"];
+  SETS["dog-welcome"] = Object.fromEntries(["bark_1", "bark_2", "bark_3", "whimper", "gate", "clock", "birds_2", "steps_wood", "giggle"].map((k) => [k, h[k]]));
 }
 
 const run = (args) => new Promise((ok, fail) => {
