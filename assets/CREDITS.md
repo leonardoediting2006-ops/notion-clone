@@ -23,6 +23,7 @@ the description of any video that shows them.
 | `sfx/ambi_drone`, `sfx/ambi_haunted_hum` | [Sonic Pi samples](https://github.com/sonic-pi-net/sonic-pi/tree/dev/etc/samples) (from freesound: Autistic Lucario, kaligari) | — | CC0 |
 | `shorts/dog-hero/sfx/*` (barks, growl, shelter dogs, glass, gunshot, birds, crickets, clock, doors, footsteps, girl laughing, siren) | real field recordings from freesound.org via the [ESC-50 dataset](https://github.com/karolpiczak/ESC-50), cut by `tools/fetch-sfx.mjs` | see `shorts/dog-hero/sfx/CREDITS.md` | CC0, one CC-BY 3.0 (credit line in that file) |
 | `shorts/dog-welcome/sfx/*` (barks, door, footsteps, clock, whimper, birds, laugh) | real field recordings from freesound.org via the [ESC-50 dataset](https://github.com/karolpiczak/ESC-50), cut by `tools/fetch-sfx.mjs` | see `shorts/dog-welcome/sfx/CREDITS.md` | CC0, one CC-BY 3.0 (credit line in that file) |
+| `shorts/dog-stare/sfx/*` (birdsong, a wooden thud, a bell, a pad, a crackle stand-in) | freesound.org recordings via the [ESC-50 dataset](https://github.com/karolpiczak/ESC-50) and [Sonic Pi's sample library](https://github.com/sonic-pi-net/sonic-pi/tree/dev/etc/samples), cut by `tools/fetch-sfx.mjs` | see `shorts/dog-stare/sfx/CREDITS.md` | all CC0 |
 | `textures/*` (brick, hardwood, grass) | [three.js examples](https://github.com/mrdoob/three.js) | three.js authors | MIT |
 
 Code-built (no licence needed): all other sounds in `sfx/` (`tools/synth-sfx.mjs`), mailbox, handbag, hats, picket fence (`js/props.js`), trees, all procedural textures.
