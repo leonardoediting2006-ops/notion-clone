@@ -936,7 +936,7 @@ const eyeHalos = [0, 1].map(() => {
   scene.add(h);
   return h;
 });
-const HEARTS = 9;
+const HEARTS = 14;
 const hearts = [];
 for (let i = 0; i < HEARTS; i++) {
   const h = new THREE.Sprite(fxMat(heartTex, 0xffffff, 0));
@@ -979,25 +979,29 @@ function dogState(t) {
   return {
     t, x: DOG_AT.x, y: 0, z: DOG_AT.z, ry: DOG_RY, sit: 1,
     headPitch: GAZE + 0.012 * br,
-    headTilt: 0.1 * stare + 0.05 * hug,
+    headTilt: 0.1 * stare + 0.05 * hug + 0.08 * gest(t),
     closed: Math.max(blink(t, 3.05), blink(t, 9.5), blink(t, 13.0), 0.9 * bump(t, hugAt + 0.3, 0.3)),
-    ears: 0.25 + 0.3 * hug,
+    ears: 0.25 + 0.3 * hug + 0.15 * gest(t),
     sad: 0.12 + 0.25 * hug,
-    wag: 0.22 + 0.5 * hug,
+    wag: 0.22 + 0.5 * hug + 0.4 * gest(t),
     wagSpeed: TAU * 21 / DURATION,
   };
 }
 
+// you reach a hand out toward him while the oxytocin line plays, then settle back
+const gest = (t) => ease.inOut(prog(t, 7.9, 8.8)) * (1 - ease.inOut(prog(t, 11.0, 11.9)));
 // the treat bag in your lap shakes once, on the word "treat"
 const shake = (t) => bump(t, C.treat + 0.25, 0.42);
 function applyOwner(t) {
   const br = Math.sin(cyc(t, 7));
-  sofaSit(owner, { x: SEAT.x, z: SEAT.z, ry: OWNER_RY, lean: 0.06 + 0.012 * br, head: 0.3 });
+  const g = gest(t);
+  sofaSit(owner, { x: SEAT.x, z: SEAT.z, ry: OWNER_RY, lean: 0.06 + 0.012 * br + 0.2 * g, head: 0.3 + 0.12 * g });
   const s = shake(t) * Math.sin(t * 38);
-  const c = local(owner, 0, 0.74 + 0.012 * s, 0.3);
-  bag.position.copy(c);
+  bag.position.copy(local(owner, 0, 0.74 + 0.012 * s, 0.3));
   bag.rotation.set(0, 0, 0.07 * s);
-  both(owner, local(owner, 0.12, 0.71 + 0.012 * s, 0.3), local(owner, -0.12, 0.71 + 0.012 * s, 0.3));
+  const lap = local(owner, 0.12, 0.71 + 0.012 * s, 0.3);
+  const out = local(owner, 0.16, 0.92, 0.8);
+  both(owner, lap.lerp(out, g), local(owner, -0.12, 0.71 + 0.012 * s, 0.3));
 }
 
 // ================= the camera: ONE smooth track; it starts and ends as YOUR eyes =================
@@ -1007,10 +1011,11 @@ const MID = V(2.4, 1.0, SEAT.z);               // the line between you
 // [time, camera position, look-at point, field of view]
 const KEYS = [
   [0.0, [EYES.x, EYES.y, EYES.z], [HIS.x, HIS.y, HIS.z], 56],           // your eyes: he is looking into the lens
-  [C.him + 0.6, [2.2, 1.65, 2.45], [2.25, 0.72, SEAT.z], 64],            // out to the side: you and him, face to face
+  [C.him + 0.6, [2.2, 1.65, 2.45], [2.25, 0.72, SEAT.z], 64],             // out to the side: you and him, face to face
   [C.else, [2.2, 1.6, 2.3], [2.25, 0.74, SEAT.z], 64],
-  [C.oxytocin + 0.6, [2.2, 1.55, 2.2], [2.25, 0.76, SEAT.z], 62],
-  [C.even, [2.15, 1.7, 2.45], [2.25, 0.72, SEAT.z], 64],
+  [8.6, [1.2, 1.45, 1.9], [2.1, 0.95, SEAT.z], 60],                      // swinging round to the front: your face, his profile
+  [11.0, [1.45, 1.4, 1.75], [2.1, 0.95, SEAT.z], 58],
+  [C.even + 0.3, [0.9, 1.65, 1.9], [2.3, 0.9, SEAT.z], 62],               // and back out wide for the wolves
   [C.hugging - 0.4, [2.7, 1.15, 0.2], [HIS.x + 0.08, HIS.y + 0.05, HIS.z], 56],
   [C.longer + 0.3, [2.72, 1.18, -0.05], [HIS.x + 0.08, HIS.y + 0.04, HIS.z], 56],
   [DURATION, [EYES.x, EYES.y, EYES.z], [HIS.x, HIS.y, HIS.z], 56],       // and back into your eyes: the first frame again
@@ -1031,10 +1036,38 @@ function track(t) {
 
 // ================= labels: four, big and calm =================
 function labels(t) {
-  tag("science", "🔬 SCIENCE", t, C.scientists, C.else + 0.4, 540, 400, "yellow");
-  tag("eyes", "👀 EYE CONTACT", t, C.when + 0.1, C.eyes + 0.7, 540, 400, "yellow");
-  tag("oxy", "💗 OXYTOCIN ↑", t, C.oxytocin - 0.45, C.baby + 0.1, 540, 400, "pink");
-  tag("wolf", "🐺 WOLVES: NO BOOST", t, C.even, C.this + 0.45, 540, 400, "yellow");
+  tag("science", "🔬 SCIENCE", t, C.scientists, C.else + 0.4, 540, 330, "yellow");
+  tag("eyes", "👀 EYE CONTACT", t, C.when + 0.1, C.eyes + 0.7, 540, 330, "yellow");
+  tag("oxy", "💗 OXYTOCIN ↑", t, C.oxytocin - 0.45, C.same - 0.05, 540, 330, "pink");
+  tag("mother", "🤱 MOTHER + BABY", t, C.same, C.even - 0.1, 540, 330, "pink");
+  tag("wolf", "🐺 WOLVES: NO BOOST", t, C.even, C.this + 0.45, 540, 330, "yellow");
+  // two little gauges over your head and his: the oxytocin line fills up in both of you
+  const lvl = ease.inOut(prog(t, C.when + 0.4, C.oxytocin + 0.9));
+  const show = ease.out(prog(t, C.eyes + 0.2, C.eyes + 0.7)) * (1 - prog(t, C.even - 0.35, C.even - 0.05));
+  gauge("g-you", "YOU", owner.position, 1.62, lvl, show, 0);
+  gauge("g-dog", "DOG", dog.position, 1.18, Math.max(0, lvl - 0.06) / 0.94, show, 0);
+}
+const gauges = new Map();
+const _g = V();
+function gauge(id, name, base, y, level, alpha, dx) {
+  let el = gauges.get(id);
+  if (!el) {
+    el = document.createElement("div");
+    el.className = "gauge";
+    el.innerHTML = `<b>${name}</b><span class="ico">💗</span><span class="bar"><i></i></span>`;
+    labelsEl.appendChild(el);
+    gauges.set(id, el);
+  }
+  if (alpha <= 0.001) { el.style.display = "none"; return; }
+  _g.set(base.x, y, base.z).project(camera);
+  const px = (_g.x * 0.5 + 0.5) * 1080 + dx, py = (-_g.y * 0.5 + 0.5) * 1920;
+  const inView = _g.z < 1 && _g.z > -1;
+  const cx = Math.min(940, Math.max(140, px)), cy = Math.min(1500, Math.max(500, py));
+  el.style.display = inView ? "flex" : "none";
+  el.style.left = `${cx}px`;
+  el.style.top = `${cy}px`;
+  el.style.opacity = String(alpha);
+  el.querySelector("i").style.width = `${Math.round(100 * level)}%`;
 }
 
 // ================= sound: real recordings (see sfx/CREDITS.md) =================
@@ -1083,7 +1116,7 @@ function drawGlow(t) {
   }
   // hearts: float up from between you while he "hugs you with his eyes" and as the looking goes on
   for (let i = 0; i < HEARTS; i++) {
-    const born = i < 3 ? C.hugging + 0.1 + i * 0.5 : C.longer + 0.1 + (i - 3) * 0.38;
+    const born = i < 3 ? C.hugging + 0.1 + i * 0.5 : i < 8 ? C.longer + 0.1 + (i - 3) * 0.38 : 8.9 + (i - 8) * 0.55;
     const u = (t - born) / 1.7;
     const h = hearts[i];
     if (u < 0 || u > 1) { h.material.opacity = 0; continue; }
@@ -1163,5 +1196,5 @@ onUpdate((t) => {
   captions(t);
 });
 
-window.__dbg = { scene, camera, renderer, dog, owner, C, track, KEYS };
+window.__dbg = { scene, camera, renderer, dog, owner, C, track, KEYS, reachTo, ARM_L, ARM_R, sofaSit, local, SEAT, OWNER_RY, bag };
 short.start();
