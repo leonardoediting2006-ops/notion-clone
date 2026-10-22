@@ -495,7 +495,6 @@ place(loadProp(short, "SheenChair", { height: 0.95 }), -1.4, 0, -1.0, Math.PI / 
   mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.03, 24), wood2, 0, 0.04, 0, g);
 }
 tableLamp(0.25, 0.57, -1.45);
-place(floorLamp(), 3.05, 0, 0.72);
 place(loadProp(short, "DiffuseTransmissionPlant", { height: 1.3 }), 3.0, 0, -3.4);
 // framed pictures above the sofa, a clock over the door
 place(wallArt({ w: 0.7, h: 0.5, style: "landscape", seed: 2 }), RX - 0.02, 1.8, -1.2, -Math.PI / 2);
@@ -1049,7 +1048,7 @@ sfx.add(C.hugging + 0.9, "thump", { gain: 0.4 });
 sfx.loop(C.longer - 0.4, DURATION, "pad", { gain: 0.22, fadeIn: 2.6, fadeOut: 0.3 });
 
 // ================= overlays =================
-const captions = wordCaptions(document.getElementById("caption"), words, { lines: LINES });
+const captions = wordCaptions(document.getElementById("caption"), words, { maxChars: 20 }) // short lines: 76 px type fits about 21 characters;
 const grainEl = document.getElementById("grain");
 grainEl.style.opacity = "0";
 document.getElementById("vignette").style.opacity = "0.18";

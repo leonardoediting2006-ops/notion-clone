@@ -1399,7 +1399,7 @@ sfx.add(21.7, "whimper", { gain: 0.4, dur: 1.4, fadeOut: 0.5 });
 sfx.add(24.6, "giggle", { gain: 0.3, dur: 1.6, fadeOut: 0.5 });
 
 // ---------- overlays: a soft film grain and a light vignette, nothing flashy ----------
-const captions = wordCaptions(document.getElementById("caption"), words, { lines: LINES });
+const captions = wordCaptions(document.getElementById("caption"), words, { maxChars: 20 }) // short lines: 76 px type fits about 21 characters;
 const grainEl = document.getElementById("grain");
 grainEl.style.backgroundImage = `url(${(() => {
   const c = document.createElement("canvas");
