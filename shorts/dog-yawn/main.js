@@ -1278,8 +1278,8 @@ const lx = LAB.x;
 const TRACKS = [
   { from: 0, to: CUT1, vs: 0, ve: 1, keys: [
     [0.0, [EYES.x, EYES.y, EYES.z], [HIS.x, HIS.y, HIS.z], 56],               // your eyes: he is watching you
-    [1.95, [2.15, 1.55, 2.4], [2.25, 0.78, SEAT.z], 64],                        // out to the side: you yawn
-    [3.55, [1.95, 1.1, 1.45], [HIS.x + 0.12, 0.8, HIS.z], 46],                  // in on his yawn
+    [2.4, [2.15, 1.55, 2.4], [2.25, 0.78, SEAT.z], 64],                         // out to the side: you yawn (an easy, unhurried move)
+    [3.85, [1.95, 1.1, 1.45], [HIS.x + 0.12, 0.8, HIS.z], 46],                  // in on his yawn
     [5.45, [2.2, 1.5, 2.3], [2.25, 0.8, SEAT.z], 62],                           // back out: yawns are contagious
     [CUT1, [2.1, 1.5, 2.15], [2.25, 0.82, SEAT.z], 60],
   ] },
