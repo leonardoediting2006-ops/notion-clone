@@ -3,6 +3,7 @@
 //   node tools/fetch-sfx.mjs dog-hero          → shorts/dog-hero/sfx/*.ogg  (+ CREDITS.md)
 //   node tools/fetch-sfx.mjs dog-welcome       → shorts/dog-welcome/sfx/*.ogg (+ CREDITS.md)
 //   node tools/fetch-sfx.mjs dog-stare         → shorts/dog-stare/sfx/*.ogg (+ CREDITS.md)
+//   node tools/fetch-sfx.mjs dog-yawn          → shorts/dog-yawn/sfx/*.ogg (+ CREDITS.md)
 //
 // Source: the ESC-50 dataset on GitHub (github.com/karolpiczak/ESC-50), 5-second clips cut
 // from freesound.org field recordings. We only use clips whose ORIGINAL freesound licence is
@@ -43,6 +44,13 @@ const SRC = {
   "5-186924-A-12": ["Fire_Loop.wav", "ReadeOnly", "CC0", 186924],
   "2-118625-A-30": ["Door Open and Close - Ortf.wav", "E-Audio", "CC0", 118625],
   "4-181563-A-12": ["Fire Crackling 01.wav", "kingsrow", "CC0", 181563],
+  "1-30709-A-23": ["breath.wav", "UncleSigmund", "CC0", 30709],
+};
+// Kenney's interface sounds (github.com/Calinou/kenney-interface-sounds, a mirror of kenney.nl/assets/interface-sounds): CC0
+const RAW_KN = "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/";
+const KN = {
+  tick_001: ["tick_001 (Kenney Interface Sounds)", "Kenney", "CC0"],
+  pluck_001: ["pluck_001 (Kenney Interface Sounds)", "Kenney", "CC0"],
 };
 // Sonic Pi's sample library (github.com/sonic-pi-net/sonic-pi, etc/samples): freesound clips, all placed in the public domain (CC0)
 const RAW_SP = "https://raw.githubusercontent.com/sonic-pi-net/sonic-pi/dev/etc/samples/";
@@ -50,7 +58,8 @@ const SP = {
   perc_bell: ["perc_bell (Sonic Pi sample)", "AlaskaRobotics", "CC0", 221515],
   ambi_sauna: ["ambi_sauna (Sonic Pi sample)", "hullum", "CC0", 415551],
 };
-const info = (c) => (c.startsWith("sp:") ? SP[c.slice(3)] : SRC[c]);
+const info = (c) => (c.startsWith("sp:") ? SP[c.slice(3)] : c.startsWith("kn:") ? KN[c.slice(3)] : SRC[c]);
+const sourceUrl = (c, id) => (c.startsWith("kn:") ? "https://kenney.nl/assets/interface-sounds" : `https://freesound.org/s/${id}/`);
 
 // name → inputs [{clip, ss (s), t (s), gain, delay (s), af (extra filters)}], post-filters, loop
 const SETS = {
@@ -122,6 +131,18 @@ SETS["dog-stare"] = {
   pad: { in: [{ clip: "sp:ambi_sauna", ss: 0, t: 4 }], post: "afade=t=in:d=1,afade=t=out:st=3:d=1" },
 };
 
+// "Why your dog yawns when you yawn": a breath in, his yawn (the same whimper as dog-hero), a lab clock, birdsong, ticks, a bell
+{
+  const h = SETS["dog-hero"];
+  SETS["dog-yawn"] = {
+    birds_2: h.birds_2, clock: h.clock, whimper: h.whimper,
+    breath: { in: [{ clip: "1-30709-A-23", ss: 1.6, t: 1.5 }], post: "afade=t=in:d=0.1,afade=t=out:st=1.1:d=0.4" },
+    tick: { in: [{ clip: "kn:tick_001", ss: 0, t: 0.2 }] },
+    pluck: { in: [{ clip: "kn:pluck_001", ss: 0, t: 0.5 }] },
+    chime: { in: [{ clip: "sp:perc_bell", ss: 0, t: 2.8 }], post: "afade=t=out:st=2.2:d=0.6" },
+  };
+}
+
 // "Why your dog goes crazy when you come home": barks, doors, footsteps, a ticking clock, whimpers, a laugh
 {
   const h = SETS["dog-hero"];
@@ -134,12 +155,12 @@ const run = (args) => new Promise((ok, fail) => {
   p.on("close", (c) => (c === 0 ? ok() : fail(new Error(`ffmpeg exited ${c}`))));
 });
 async function clipFile(clip) {
-  const sp = clip.startsWith("sp:");
-  const f = join(CACHE, sp ? `${clip.slice(3)}.flac` : clip + ".wav");
+  const sp = clip.startsWith("sp:"), kn = clip.startsWith("kn:");
+  const f = join(CACHE, sp ? `${clip.slice(3)}.flac` : kn ? `kn_${clip.slice(3)}.wav` : clip + ".wav");
   try {
     await access(f);
   } catch {
-    const r = await fetch(sp ? `${RAW_SP}${clip.slice(3)}.flac` : RAW + clip + ".wav");
+    const r = await fetch(sp ? `${RAW_SP}${clip.slice(3)}.flac` : kn ? `${RAW_KN}${clip.slice(3)}.wav` : RAW + clip + ".wav");
     if (!r.ok) throw new Error(`download failed: ${clip} (${r.status})`);
     await writeFile(f, Buffer.from(await r.arrayBuffer()));
   }
@@ -183,7 +204,7 @@ for (const [name, spec] of Object.entries(set)) {
 // credits
 const lines = [...used].map((c) => {
   const [title, author, lic, id] = info(c);
-  return `| ${c} | "${title}" by ${author} — https://freesound.org/s/${id}/ | ${lic} |`;
+  return `| ${c} | "${title}" by ${author} — ${sourceUrl(c, id)} | ${lic} |`;
 });
 const by = [...used].filter((c) => info(c)[2].startsWith("CC-BY")).map((c) => `"${info(c)[0]}" by ${info(c)[1]} (freesound.org, CC BY 3.0)`);
 await writeFile(`${outDir}/CREDITS.md`, `# Sound effects — real recordings

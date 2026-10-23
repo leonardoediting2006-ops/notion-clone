@@ -1,0 +1,108 @@
+/* Same channel look: yellow typewriter captions with a heavy black outline, word by word. */
+.tw-caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 1060px;
+  padding: 0 50px;
+  text-align: center;
+  font-family: "Courier New", "Courier Prime", "Courier 10 Pitch", "Liberation Mono", monospace;
+  font-weight: 700;
+  font-size: 76px;
+  letter-spacing: -1px;
+  color: #ffe93b;
+  -webkit-text-stroke: 14px #000;
+  paint-order: stroke fill;
+  text-shadow: 0 4px 0 #000;
+  white-space: nowrap;
+}
+
+/* the 3D canvas gets a per-scene colour grade (set from main.js via style.filter) */
+#stage canvas { will-change: filter; }
+
+/* film grain (the flashback is old, cold and grainy) */
+.grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background-size: 256px 256px;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+
+/* dark, soft edges */
+.vignette {
+  position: absolute;
+  inset: 0;
+  opacity: 0.6;
+  background: radial-gradient(ellipse 75% 60% at 50% 45%, rgba(0, 0, 0, 0) 55%, rgba(0, 0, 0, 0.85) 100%);
+  pointer-events: none;
+}
+
+.flash, .fade {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background: #fff;
+  pointer-events: none;
+}
+.fade { background: #000; }
+
+/* "3 DAYS EARLIER" — white typewriter title, upper third */
+.title {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 330px;
+  text-align: center;
+  font-family: "Courier New", "Courier Prime", "Liberation Mono", monospace;
+  font-weight: 700;
+  font-size: 70px;
+  letter-spacing: 6px;
+  color: #fff;
+  -webkit-text-stroke: 10px #000;
+  paint-order: stroke fill;
+  opacity: 0;
+}
+
+/* tape-rewind lines for the jump back in time */
+.rewind {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.0) 0px, rgba(255, 255, 255, 0.0) 60px, rgba(255, 255, 255, 0.22) 64px, rgba(255, 255, 255, 0.0) 70px);
+  mix-blend-mode: screen;
+}
+
+/* ---- labels: big, clear, friendly ---- */
+.labels { position: absolute; inset: 0; pointer-events: none; }
+.tag {
+  position: absolute;
+  display: none;
+  white-space: nowrap;
+  font-family: "Arial Rounded MT Bold", "Nunito", "Arial Black", Arial, sans-serif;
+  font-weight: 900;
+  font-size: 58px;
+  color: #111;
+  background: #fff;
+  padding: 14px 34px;
+  border: 7px solid #111;
+  border-radius: 999px;
+  box-shadow: 0 9px 0 #111;
+  text-align: center;
+  line-height: 1.1;
+}
+.tag.red { background: #ff3b4e; color: #fff; }
+.tag.green { background: #39d17a; }
+.tag.pink { background: #ff9ec0; }
+.tag.yellow { background: #ffe93b; }
+.tag.big { font-size: 190px; padding: 6px 48px; border-radius: 40px; background: #ffe93b; }
+.tag.card { border-radius: 36px; padding: 26px 40px; text-align: left; font-size: 60px; }
+.tag.card .row { display: flex; align-items: center; gap: 22px; margin: 6px 0; }
+.tag.card .yes { color: #16a34a; } .tag.card .no { color: #e0303e; }
+.tag .pic { width: 300px; height: 300px; border-radius: 30px; overflow: hidden; }
+.tag .pic img { width: 100%; height: 100%; display: block; }
+.tag.chip { font-size: 50px; background: #111; color: #ffe93b; border-color: #ffe93b; box-shadow: none; }
+.tag .dot { display: inline-block; width: 0.42em; height: 0.42em; border-radius: 50%; background: #fff; margin-right: 0.3em; vertical-align: middle; }
+
