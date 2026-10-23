@@ -62,6 +62,7 @@ shorts/
   dog-hero/           "This dog took a bullet for a girl" (60 fps story, real recorded SFX)
   dog-welcome/        "Why your dog goes crazy when you come home" (60 fps, one continuous smooth camera, furnished house + street)
   dog-stare/          "Why your dog stares at you" (60 fps, loops seamlessly: the camera starts and ends as your eyes)
+  dog-yawn/           "Why your dog yawns when you yawn" (60 fps, fast-paced, four places: home, a lab with 29 dogs, a park; loops seamlessly)
   dog-leash/          "He slept by the door holding his leash" (60 fps story: night hall, winter flashback)
 characters/           Character Lab: preview every human preset (?only=dad, &face for a close-up)
 js/avatar.js          photorealistic premade people (Rocketbox) with walk/run/sit in code
@@ -260,7 +261,7 @@ sfx.steps([1.2, 1.8, 2.4], ["step_1", "step_2"]);          // footsteps with nat
 
 Options: `gain`, `rate` (speed/pitch), `pan` (-1..1), `offset`, `dur`, `fadeIn`, `fadeOut`.
 The library is in `assets/sfx/` (see its README for sources and how to drop in real recordings).
-`node tools/fetch-sfx.mjs dog-hero` (or `dog-welcome`, `dog-stare`) downloads real field recordings (CC0 / CC-BY, from the ESC-50
+`node tools/fetch-sfx.mjs dog-hero` (or `dog-welcome`, `dog-stare`, `dog-yawn`) downloads real field recordings (CC0 / CC-BY, from the ESC-50
 dataset of freesound.org clips) and cuts them into `shorts/dog-hero/sfx/` with a `CREDITS.md`.
 Put `voiceover.wav` (or .mp3) in the short's folder and it is mixed in automatically.
 `npm run render -- shorts/<name> --audio-only` mixes just the soundtrack (`out/<name>-audio.wav`) in
