@@ -78,6 +78,8 @@ frame, daytime and bright, one soft label or card at a time, nobody is angry wit
 Yawn in front of your dog and watch what he does! 🥱🐶 In one study, 21 of 29 dogs yawned when a person yawned, and in another, dogs yawned more for their owner than for a stranger.
 #shorts #dogs #dogfacts
 
+Sounds: "barkingdog_in_dream.mp3" by Taira Komori (freesound.org, CC BY 3.0).
+
 Sources: Joly-Mascheroni et al., Biology Letters (2008), "Dogs catch human yawns"; Romero, Konno & Hasegawa, PLoS ONE (2013), "Familiarity bias and physiological responses in contagious yawning by dogs support link to empathy".
 ```
 
