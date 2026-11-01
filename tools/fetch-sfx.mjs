@@ -4,6 +4,7 @@
 //   node tools/fetch-sfx.mjs dog-welcome       → shorts/dog-welcome/sfx/*.ogg (+ CREDITS.md)
 //   node tools/fetch-sfx.mjs dog-stare         → shorts/dog-stare/sfx/*.ogg (+ CREDITS.md)
 //   node tools/fetch-sfx.mjs dog-yawn          → shorts/dog-yawn/sfx/*.ogg (+ CREDITS.md)
+//   node tools/fetch-sfx.mjs dog-tail          → shorts/dog-tail/sfx/*.ogg (+ CREDITS.md)
 //
 // Source: the ESC-50 dataset on GitHub (github.com/karolpiczak/ESC-50), 5-second clips cut
 // from freesound.org field recordings. We only use clips whose ORIGINAL freesound licence is
@@ -45,6 +46,11 @@ const SRC = {
   "2-118625-A-30": ["Door Open and Close - Ortf.wav", "E-Audio", "CC0", 118625],
   "4-181563-A-12": ["Fire Crackling 01.wav", "kingsrow", "CC0", 181563],
   "1-30709-A-23": ["breath.wav", "UncleSigmund", "CC0", 30709],
+  "4-117627-A-25": ["footsteps - gravel pavement.wav", "soundmary", "CC0", 117627],
+  "1-29532-A-16": ["wind3.wav", "eliasheuninck", "CC0", 29532],
+  "3-156907-A-15": ["Water drop", "Elfman-Rox", "CC0", 156907],
+  "4-188293-A-15": ["Water Drop", "willstepp", "CC0", 188293],
+  "4-223125-A-14": ["starlings2.wav", "keweldog", "CC0", 223125],
 };
 // Kenney's interface sounds (github.com/Calinou/kenney-interface-sounds, a mirror of kenney.nl/assets/interface-sounds): CC0
 const RAW_KN = "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/";
@@ -57,6 +63,7 @@ const RAW_SP = "https://raw.githubusercontent.com/sonic-pi-net/sonic-pi/dev/etc/
 const SP = {
   perc_bell: ["perc_bell (Sonic Pi sample)", "AlaskaRobotics", "CC0", 221515],
   ambi_sauna: ["ambi_sauna (Sonic Pi sample)", "hullum", "CC0", 415551],
+  drum_bass_soft: ["drum_bass_soft (Sonic Pi sample)", "menegass", "CC0", 100052],
 };
 const info = (c) => (c.startsWith("sp:") ? SP[c.slice(3)] : c.startsWith("kn:") ? KN[c.slice(3)] : SRC[c]);
 const sourceUrl = (c, id) => (c.startsWith("kn:") ? "https://kenney.nl/assets/interface-sounds" : `https://freesound.org/s/${id}/`);
@@ -140,6 +147,33 @@ SETS["dog-stare"] = {
     tick: { in: [{ clip: "kn:tick_001", ss: 0, t: 0.2 }] },
     pluck: { in: [{ clip: "kn:pluck_001", ss: 0, t: 0.5 }] },
     chime: { in: [{ clip: "sp:perc_bell", ss: 0, t: 2.8 }], post: "afade=t=out:st=2.2:d=0.6" },
+  };
+}
+
+// "Which way your dog wags his tail": close, soft, satisfying real recordings (gravel steps, a creaking gate, soft wind and birds,
+// tail thumps, water drops for the labels, a heartbeat, a calm breath) plus the same whimper, chime, pluck and tick as the other shorts
+{
+  const h = SETS["dog-hero"], st = SETS["dog-stare"], yw = SETS["dog-yawn"];
+  const step = (ss) => ({ in: [{ clip: "4-117627-A-25", ss, t: 0.4, gain: 1.6 }], post: "afade=t=in:d=0.005,afade=t=out:st=0.3:d=0.1" });
+  SETS["dog-tail"] = {
+    birds: h.birds_2,
+    birds_b: { in: [{ clip: "4-223125-A-14", ss: 0, t: 5, gain: 2 }], post: "afade=t=in:d=0.03,afade=t=out:st=4.97:d=0.03" },
+    wind: { in: [{ clip: "1-29532-A-16", ss: 0, t: 5, af: "lowpass=f=2400" }], post: "afade=t=in:d=0.03,afade=t=out:st=4.97:d=0.03" },
+    step_1: step(1.35), step_2: step(2.85), step_3: step(3.8),
+    gate: h.door_creak,
+    thump: st.thump,
+    drop_1: { in: [{ clip: "3-156907-A-15", ss: 0.3, t: 0.55, gain: 1.4 }], post: "afade=t=out:st=0.4:d=0.15" },
+    drop_2: { in: [{ clip: "4-188293-A-15", ss: 0.2, t: 0.6, gain: 2 }], post: "afade=t=out:st=0.45:d=0.15" },
+    // lub-dub: two soft low bass-drum hits
+    heart: {
+      in: [
+        { clip: "sp:drum_bass_soft", ss: 0, t: 0.35, af: "lowpass=f=170,afade=t=out:st=0.18:d=0.17" },
+        { clip: "sp:drum_bass_soft", ss: 0, t: 0.35, delay: 0.2, gain: 0.65, af: "lowpass=f=170,afade=t=out:st=0.18:d=0.17" },
+      ],
+      post: "volume=2.2",
+    },
+    breath: yw.breath, whimper: h.whimper, bark_1: h.bark_1,
+    tick: yw.tick, pluck: yw.pluck, chime: yw.chime,
   };
 }
 

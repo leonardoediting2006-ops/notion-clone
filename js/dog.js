@@ -165,7 +165,7 @@ export function createDog({ colors = DOG_COLORS.golden, key = "", glowEyes = fal
     wag = 0, wagSpeed = 18, t = 0, trot = 0, trotSpeed = 11,
     squint = 0, angry = 0, earUp = 0, earBack = 0, capeOn = false, cute = 0, tilt = 0,
     closed = 0, sad = 0, snarl = 0, glasses: glassesPos = null, earpiece: hasEarpiece = false,
-    pupil = 1, shiver = 0, bow = 0,
+    pupil = 1, shiver = 0, bow = 0, tailLean = 0,
   } = {}) => {
     // shiver: whole-body excited vibration; bow: play bow (chest down, bum up)
     const sx = shiver ? Math.sin(t * 97) * 0.012 * shiver : 0;
@@ -182,7 +182,8 @@ export function createDog({ colors = DOG_COLORS.golden, key = "", glowEyes = fal
     head.rotation.set(0, 0, 0);
     jaw.rotation.x = Math.max(jawOpen, snarl * 0.35) * 0.55;
     teeth.visible = snarl > 0;
-    tail.rotation.set(-0.7 + lie * 0.6 + sit * 0.5, Math.sin(t * wagSpeed) * 0.7 * wag, 0);
+    // tailLean (radians): the whole swing is shifted to the dog's right (+) or left (-)
+    tail.rotation.set(-0.7 + lie * 0.6 + sit * 0.5, Math.sin(t * wagSpeed) * 0.7 * wag + tailLean, 0);
     const s = Math.sin(t * trotSpeed) * 0.7 * trot;
     legs.fl.rotation.x = s - rear * 0.6 + sitTilt - lie * 1.45;
     legs.fr.rotation.x = -s - rear * 0.6 + sitTilt - lie * 1.45;

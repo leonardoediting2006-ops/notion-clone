@@ -889,3 +889,30 @@ export function terrainMesh({ x0, x1, z0, z1, step = 1, heightAt, material }) {
   m.userData.ink = false;
   return m;
 }
+
+// ---------- a toon car (length along x) and a mailbox ----------
+export function car({ color = 0x4fb6a8 } = {}) {
+  const g = new THREE.Group();
+  box(g, 2.1, 0.5, 1.0, color, 0, 0.46, 0, 0.14);
+  box(g, 1.15, 0.44, 0.9, color, -0.12, 0.92, 0, 0.14);
+  for (const sz of [-1, 1]) {
+    box(g, 0.5, 0.3, 0.03, PAL.glass, 0.12, 0.94, sz * 0.455, 0.03);
+    box(g, 0.5, 0.3, 0.03, PAL.glass, -0.5, 0.94, sz * 0.455, 0.03);
+    for (const sx of [-1, 1]) {
+      const w = cyl(g, 0.27, 0.27, 0.16, 0x2b2b33, sx * 0.68, 0.27, sz * 0.5, 14);
+      w.rotation.x = Math.PI / 2;
+      const hub = cyl(g, 0.12, 0.12, 0.18, 0xd6d6dc, sx * 0.68, 0.27, sz * 0.5, 10);
+      hub.rotation.x = Math.PI / 2;
+    }
+    ball(g, 0.07, 0xfff2b0, 1.05, 0.5, sz * 0.32, 0.6, 1, 1);
+  }
+  box(g, 0.04, 0.3, 0.8, PAL.glass, 0.45, 0.94, 0, 0.02); // windscreen
+  return g;
+}
+export function mailbox() {
+  const g = new THREE.Group();
+  cyl(g, 0.04, 0.04, 0.9, PAL.woodDark, 0, 0.45, 0, 8);
+  box(g, 0.3, 0.2, 0.42, 0xd9534f, 0, 0.98, 0, 0.07);
+  box(g, 0.04, 0.16, 0.02, PAL.yellow, 0.17, 1.05, 0.1, 0.01);
+  return g;
+}

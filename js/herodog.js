@@ -7,8 +7,8 @@ const lerp = (a, b, k) => a + (b - a) * k;
 const V = (x, y, z) => new THREE.Vector3(x, y, z);
 
 export const DOG_SCALE = 0.7;
-export function heroDog(colors, key, scale = DOG_SCALE) {
-  const d = createDog({ colors, key, collar: false });
+export function heroDog(colors, key, scale = DOG_SCALE, extra = {}) {
+  const d = createDog({ colors, key, collar: false, ...extra });
   d.scale.setScalar(scale);
   const toonPose = d.pose;
   d.pose = ({

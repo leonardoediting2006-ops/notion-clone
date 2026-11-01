@@ -237,11 +237,46 @@ function limbCanvas(w, h, body, skin, split, shoe, kind = "round") {
   });
 }
 
+// the whole arm is ONE ribbon (sleeve, skin, hand-end) with ink only along its two long edges, so it bends with no joint circles
+const ARM_W0 = 0.125, ARM_W1 = 0.1;
+function armCanvas(o, total, sleeveLen) {
+  const W = 128, H = 560;
+  const c = document.createElement("canvas");
+  c.width = W; c.height = H;
+  const x = c.getContext("2d");
+  const sleeve = o.shirt, skin = o.skin;
+  const hem = Math.min(H, Math.round((sleeveLen / total) * H));
+  x.fillStyle = sleeve; x.fillRect(0, 0, W, hem);
+  x.fillStyle = skin; x.fillRect(0, hem, W, H - hem);
+  // cel shade on the lit-away side
+  x.fillStyle = shadeOf(sleeve); x.fillRect(W * 0.68, 0, W, hem);
+  x.fillStyle = shadeOf(skin); x.fillRect(W * 0.68, hem, W, H - hem);
+  // sleeve hem line
+  if (hem < H - 4) { x.fillStyle = INK; x.fillRect(0, hem - 4, W, 8); }
+  // ink along both long edges (it fades in at the shoulder so the arm melts into the shirt)
+  const e = Math.round((LW / ARM_W0) * W * 0.95);
+  const g = x.createLinearGradient(0, 0, 0, 60);
+  g.addColorStop(0, "rgba(43,27,22,0)"); g.addColorStop(1, "rgba(43,27,22,1)");
+  x.fillStyle = g; x.fillRect(0, 0, e, 60); x.fillRect(W - e, 0, e, 60);
+  x.fillStyle = INK; x.fillRect(0, 60, e, H - 60); x.fillRect(W - e, 60, e, H - 60);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 8;
+  t.flipY = false; // v = 0 at the shoulder (top of the canvas)
+  return t;
+}
+
+// the hand continues the forearm: no ink where it joins the wrist, same width as the arm's end
 function handCanvas(skin) {
   return paint(0.2, 0.2, (x) => {
-    shape(x, rr(-0.05, -0.05, 0.1, 0.115, 0.04), skin, { dx: 0.03 });
-    for (const dx of [-0.017, 0.0, 0.017]) line(x, [[dx, 0.02], [dx, 0.055]], 0.008, mix(skin, "#3a1a10", 0.55));
-    shape(x, oval(0.052, -0.012, 0.022, 0.034), skin, { shade: false, lw: 0.011 });
+    const w = ARM_W1 / 2;
+    const body = (p) => { p.moveTo(-w, -0.06); p.lineTo(-w, 0.022); p.arcTo(-w, 0.066, -w + 0.04, 0.066, 0.04); p.lineTo(w - 0.04, 0.066); p.arcTo(w, 0.066, w, 0.022, 0.04); p.lineTo(w, -0.06); p.closePath(); };
+    x.beginPath(); body(x); x.fillStyle = skin; x.fill();
+    x.save(); x.clip(); x.fillStyle = shadeOf(skin); x.fillRect(w * 0.35, -0.1, 0.2, 0.3); x.restore();
+    x.beginPath(); x.moveTo(-w, -0.06); x.lineTo(-w, 0.022); x.arcTo(-w, 0.066, -w + 0.04, 0.066, 0.04); x.lineTo(w - 0.04, 0.066); x.arcTo(w, 0.066, w, 0.022, 0.04); x.lineTo(w, -0.06);
+    x.lineWidth = LW; x.strokeStyle = INK; x.stroke();
+    for (const dx of [-0.016, 0.0, 0.016]) line(x, [[dx, 0.03], [dx, 0.058]], 0.008, mix(skin, "#3a1a10", 0.55));
+    shape(x, oval(0.056, 0.0, 0.02, 0.032), skin, { shade: false, lw: 0.011 });
   }, 800);
 }
 
@@ -353,12 +388,11 @@ export function createPuppet(options = {}) {
     glasses: o.glasses ? glassesCanvas() : null,
     torsoFront: torsoCanvas(o, false),
     torsoBack: torsoCanvas(o, true),
-    upper: limbCanvas(0.13, UPPER, SLEEVE, o.skin, long ? 0 : 0.2),
-    fore: limbCanvas(0.12, FORE, long ? SLEEVE : o.skin, o.skin, 0),
     thighS: limbCanvas(0.18, THIGH, o.pants, o.skin, 0, null, "thighStraight"),
     thighB: limbCanvas(0.18, THIGH, o.pants, o.skin, 0),
     shin: limbCanvas(0.17, SHIN + 0.06, o.pants, o.skin, 0, o.shoes, "shin"),
     hand: handCanvas(o.skin),
+    arm: armCanvas(o, UPPER + FORE + 0.03, long ? 9 : 0.2),
   }));
   const tex = (c) => memo("tex" + key + (c.__id ??= Math.random().toString(36).slice(2)), () => textureOf(c));
 
@@ -396,16 +430,60 @@ export function createPuppet(options = {}) {
   headG.add(headM, faceM, hairF, headB);
   if (hairBk) headG.add(hairBk);
   if (glassesM) headG.add(glassesM);
-  // arms (in front of the torso)
+  // arms (in front of the torso): one smooth ribbon per arm, plus the hand that continues it
   const arm = {};
+  const RN = 21; // samples along the ribbon (nA + nB + nC + 1 = 22 points)
+  const armMat = new THREE.MeshBasicMaterial({ map: parts.arm, alphaTest: 0.35, side: THREE.DoubleSide });
+  mats.push(armMat);
   for (const s of [-1, 1]) {
     const sh = group(s * 0.215, TORSO - 0.06, 0.016, torso);
-    sh.add(plane(0.19, UPPER + 0.06, tex(parts.upper), { pivotTop: true, cy: 0.03 }));
     const elbow = group(0, -UPPER, 0.004, sh);
-    elbow.add(plane(0.18, FORE + 0.06, tex(parts.fore), { pivotTop: true, cy: 0.03 }));
     const hand = group(0, -FORE, 0.008, elbow);
-    hand.add(plane(0.2, 0.2, tex(parts.hand), { cy: -0.055 }));
-    arm[s] = { sh, elbow, hand };
+    hand.add(plane(0.2, 0.2, tex(parts.hand), { cy: -0.06 }));
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute("position", new THREE.BufferAttribute(new Float32Array((RN + 1) * 2 * 3), 3));
+    const uv = new Float32Array((RN + 1) * 2 * 2), idx = [];
+    for (let i = 0; i <= RN; i++) { uv.set([0, i / RN, 1, i / RN], i * 4); }
+    for (let i = 0; i < RN; i++) { const a = i * 2; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
+    geo.setAttribute("uv", new THREE.BufferAttribute(uv, 2));
+    geo.setIndex(idx);
+    const ribbon = new THREE.Mesh(geo, armMat);
+    ribbon.frustumCulled = false; ribbon.userData.ink = false;
+    ribbon.position.z = 0.016;
+    torso.add(ribbon);
+    arm[s] = { sh, elbow, hand, geo };
+  }
+  // rebuild an arm ribbon through shoulder S, elbow E and the hand end W (torso space), with a softly rounded elbow
+  const P = [];
+  function updateRibbon(A, s) {
+    const th1 = A.sh.rotation.z, th2 = th1 + A.elbow.rotation.z;
+    const S = [s * 0.215, TORSO - 0.06];
+    const E = [S[0] + Math.sin(th1) * UPPER, S[1] - Math.cos(th1) * UPPER];
+    const W = [E[0] + Math.sin(th2) * (FORE + 0.03), E[1] - Math.cos(th2) * (FORE + 0.03)];
+    const lerp2 = (a, b, k) => [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k];
+    const M1 = lerp2(S, E, 0.5), M2 = lerp2(E, W, 0.5);
+    P.length = 0;
+    const nA = 6, nB = 9, nC = 6;
+    for (let i = 0; i < nA; i++) P.push(lerp2(S, M1, 0.28 + (0.72 * i) / nA)); // starts a little inside the shirt
+    for (let i = 0; i < nB; i++) { const u = i / nB, a = lerp2(M1, E, u), b = lerp2(E, M2, u); P.push(lerp2(a, b, u)); }
+    for (let i = 0; i <= nC; i++) P.push(lerp2(M2, W, i / nC));
+    let total = 0;
+    const cum = [0];
+    for (let i = 1; i < P.length; i++) { total += Math.hypot(P[i][0] - P[i - 1][0], P[i][1] - P[i - 1][1]); cum.push(total); }
+    const pos = A.geo.attributes.position.array, uv = A.geo.attributes.uv.array;
+    const n = P.length;
+    for (let i = 0; i < n; i++) {
+      const a = P[Math.max(0, i - 1)], b = P[Math.min(n - 1, i + 1)];
+      let tx = b[0] - a[0], ty = b[1] - a[1];
+      const l = Math.hypot(tx, ty) || 1; tx /= l; ty /= l;
+      const nx = -ty, ny = tx;
+      const v = cum[i] / total, w = (ARM_W0 + (ARM_W1 - ARM_W0) * v) / 2;
+      pos.set([P[i][0] - nx * w, P[i][1] - ny * w, 0, P[i][0] + nx * w, P[i][1] + ny * w, 0], i * 6);
+      uv.set([0, v, 1, v], i * 4);
+    }
+    A.geo.setDrawRange(0, (n - 1) * 6);
+    A.geo.attributes.position.needsUpdate = true;
+    A.geo.attributes.uv.needsUpdate = true;
   }
 
   const face = {};
@@ -512,6 +590,7 @@ export function createPuppet(options = {}) {
         A.elbow.rotation.z = a.e ?? 0;
       }
       A.hand.rotation.z = (a.hand ?? 0);
+      updateRibbon(A, s);
     }
   };
 
