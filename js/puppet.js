@@ -209,11 +209,19 @@ function torsoCanvas(o, back) {
   });
 }
 
-function limbCanvas(w, h, body, skin, split, shoe) {
+// kind: "round" (arms, bent thigh: rounded both ends), "thighStraight" (flat bottom, joins the shin), "shin" (flat top, tucks under the thigh)
+function limbCanvas(w, h, body, skin, split, shoe, kind = "round") {
   return paint(w + 0.06, h + 0.06, (x) => {
-    const p = rr(-w / 2, -h / 2, w, h, w / 2);
-    shape(x, p, body, { dx: w * 0.26 });
-    if (split) { // short sleeve / shorts: skin below `split` metres from the top
+    const r = w / 2;
+    const radii = kind === "thighStraight" ? [r, r, 0, 0] : kind === "shin" ? [0, 0, r, r] : r;
+    const p = rr(-w / 2, -h / 2, w, h, radii);
+    shape(x, p, body, { dx: w * 0.26, lw: kind === "round" ? LW : 0 });
+    if (kind !== "round") { // ink only along the long sides (and the rounded end), so the joint reads as one leg
+      for (const sx of [-1, 1]) line(x, [[sx * w / 2, kind === "shin" ? -h / 2 : -h / 2 + r], [sx * w / 2, kind === "shin" ? h / 2 - r : h / 2]], LW);
+      if (kind === "thighStraight") { x.beginPath(); x.arc(0, -h / 2 + r, r, Math.PI, 0); x.lineWidth = LW; x.strokeStyle = INK; x.stroke(); }
+      if (kind === "shin" && !shoe) { x.beginPath(); x.arc(0, h / 2 - r, r, 0, Math.PI); x.lineWidth = LW; x.strokeStyle = INK; x.stroke(); }
+    }
+    if (split && kind === "round") { // short sleeve / shorts: skin below `split` metres from the top
       x.save(); x.beginPath(); p(x); x.clip();
       x.fillStyle = skin; x.fillRect(-w, -h / 2 + split, w * 2, h);
       x.fillStyle = shadeOf(skin); x.fillRect(w * 0.12, -h / 2 + split, w, h);
@@ -221,8 +229,8 @@ function limbCanvas(w, h, body, skin, split, shoe) {
       line(x, [[-w / 2, -h / 2 + split], [w / 2, -h / 2 + split]], 0.011);
       x.beginPath(); p(x); x.lineWidth = LW; x.strokeStyle = INK; x.stroke();
     }
+    if (kind === "round" && !shoe && !split) { /* plain capsule */ }
     if (shoe) {
-      line(x, [[-w * 0.3, -h / 2 + 0.045], [0, -h / 2 + 0.075, w * 0.3, -h / 2 + 0.045]], 0.009, mix(body, "#000000", 0.45)); // knee crease
       shape(x, rr(-w / 2 - 0.018, h / 2 - 0.095, w + 0.036, 0.1, 0.045), shoe, { dx: 0.05 });
       line(x, [[-w / 2 - 0.012, h / 2 - 0.018], [w / 2 + 0.012, h / 2 - 0.018]], 0.01, "#9a8a7a");
     }
@@ -347,21 +355,23 @@ export function createPuppet(options = {}) {
     torsoBack: torsoCanvas(o, true),
     upper: limbCanvas(0.13, UPPER, SLEEVE, o.skin, long ? 0 : 0.2),
     fore: limbCanvas(0.12, FORE, long ? SLEEVE : o.skin, o.skin, 0),
-    thigh: limbCanvas(0.18, THIGH, o.pants, o.skin, 0),
-    shin: limbCanvas(0.17, SHIN, o.pants, o.skin, 0, o.shoes),
+    thighS: limbCanvas(0.18, THIGH, o.pants, o.skin, 0, null, "thighStraight"),
+    thighB: limbCanvas(0.18, THIGH, o.pants, o.skin, 0),
+    shin: limbCanvas(0.17, SHIN + 0.06, o.pants, o.skin, 0, o.shoes, "shin"),
     hand: handCanvas(o.skin),
   }));
   const tex = (c) => memo("tex" + key + (c.__id ??= Math.random().toString(36).slice(2)), () => textureOf(c));
 
-  // legs
+  // legs: standing = thigh + shin in one line; sitting = a rounded thigh that overlaps the shin (a real knee)
   const leg = {};
   for (const s of [-1, 1]) {
     const hip = group(s * 0.105, 0, s < 0 ? -0.012 : -0.02, rig);
-    const thigh = plane(0.24, THIGH + 0.06, tex(parts.thigh), { pivotTop: true, cy: 0.03 });
-    hip.add(thigh);
+    const thighS = plane(0.24, THIGH + 0.06, tex(parts.thighS), { pivotTop: true, cy: 0.03 });
+    const thighB = plane(0.24, THIGH + 0.06, tex(parts.thighB), { pivotTop: true, cy: 0.03, z: 0.006 });
+    hip.add(thighS, thighB);
     const knee = group(0, -THIGH, 0.004, hip);
-    knee.add(plane(0.23, SHIN + 0.06, tex(parts.shin), { pivotTop: true, cy: 0.03 }));
-    leg[s] = { hip, thigh, knee };
+    knee.add(plane(0.23, SHIN + 0.12, tex(parts.shin), { pivotTop: true, cy: 0.03 }));
+    leg[s] = { hip, thigh: thighS, thighB, knee };
   }
   // torso (+ back view)
   const torso = group(0, 0, 0, rig);
@@ -445,7 +455,7 @@ export function createPuppet(options = {}) {
     rig.scale.set(flip * sc, sc, sc);
     state.flip = flip; state.sit = sit;
     const bob = Math.abs(Math.sin(walkPhase)) * 0.03 * walk;
-    const hipY = lerp(THIGH + SHIN, seat, sit) + bob;
+    const hipY = lerp(THIGH + SHIN, seat + 0.08, sit) + bob;
     state.hipY = hipY;
     const breath = Math.sin(t * 2.1 + o.seed) * 0.012 * breathe;
     // legs: standing straight (a little stride when walking); sitting: thighs point at the camera (foreshortened)
@@ -454,8 +464,12 @@ export function createPuppet(options = {}) {
       L.hip.position.set(s * 0.105, hipY, s < 0 ? -0.012 : -0.02);
       const swing = Math.sin(walkPhase + (s > 0 ? Math.PI : 0)) * 0.5 * walk;
       L.hip.rotation.z = swing * 0.35;
-      L.thigh.scale.y = lerp(1, 0.3, sit);
-      L.knee.position.y = -THIGH * L.thigh.scale.y;
+      const bent = sit > 0.5;
+      const k = lerp(1, 0.6, sit);
+      L.thigh.visible = !bent; L.thighB.visible = bent;
+      L.thigh.scale.y = L.thighB.scale.y = k;
+      L.knee.position.y = -THIGH * k + (bent ? 0.06 : 0.015);
+      L.knee.position.z = bent ? -0.004 : 0.004;
       L.knee.rotation.z = -L.hip.rotation.z + (sit ? -s * 0.04 : 0);
     }
     torso.position.set(0, hipY, 0);

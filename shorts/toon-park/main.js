@@ -144,25 +144,25 @@ onUpdate((t) => {
   owner.userData.t = t; stranger.userData.t = t;
   const m = owner.mouthPoint();
   owner.pose({
-    t, x: -0.95, z: -2.7, sit: 1, seat: SEAT, cute: 0.4,
+    t, x: -0.95, z: -2.6, sit: 1, seat: SEAT, cute: 0.4,
     look: [0.7 * (1 - eo), 0.1 * (1 - eo)],
     eyes: { open: 1 - eo * 0.97 }, brow: { raise: eo * 0.7, worry: eo * 0.2 },
     mouth: { open: eo, width: 1 - eo * 0.25, smile: lerp(0.35, 0, eo) },
     head: { tilt: -eo * 0.08, lift: eo * 0.025, turn: 0.4 * (1 - eo) },
     lean: eo * 0.04,
-    armR: { to: [lerp(0.17, m[0] + 0.03, eo), lerp(SEAT + 0.01, m[1] - 0.1, eo)], bend: 1 },
-    armL: { to: [-0.17, SEAT + 0.01], bend: -1 },
+    armR: { to: [lerp(0.17, m[0] + 0.03, eo), lerp(SEAT + 0.08, m[1] - 0.1, eo)], bend: 1 },
+    armL: { to: [-0.17, SEAT + 0.08], bend: -1 },
   });
   const ms = stranger.mouthPoint();
   stranger.pose({
-    t, x: 0.95, z: -2.7, sit: 1, seat: SEAT, cute: 0.3,
+    t, x: 0.95, z: -2.6, sit: 1, seat: SEAT, cute: 0.3,
     look: [-0.6 * (1 - es), 0.1 * (1 - es)],
     eyes: { open: 1 - es * 0.97 }, brow: { raise: es * 0.7, worry: es * 0.2 },
     mouth: { open: es, width: 1 - es * 0.25, smile: lerp(0.3, 0, es) },
     head: { tilt: es * 0.08, lift: es * 0.025, turn: -0.4 * (1 - es) },
     lean: -es * 0.04,
-    armR: { to: [lerp(0.17, ms[0] + 0.03, es), lerp(SEAT + 0.01, ms[1] - 0.1, es)], bend: 1 },
-    armL: { to: [-0.17, SEAT + 0.01], bend: -1 },
+    armR: { to: [lerp(0.17, ms[0] + 0.03, es), lerp(SEAT + 0.08, ms[1] - 0.1, es)], bend: 1 },
+    armL: { to: [-0.17, SEAT + 0.08], bend: -1 },
   });
   dog.pose({
     t, x: TIGHT ? -0.15 : 0.0, z: -1.5, sit: 1, wag: 0.7 * (1 - ed), wagSpeed: 9, cute: 1,
