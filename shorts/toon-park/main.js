@@ -7,7 +7,8 @@ import { DOG_COLORS } from "../../js/dog.js";
 import * as W from "../../js/toonworld.js";
 
 const DURATION = 6;
-const TIGHT = new URLSearchParams(location.search).get("cam") === "tight";
+const CAM = new URLSearchParams(location.search).get("cam");
+const TIGHT = CAM === "tight";
 const short = createShort({ duration: DURATION, fps: 60, background: "#bfe6ff", fov: 60, lights: false });
 const { scene, camera, renderer, onUpdate } = short;
 renderer.toneMapping = THREE.NoToneMapping;
@@ -26,10 +27,17 @@ const put = (o, x, y, z, ry = 0, s) => {
   return o;
 };
 
-// ground, plaza, paths
-const ground = new THREE.Mesh(new THREE.PlaneGeometry(140, 100).rotateX(-Math.PI / 2), W.grassMaterial([30, 20]));
-ground.position.set(0, 0, -25); ground.receiveShadow = true; ground.userData.ink = false;
-world.add(ground);
+// ground (flat park that rolls into hills far away), plaza, paths
+const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+const heightAt = (x, z) => {
+  const far = smooth(0, 24, -19 - z);
+  const side = smooth(14, 30, Math.abs(x)) * 2.2;
+  const bumps = 3.4 + 2.2 * Math.sin(x * 0.11 + 1.3) + 1.4 * Math.sin(x * 0.23 + z * 0.07) + 1.0 * Math.sin(z * 0.15);
+  return far * Math.max(0, bumps) + side * smooth(-14, -30, z + 6) * 0;
+};
+world.add(W.terrainMesh({ x0: -70, x1: 70, z0: -22, z1: 25, step: 1.25, heightAt, material: W.grassMaterial([34, 11]) }));
+// far hills: the same lawn painted with bigger tufts, so grass strokes still read from a distance
+world.add(W.terrainMesh({ x0: -90, x1: 90, z0: -90, z1: -22, step: 1.5, heightAt, material: W.grassMaterial([9, 5]) }));
 const payC = document.createElement("canvas"); payC.width = payC.height = 256;
 {
   const x = payC.getContext("2d");
@@ -61,12 +69,28 @@ put(W.bench({ w: 1.3 }), 0.95, 0, -2.9);
 put(W.lampPost(2.7), -3.4, 0, -3.4);
 put(W.lampPost(2.7), 3.4, 0, -3.4);
 
-// trees, bushes, flowers (back and sides)
-W.reseed(5);
-const treeSpots = [[-4.6, -4.8, 3.2, 1.35, 0], [-7.2, -7.5, 3.6, 1.5, 1], [-3.2, -9.2, 3.0, 1.2, 2], [4.9, -5.2, 3.3, 1.4, 1], [7.4, -7.0, 3.8, 1.6, 2], [3.4, -9.6, 3.0, 1.2, 0], [-10, -11, 3.4, 1.5, 0], [10, -11.5, 3.6, 1.6, 1], [-1.2, -14, 3.3, 1.4, 2], [1.8, -15, 3.4, 1.5, 0]];
-for (const [x, z, h, r, tint] of treeSpots) put(W.tree({ h, r, tint }), x, 0, z);
-for (const [x, z] of [[-6.4, -4.2], [6.5, -3.8], [-2.9, -6.3], [3.0, -6.4]]) put(W.bush(0.55, Math.abs(x) | 0), x, 0, z);
-for (const [x, z, h, r] of [[-12.5, -8, 5, 1.5], [12.8, -8, 5.2, 1.6], [-8.5, -13, 4.6, 1.4], [8.8, -13.5, 4.8, 1.5]]) put(W.tree({ kind: "pine", h, r }), x, 0, z);
+// trees, bushes, grass (real branches and leaves)
+const treeSpots = [
+  [-4.3, -4.8, "oak", 4.7, 2.0, 1], [4.5, -5.2, "maple", 4.5, 1.9, 2], [-2.3, -8.6, "birch", 4.6, 1.5, 3], [2.9, -9.0, "oak", 4.9, 2.1, 4],
+  [-7.4, -7.2, "oak", 5.0, 2.1, 5], [7.5, -7.6, "birch", 4.8, 1.6, 6], [-0.4, -13.5, "maple", 5.2, 2.2, 7],
+];
+for (const [x, z, species, h, crown, seed] of treeSpots) put(W.leafyTree({ species, height: h, crown, seed, trunkR: 0.17 + seed * 0.004, leaves: 1500, leafSize: 0.25 }), x, 0, z, seed);
+for (const [x, z, h, seed] of [[-11.5, -9, 6.4, 11], [11.8, -9.6, 6.8, 12], [-8.5, -14, 6.2, 13], [8.8, -14.5, 6.5, 14], [-14.5, -13, 7, 15], [14.5, -14, 7, 16]]) {
+  put(W.leafyTree({ species: "pine", height: h, crown: 1.5, seed, trunkR: 0.2, leaves: 700, far: true }), x, 0, z, seed);
+}
+const bushSpots = [[-6.2, -4.0, 0, 1], [6.3, -3.8, 12, 2], [-3.0, -6.2, 8, 3], [3.2, -6.3, 8, 4], [-1.1, -6.5, 4, 5], [1.2, -6.4, 4, 6]];
+for (const [x, z, fl, seed] of bushSpots) put(W.leafyBush({ r: 0.62 + (seed % 3) * 0.08, seed, leaves: 300, flowers: fl, flowerColor: seed % 2 ? W.PAL.pink : W.PAL.yellow, tint: seed }), x, 0, z, seed);
+const lawnSkip = (x, z) => {
+  if (Math.hypot(x, z + 1.7) < 3.9) return true; // plaza
+  if (Math.abs(x) < 1.1 && (z < -3 || z > 3)) return true; // paths
+  if (Math.hypot(x + 6.4, z - 1.6) < 2.0) return true; // pond
+  if (z < -4.6 && z > -6.2 && Math.abs(Math.abs(x) - 2.2) < 1.3) return true; // flower beds
+  return false;
+};
+world.add(W.grassField({ x0: -10, x1: 10, z0: -7, z1: 5, count: 50000, skip: lawnSkip, seed: 2, height: 0.32 }));
+world.add(W.grassField({ x0: -14, x1: 14, z0: -13, z1: -4.6, count: 36000, skip: lawnSkip, seed: 5, height: 0.6, width: 1.9, spread: 0.22 }));
+world.add(W.grassField({ x0: -46, x1: 46, z0: -52, z1: -10.8, count: 110000, skip: lawnSkip, seed: 8, height: 0.55, width: 2.6, spread: 0.4, heightAt }));
+world.add(W.meadowFlowers({ x0: -9, x1: 9, z0: -10, z1: 4, count: 150, skip: lawnSkip, seed: 4 }));
 put(W.flowerBed(2.3, 0.7, 26), -2.2, 0, -5.4);
 put(W.flowerBed(2.3, 0.7, 26), 2.2, 0, -5.4);
 put(W.flowerBed(1.4, 0.6, 14), -5.2, 0, -1.8);
@@ -79,9 +103,9 @@ put(W.picketFence(30), 0, 0, -10.5);
 put(W.house({ w: 3.4, h: 2.3, d: 2.6, wall: W.PAL.cream, roof: W.PAL.roof }), -6.5, 0, -14.5, 0.08);
 put(W.house({ w: 3.0, h: 2.0, d: 2.4, wall: W.PAL.wall2, roof: W.PAL.roof2, door: 0xd9734f }), 0.5, 0, -17.5, -0.05);
 put(W.house({ w: 3.6, h: 2.4, d: 2.8, wall: W.PAL.wall3, roof: W.PAL.roof }), 7.2, 0, -15, -0.1);
-put(W.hill(34, 7, W.PAL.hill2), -16, -1.5, -42);
-put(W.hill(40, 9, W.PAL.hill1), 22, -2, -48);
-put(W.hill(30, 5, W.PAL.hill3), 0, -1, -38);
+put(W.hill(40, 11, W.PAL.hill2), -22, 4, -92);
+put(W.hill(46, 13, W.PAL.hill1), 28, 5, -100);
+put(W.hill(36, 9, W.PAL.hill3), 0, 4, -88);
 const clouds = [[-9, 9, -34, 1.6], [6, 11, -40, 2.0], [16, 8.5, -36, 1.3], [-20, 12, -44, 2.2]];
 clouds.forEach(([x, y, z, s]) => put(W.cloud(s), x, y, z));
 
@@ -89,8 +113,8 @@ outlineStatic(world, { width: 0.02, min: 0.08 });
 console.log("fused", JSON.stringify(W.fuseStatic(world)));
 
 // lights
-scene.add(new THREE.HemisphereLight(0xeaf6ff, 0xd8cfa0, 1.85));
-const sun = new THREE.DirectionalLight(0xfff0d2, 1.7);
+scene.add(new THREE.HemisphereLight(0xeaf6ff, 0xd8cfa0, 2.15));
+const sun = new THREE.DirectionalLight(0xfff0d2, 1.35);
 sun.position.set(-4.5, 7.5, 4);
 sun.target.position.set(0, 0, -2.5);
 sun.castShadow = true;
@@ -147,7 +171,17 @@ onUpdate((t) => {
     mouth: ed, closed: Math.min(1, ed * 1.4), ears: -ed * 0.7,
   });
   const u = t / DURATION;
-  if (TIGHT) {
+  if (CAM === "hill") {
+    camera.position.set(3.2, 1.2, -9);
+    camera.lookAt(-4, 2.6, -40);
+  } else if (CAM === "top") {
+    camera.position.set(0, 26, -4);
+    camera.lookAt(0, 0, -6);
+    camera.fov = 50; camera.updateProjectionMatrix();
+  } else if (CAM === "lawn") {
+    camera.position.set(-3.5, 0.7, -3.2);
+    camera.lookAt(-3.2, 0.2, -7.5);
+  } else if (TIGHT) {
     camera.fov = 52; camera.updateProjectionMatrix();
     camera.position.set(-0.35 + 0.1 * Math.sin(u * Math.PI), 0.95, 1.5 - 0.15 * u);
     camera.lookAt(-0.55, 0.78, -2.3);
