@@ -100,9 +100,9 @@ put(W.duck(), -6.2, 0.06, 1.8, 0.6);
 
 // the neighbourhood far behind: fence, houses, hills, clouds
 put(W.picketFence(30), 0, 0, -10.5);
-put(W.house({ w: 3.4, h: 2.3, d: 2.6, wall: W.PAL.cream, roof: W.PAL.roof }), -6.5, 0, -14.5, 0.08);
-put(W.house({ w: 3.0, h: 2.0, d: 2.4, wall: W.PAL.wall2, roof: W.PAL.roof2, door: 0xd9734f }), 0.5, 0, -17.5, -0.05);
-put(W.house({ w: 3.6, h: 2.4, d: 2.8, wall: W.PAL.wall3, roof: W.PAL.roof }), 7.2, 0, -15, -0.1);
+put(W.house({ w: 3.6, h: 2.3, d: 2.7, style: "siding", wall: 0xf3dfb0, roof: W.PAL.roof, door: 0x4f7ccf, shutter: 0x5f8f6a }), -6.5, 0, -14.5, 0.08);
+put(W.house({ w: 3.2, h: 2.1, d: 2.5, style: "brick", wall: 0xc9684a, roof: 0x6f7fb8, door: 0xf2f0e6, shutter: 0x3f5f8f }), 0.5, 0, -17.5, -0.05);
+put(W.house({ w: 3.8, h: 2.4, d: 2.8, style: "stucco", wall: 0xcfe7ee, roof: 0xb4553d, door: 0xd9734f, shutter: 0xf2b84a }), 7.2, 0, -15, -0.1);
 put(W.hill(40, 11, W.PAL.hill2), -22, 4, -92);
 put(W.hill(46, 13, W.PAL.hill1), 28, 5, -100);
 put(W.hill(36, 9, W.PAL.hill3), 0, 4, -88);
@@ -171,7 +171,11 @@ onUpdate((t) => {
     mouth: ed, closed: Math.min(1, ed * 1.4), ears: -ed * 0.7,
   });
   const u = t / DURATION;
-  if (CAM === "hill") {
+  if (CAM === "house") {
+    camera.position.set(-4.0, 1.5, -8.5);
+    camera.lookAt(-6.5, 1.5, -14.5);
+    camera.fov = 50; camera.updateProjectionMatrix();
+  } else if (CAM === "hill") {
     camera.position.set(3.2, 1.2, -9);
     camera.lookAt(-4, 2.6, -40);
   } else if (CAM === "top") {

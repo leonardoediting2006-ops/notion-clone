@@ -159,19 +159,205 @@ export function picketFence(length, { h = 0.8, step = 0.22 } = {}) {
   return g;
 }
 
-export function house({ w = 3.2, h = 2.2, d = 2.6, wall = PAL.cream, roof = PAL.roof, door = PAL.door } = {}) {
+// ---------- houses with real surface texture: clapboard / brick / stucco, shingled roof, shutters, flower boxes ----------
+const houseTex = {};
+function htex(key, draw, size = 256) {
+  if (!houseTex[key]) {
+    const c = document.createElement("canvas");
+    c.width = c.height = size;
+    draw(c.getContext("2d"), size);
+    const t = new THREE.CanvasTexture(c);
+    t.colorSpace = THREE.SRGBColorSpace;
+    t.wrapS = t.wrapT = THREE.RepeatWrapping;
+    t.anisotropy = 8;
+    houseTex[key] = t;
+  }
+  return houseTex[key];
+}
+const hexs = (c) => "#" + c.toString(16).padStart(6, "0");
+function shadeHex(c, k) {
+  const r = Math.min(255, Math.max(0, Math.round(((c >> 16) & 255) * k))), g = Math.min(255, Math.max(0, Math.round(((c >> 8) & 255) * k))), b = Math.min(255, Math.max(0, Math.round((c & 255) * k)));
+  return `rgb(${r},${g},${b})`;
+}
+function sidingTex(c) {
+  return htex("siding" + c, (x, n) => {
+    const rows = 8, h = n / rows;
+    for (let r = 0; r < rows; r++) {
+      x.fillStyle = shadeHex(c, 0.97 + ((r * 37) % 7) * 0.01); x.fillRect(0, r * h, n, h);
+      x.fillStyle = shadeHex(c, 1.1); x.fillRect(0, r * h, n, 3); // lit top edge
+      x.fillStyle = shadeHex(c, 0.78); x.fillRect(0, r * h + h - 6, n, 6); // shadow under each board
+      x.fillStyle = "rgba(0,0,0,0.2)"; x.fillRect(0, r * h + h - 2, n, 2);
+      x.fillStyle = shadeHex(c, 0.88); x.fillRect(((r * 83) % 200) + 20, r * h + 4, 2, h - 10); // butt joint
+    }
+  });
+}
+function brickTex(c) {
+  return htex("brick" + c, (x, n) => {
+    x.fillStyle = "#d8cbb8"; x.fillRect(0, 0, n, n); // mortar
+    const bw = 64, bh = 32;
+    for (let r = 0; r < n / bh; r++) for (let i = -1; i < n / bw + 1; i++) {
+      const k = 0.88 + (((r * 7 + i * 13) % 9) / 9) * 0.28;
+      x.fillStyle = shadeHex(c, k);
+      x.fillRect(i * bw + (r % 2) * (bw / 2) + 3, r * bh + 3, bw - 6, bh - 6);
+      x.fillStyle = "rgba(255,255,255,0.14)"; x.fillRect(i * bw + (r % 2) * (bw / 2) + 3, r * bh + 3, bw - 6, 4);
+    }
+  });
+}
+function stuccoTex(c) {
+  return htex("stucco" + c, (x, n) => {
+    x.fillStyle = shadeHex(c, 1); x.fillRect(0, 0, n, n);
+    let sd = 5;
+    const r = () => ((sd = (sd * 16807) % 2147483647) / 2147483647);
+    for (let i = 0; i < 520; i++) { x.fillStyle = Math.random() < 0 ? "#fff" : (i % 2 ? shadeHex(c, 0.93) : shadeHex(c, 1.07)); x.beginPath(); x.arc(r() * n, r() * n, 1 + r() * 3.5, 0, 7); x.fill(); }
+    x.strokeStyle = shadeHex(c, 0.9); x.lineWidth = 2;
+    for (let i = 0; i < 7; i++) { x.beginPath(); x.arc(r() * n, r() * n, 20 + r() * 30, 0, 2.4); x.stroke(); }
+  });
+}
+function shingleTex(c) {
+  return htex("shingle" + c, (x, n) => {
+    const rows = 8, h = n / rows, wd = 32;
+    x.fillStyle = shadeHex(c, 0.8); x.fillRect(0, 0, n, n);
+    for (let r = 0; r < rows; r++) for (let i = -1; i < n / wd + 1; i++) {
+      const cx = i * wd + (r % 2) * (wd / 2), k = 0.92 + (((r * 11 + i * 5) % 8) / 8) * 0.2;
+      x.fillStyle = shadeHex(c, k);
+      x.beginPath(); x.moveTo(cx, r * h); x.lineTo(cx + wd, r * h); x.lineTo(cx + wd, r * h + h * 0.62); x.arc(cx + wd / 2, r * h + h * 0.62, wd / 2, 0, Math.PI); x.closePath(); x.fill();
+      x.strokeStyle = "rgba(40,20,15,0.55)"; x.lineWidth = 2.5; x.stroke();
+    }
+  });
+}
+function stoneTex() {
+  return htex("stone", (x, n) => {
+    x.fillStyle = "#8f9096"; x.fillRect(0, 0, n, n);
+    for (let r = 0; r < 4; r++) for (let i = 0; i < 4; i++) {
+      x.fillStyle = `rgb(${150 + ((r * 5 + i * 9) % 5) * 8},${150 + ((r * 3 + i * 7) % 5) * 8},${156 + ((r + i) % 4) * 8})`;
+      x.beginPath(); x.roundRect(i * 64 + (r % 2) * 22 - 10, r * 64 + 4, 58, 56, 12); x.fill();
+    }
+  });
+}
+function louverTex(c) {
+  return htex("louver" + c, (x, n) => {
+    x.fillStyle = shadeHex(c, 1); x.fillRect(0, 0, n, n);
+    for (let i = 0; i < 10; i++) { x.fillStyle = shadeHex(c, 0.8); x.fillRect(16, i * 25 + 14, n - 32, 5); x.fillStyle = shadeHex(c, 1.15); x.fillRect(16, i * 25 + 9, n - 32, 4); }
+  });
+}
+function glassTex() {
+  return htex("glass", (x, n) => {
+    const g = x.createLinearGradient(0, 0, n, n);
+    g.addColorStop(0, "#d6f1fb"); g.addColorStop(0.55, "#9fd5ee"); g.addColorStop(1, "#7fbfe0");
+    x.fillStyle = g; x.fillRect(0, 0, n, n);
+    x.fillStyle = "rgba(255,255,255,0.5)";
+    x.beginPath(); x.moveTo(30, n); x.lineTo(110, 0); x.lineTo(150, 0); x.lineTo(70, n); x.fill();
+    x.fillStyle = "rgba(255,255,255,0.28)"; x.beginPath(); x.moveTo(110, n); x.lineTo(190, 0); x.lineTo(210, 0); x.lineTo(130, n); x.fill();
+    x.fillStyle = "rgba(255,244,214,0.75)"; x.fillRect(0, 0, 36, n); x.fillRect(n - 36, 0, 36, n); // curtains
+  });
+}
+const flat = (tex) => new THREE.MeshToonMaterial({ map: tex, gradientMap: toonGradient() });
+// a plane whose UVs are in "tiles" (one tile = tile metres), so textures keep their scale on any wall size
+function tiledQuad(parent, w, h, tex, x, y, z, ry = 0, tile = 1) {
+  const g = new THREE.PlaneGeometry(w, h);
+  const uv = g.attributes.uv;
+  for (let i = 0; i < uv.count; i++) uv.setXY(i, (uv.getX(i) * w) / tile, (uv.getY(i) * h) / tile);
+  const m = new THREE.Mesh(g, flat(tex));
+  m.position.set(x, y, z); m.rotation.y = ry; m.castShadow = m.receiveShadow = true; m.userData.ink = false;
+  parent.add(m);
+  return m;
+}
+function windowUnit(g, cx, cy, cz, { w = 0.82, h = 0.9, shutter = 0xffffff, trim = 0xffffff, flowers = true, shutters = true } = {}) {
+  box(g, w + 0.16, h + 0.16, 0.07, trim, cx, cy, cz, 0.025); // frame
+  const gl = new THREE.Mesh(new THREE.PlaneGeometry(w, h), flat(glassTex()));
+  gl.position.set(cx, cy, cz + 0.045); gl.userData.ink = false; g.add(gl);
+  box(g, 0.045, h, 0.05, trim, cx, cy, cz + 0.06, 0.012);
+  box(g, w, 0.045, 0.05, trim, cx, cy + h * 0.1, cz + 0.06, 0.012);
+  box(g, w + 0.26, 0.06, 0.18, trim, cx, cy - h / 2 - 0.1, cz + 0.08, 0.02); // sill
+  if (shutters) for (const s of [-1, 1]) {
+    const sh = box(g, 0.28, h + 0.1, 0.05, shutter, cx + s * (w / 2 + 0.27), cy, cz + 0.03, 0.015);
+    sh.material = flat(louverTex(shutter));
+  }
+  if (flowers) {
+    box(g, w + 0.1, 0.16, 0.2, 0x8a5a38, cx, cy - h / 2 - 0.22, cz + 0.16, 0.02);
+    for (let i = 0; i < 7; i++) {
+      const fx = cx - w / 2 + 0.06 + (i * (w - 0.08)) / 6;
+      ball(g, 0.05, PAL.leaf2, fx, cy - h / 2 - 0.1, cz + 0.17, 1.3, 0.8, 1);
+      ball(g, 0.042, [PAL.pink, PAL.yellow, PAL.white, PAL.purple][i % 4], fx, cy - h / 2 - 0.05, cz + 0.2);
+    }
+  }
+}
+
+export function house({ w = 3.4, h = 2.3, d = 2.6, style = "siding", wall = PAL.cream, roof = PAL.roof, door = PAL.door, trim = 0xffffff, shutter = 0x5f8f6a } = {}) {
   const g = new THREE.Group(); // front faces +z
-  box(g, w, h, d, wall, 0, h / 2, 0, 0.05);
-  const r = mesh(g, new THREE.ConeGeometry(1, 1, 4).rotateY(Math.PI / 4), toon(roof), 0, h + 0.55, 0);
-  r.scale.set((w / 2) * 1.5, 1.1, (d / 2) * 1.5);
-  box(g, 0.3, 0.8, 0.3, 0xb88a6a, w * 0.25, h + 0.7, -d * 0.1, 0.03); // chimney
-  box(g, 0.62, 1.15, 0.06, door, -w * 0.18, 0.58, d / 2 + 0.01, 0.03);
-  ball(g, 0.04, PAL.yellow, -w * 0.18 + 0.2, 0.58, d / 2 + 0.06);
-  for (const s of [0.28, -0.7]) {
-    box(g, 0.78, 0.7, 0.06, 0xffffff, w * s * 0.9 + (s > 0 ? 0.1 : 0), h * 0.58, d / 2 + 0.01, 0.03);
-    box(g, 0.64, 0.56, 0.07, PAL.glass, w * s * 0.9 + (s > 0 ? 0.1 : 0), h * 0.58, d / 2 + 0.02, 0.02);
+  const wallTex = style === "brick" ? brickTex(wall) : style === "stucco" ? stuccoTex(wall) : sidingTex(wall);
+  box(g, w - 0.04, h, d - 0.04, wall, 0, h / 2, 0, 0.04); // solid core (shadow + outline)
+  tiledQuad(g, w, h, wallTex, 0, h / 2, d / 2 + 0.002);
+  tiledQuad(g, w, h, wallTex, 0, h / 2, -d / 2 - 0.002, Math.PI);
+  tiledQuad(g, d, h, wallTex, -w / 2 - 0.002, h / 2, 0, -Math.PI / 2);
+  tiledQuad(g, d, h, wallTex, w / 2 + 0.002, h / 2, 0, Math.PI / 2);
+  for (const sx of [-1, 1]) for (const sz of [-1, 1]) box(g, 0.1, h, 0.1, trim, sx * w / 2, h / 2, sz * d / 2, 0.02); // corner boards
+  // stone foundation
+  tiledQuad(g, w + 0.08, 0.34, stoneTex(), 0, 0.17, d / 2 + 0.04, 0, 0.8);
+  tiledQuad(g, d + 0.08, 0.34, stoneTex(), -w / 2 - 0.04, 0.17, 0, -Math.PI / 2, 0.8);
+  tiledQuad(g, d + 0.08, 0.34, stoneTex(), w / 2 + 0.04, 0.17, 0, Math.PI / 2, 0.8);
+  box(g, w + 0.1, 0.05, 0.05, 0xd8d8d8, 0, 0.35, d / 2 + 0.05, 0.015);
+
+  // gable roof with overhang, shingles, fascia and gable-end walls
+  const ov = 0.34, rh = Math.min(1.3, w * 0.36), hw = w / 2 + ov, hd = d / 2 + ov;
+  const rg = new THREE.BufferGeometry();
+  const slope = Math.hypot(hd, rh);
+  const P = [[-hw, h, hd], [hw, h, hd], [hw, h + rh, 0], [-hw, h + rh, 0], [-hw, h, -hd], [hw, h, -hd]];
+  const verts = [], uvs = [], idx = [];
+  const quad = (a, b, c, dd, u, v) => { const i = verts.length / 3; for (const q of [a, b, c, dd]) verts.push(...P[q]); uvs.push(0, 0, u, 0, u, v, 0, v); idx.push(i, i + 1, i + 2, i, i + 2, i + 3); };
+  quad(0, 1, 2, 3, (hw * 2) / 1.0, slope / 1.0); // front slope
+  quad(5, 4, 3, 2, (hw * 2) / 1.0, slope / 1.0); // back slope
+  rg.setAttribute("position", new THREE.Float32BufferAttribute(verts, 3));
+  rg.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
+  rg.setIndex(idx);
+  rg.computeVertexNormals();
+  const roofMesh = new THREE.Mesh(rg, flat(shingleTex(roof)));
+  roofMesh.castShadow = roofMesh.receiveShadow = true; roofMesh.userData.ink = false;
+  roofMesh.material.side = THREE.DoubleSide;
+  g.add(roofMesh);
+  // ridge cap + fascia + roof outline
+  const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, hw * 2 + 0.04, 8).rotateZ(Math.PI / 2), toon(shadeHexNum(roof, 0.72)));
+  cap.position.set(0, h + rh + 0.02, 0); cap.castShadow = true; g.add(cap);
+  for (const s of [1, -1]) box(g, hw * 2 + 0.06, 0.1, 0.05, trim, 0, h + 0.02, s * hd, 0.015); // fascia boards
+  const ridgeOutline = new THREE.Mesh(rg, new THREE.MeshBasicMaterial({ color: INK_HEX, side: THREE.BackSide }));
+  ridgeOutline.scale.set(1.012, 1.03, 1.012); ridgeOutline.position.y = -0.012; ridgeOutline.userData.isOutline = true; g.add(ridgeOutline);
+  // gable-end triangles (wall material) and a round attic window on the front
+  for (const sx of [-1, 1]) {
+    const tg = new THREE.BufferGeometry();
+    tg.setAttribute("position", new THREE.Float32BufferAttribute([-d / 2, h, 0, d / 2, h, 0, 0, h + rh * (d / 2 / hd) , 0], 3));
+    tg.setAttribute("uv", new THREE.Float32BufferAttribute([0, 0, d, 0, d / 2, rh], 2));
+    tg.setIndex([0, 1, 2]);
+    tg.computeVertexNormals();
+    const tm = new THREE.Mesh(tg, flat(wallTex));
+    tm.position.set(sx * (w / 2 + 0.003), 0, 0); tm.rotation.y = sx * Math.PI / 2; tm.userData.ink = false; tm.material.side = THREE.DoubleSide; g.add(tm);
+  }
+  // chimney (brick)
+  const ch = box(g, 0.42, 1.0, 0.42, 0xb8573f, w * 0.26, h + rh * 0.8, -d * 0.12, 0.02);
+  ch.material = flat(brickTex(0xb8573f));
+  box(g, 0.52, 0.08, 0.52, 0x7e7a78, w * 0.26, h + rh * 0.8 + 0.52, -d * 0.12, 0.02);
+
+  // front door with panels, porch step and lamp
+  const dx = -w * 0.2;
+  box(g, 0.86, 1.5, 0.07, trim, dx, 0.8, d / 2 + 0.03, 0.025);
+  box(g, 0.68, 1.34, 0.06, door, dx, 0.74, d / 2 + 0.07, 0.02);
+  for (const [px, py] of [[-0.15, 0.4], [0.15, 0.4], [-0.15, 1.0], [0.15, 1.0]]) box(g, 0.22, 0.4, 0.025, shadeHexNum(door, 0.82), dx + px, py + 0.0, d / 2 + 0.11, 0.012);
+  ball(g, 0.04, PAL.yellow, dx + 0.24, 0.72, d / 2 + 0.13);
+  box(g, 1.1, 0.14, 0.5, 0xb9b9bd, dx, 0.07, d / 2 + 0.3, 0.03);
+  box(g, 0.26, 0.2, 0.2, 0x3d4452, dx, 1.75, d / 2 + 0.12, 0.04).material = new THREE.MeshToonMaterial({ color: 0xfff0b0, gradientMap: toonGradient(), emissive: 0xffe08a, emissiveIntensity: 0.5 });
+  // windows (front: one big, one small; sides: one each)
+  windowUnit(g, w * 0.24, h * 0.56, d / 2 + 0.03, { w: 0.84, h: 0.92, shutter, trim });
+  for (const sx of [-1, 1]) {
+    const sg = new THREE.Group();
+    sg.position.set(sx * (w / 2 + 0.03), 0, 0); sg.rotation.y = sx * Math.PI / 2;
+    windowUnit(sg, 0, h * 0.56, 0, { w: 0.78, h: 0.86, shutter, trim, flowers: false });
+    g.add(sg);
   }
   return g;
+}
+const INK_HEX = 0x2a1d16;
+function shadeHexNum(c, k) {
+  const r = Math.round(((c >> 16) & 255) * k), gg = Math.round(((c >> 8) & 255) * k), b = Math.round((c & 255) * k);
+  return (r << 16) | (gg << 8) | b;
 }
 
 export function cloud(s = 1) {

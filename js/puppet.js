@@ -110,7 +110,7 @@ function headCanvas(o) {
 
 function hairFrontCanvas(o) {
   const c = o.hair;
-  return paint(0.7, 0.7, (x) => {
+  return paint(0.7, 0.96, (x) => {
     const S = (p, opt) => shape(x, p, c, { dx: 0.06, ...opt });
     switch (o.hairStyle) {
       case "short":
@@ -149,7 +149,7 @@ function hairFrontCanvas(o) {
 
 function hairBackCanvas(o) {
   if (o.hairStyle !== "long" && o.hairStyle !== "bun") return null;
-  return paint(0.74, 0.92, (x) => {
+  return paint(0.74, 1.1, (x) => {
     if (o.hairStyle === "long") shape(x, rr(-0.3, -0.3, 0.6, 0.78, [0.28, 0.28, 0.1, 0.1]), o.hair, { dx: 0.07 });
     else shape(x, oval(0, -0.39, 0.1, 0.1), o.hair, { dx: 0.03 });
   }, 800);
@@ -157,7 +157,7 @@ function hairBackCanvas(o) {
 
 // seen from behind: the whole head is hair
 function headBackCanvas(o) {
-  return paint(0.62, 0.66, (x) => {
+  return paint(0.62, 0.84, (x) => {
     for (const s of [-1, 1]) shape(x, oval(s * 0.243, 0.03, 0.05, 0.06), o.skin, { shade: false });
     const c = o.hairStyle === "bald" ? o.skin : o.hair;
     shape(x, rr(-0.245, -0.33, 0.49, 0.6, [0.22, 0.22, 0.2, 0.2]), c, { dx: 0.07 });
@@ -222,6 +222,7 @@ function limbCanvas(w, h, body, skin, split, shoe) {
       x.beginPath(); p(x); x.lineWidth = LW; x.strokeStyle = INK; x.stroke();
     }
     if (shoe) {
+      line(x, [[-w * 0.3, -h / 2 + 0.045], [0, -h / 2 + 0.075, w * 0.3, -h / 2 + 0.045]], 0.009, mix(body, "#000000", 0.45)); // knee crease
       shape(x, rr(-w / 2 - 0.018, h / 2 - 0.095, w + 0.036, 0.1, 0.045), shoe, { dx: 0.05 });
       line(x, [[-w / 2 - 0.012, h / 2 - 0.018], [w / 2 + 0.012, h / 2 - 0.018]], 0.01, "#9a8a7a");
     }
@@ -355,10 +356,10 @@ export function createPuppet(options = {}) {
   // legs
   const leg = {};
   for (const s of [-1, 1]) {
-    const hip = group(s * 0.085, 0, -0.012, rig);
+    const hip = group(s * 0.105, 0, s < 0 ? -0.012 : -0.02, rig);
     const thigh = plane(0.24, THIGH + 0.06, tex(parts.thigh), { pivotTop: true, cy: 0.03 });
     hip.add(thigh);
-    const knee = group(0, -THIGH, 0, hip);
+    const knee = group(0, -THIGH, 0.004, hip);
     knee.add(plane(0.23, SHIN + 0.06, tex(parts.shin), { pivotTop: true, cy: 0.03 }));
     leg[s] = { hip, thigh, knee };
   }
@@ -378,9 +379,9 @@ export function createPuppet(options = {}) {
   faceCanvas.width = Math.ceil(0.62 * 800); faceCanvas.height = Math.ceil(0.66 * 800);
   const faceTex = textureOf(faceCanvas);
   const faceM = plane(0.62, 0.66, faceTex, { cy: HEADC, z: 0.006 });
-  const hairF = plane(0.7, 0.7, tex(parts.hairFront), { cy: HEADC, z: 0.012 });
-  const headB = plane(0.62, 0.66, tex(parts.headB), { cy: HEADC, z: 0.008 });
-  const hairBk = parts.hairBack ? plane(0.74, 0.92, tex(parts.hairBack), { cy: HEADC + 0.03, z: -0.03 }) : null;
+  const hairF = plane(0.7, 0.96, tex(parts.hairFront), { cy: HEADC, z: 0.012 });
+  const headB = plane(0.62, 0.84, tex(parts.headB), { cy: HEADC, z: 0.008 });
+  const hairBk = parts.hairBack ? plane(0.74, 1.1, tex(parts.hairBack), { cy: HEADC, z: -0.03 }) : null;
   const glassesM = parts.glasses ? plane(0.62, 0.3, tex(parts.glasses), { cy: HEADC - 0.02, z: 0.018 }) : null;
   headG.add(headM, faceM, hairF, headB);
   if (hairBk) headG.add(hairBk);
@@ -450,7 +451,7 @@ export function createPuppet(options = {}) {
     // legs: standing straight (a little stride when walking); sitting: thighs point at the camera (foreshortened)
     for (const s of [-1, 1]) {
       const L = leg[s];
-      L.hip.position.set(s * 0.085, hipY, -0.012);
+      L.hip.position.set(s * 0.105, hipY, s < 0 ? -0.012 : -0.02);
       const swing = Math.sin(walkPhase + (s > 0 ? Math.PI : 0)) * 0.5 * walk;
       L.hip.rotation.z = swing * 0.35;
       L.thigh.scale.y = lerp(1, 0.3, sit);
