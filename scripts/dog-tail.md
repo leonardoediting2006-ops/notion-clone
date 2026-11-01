@@ -1,6 +1,6 @@
 # Which way your dog wags his tail (it means something)
 
-Seamless-loop Short · ~23.3 s · 86 words · fast pace (~3.7 words/s) · 1080×1920, 60 fps · **toon style** (flat 2D people in a 3D cartoon world)
+Seamless-loop Short · ~20.7 s (the recorded voiceover) · 86 words · fast pace (~4.2 words/s) · 1080×1920, 60 fps · **toon style** (flat 2D people in a 3D cartoon world)
 
 One simple fact, no "scientists tested…" opener: **a dog's tail swings more to his right when he's happy to see someone, and more to his left when he's nervous.**
 
@@ -90,3 +90,24 @@ Sources: Quaranta, Siniscalchi & Vallortigara, Current Biology (2007), "Asymmetr
 - **New pieces:** a tail-swing trail (a glowing arc drawn on the ground that grows biased to one side), a heart-rate pill with a pulsing heart, floating emoji bubbles, and a puppet "walk" (a bounce plus a slide along the path).
 - **Real SFX needed (CC0/CC-BY, no synthesised sounds):** birdsong, a wooden gate creak, footsteps on a path, a dog tail thump or soft pant, a low whine, a heartbeat (a soft kick/thump sample), a soft chime and a pluck. Cut them with `tools/fetch-sfx.mjs`.
 - Frame budget: about 1,400 frames; the dense trees and grass make the park and gardens the slowest places, so render on a GPU PC if possible.
+
+## Final build (what was animated from the recorded `Compound_Clip_7.srt`)
+
+No on-screen label text: the tail is **highlighted** instead (a ring on the tip of the tail, a fan on the ground showing how far it swings, an arrow along the lean: yellow while it only wags, green for right, orange for left; a beating heart above the white dog for the heart-rate; arrows on the screen). Only the word-by-word captions stay.
+
+Ten shots in three outdoor places, a different camera move in each (all smooth, eased):
+
+| # | Words | Place | Action · camera |
+|---|---|---|---|
+| 1 | Watch your dog's tail when you come home. | Neighbourhood | He sits wagging; you walk up to the gate and wave · slow push-in from behind-left (also the loop's first and last frame) |
+| 2 | It's not just wagging, it's leaning. | Neighbourhood | He trots down the path to you · camera follows him from behind |
+| 3 | When he's happy to see you, his tail swings more to his right. | Park | He runs along the path and leaps to you, hearts · crane up and back |
+| 4 | When he's nervous, more to his left. | Park | A big dark dog walks in; he sits, ears back, tail left · slow orbit |
+| 5 | And other dogs can tell the difference. | Back garden | A small white dog watches · push-in on its face |
+| 6 | A dog watching a left wag gets a faster heartbeat. | Back garden | A screen shows a dog wagging left; the dog trembles, a red heart beats faster · orbit round to the screen |
+| 7 | A right wag keeps him calm. | Back garden | The wag swings right, the heart slows and turns green, he lies down · dolly back and crane down |
+| 8 | So his tail isn't just happy, it's a message. | Neighbourhood, from above | Emoji messages fly between two dogs · crane up |
+| 9 | And when you walk in, it's his way of saying, "You're my person." | Neighbourhood | You walk in, he runs to you and rears up, hearts · orbit round the hug |
+| 10 | So the next time you come home, | Neighbourhood | You leave, he sits again · camera glides back to the opening shot |
+
+Sound: all real recordings (see `shorts/dog-tail/sfx/CREDITS.md`), soft and close: birdsong, wind, gravel steps, a creaking gate, tail thumps, water drops on each highlight, a soft heartbeat that speeds up and slows down, a breath. Add the credit line in that file to the description (the whimper is CC-BY).
