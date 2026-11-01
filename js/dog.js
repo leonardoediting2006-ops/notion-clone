@@ -225,7 +225,7 @@ export function createDog({ colors = DOG_COLORS.golden, key = "", glowEyes = fal
     }
     earpiece.visible = hasEarpiece;
   };
-  Object.assign(dog, { pivot, hips, neck, head, jaw, mouth, eyes, brows, ears, tail, legs, cape, capeMesh, teeth });
+  Object.assign(dog, { pivot, hips, neck, head, jaw, mouth, eyes, brows, ears, tail, legs, cape, capeMesh, teeth, materials: { body: M.body, light: M.light, dark: M.dark }, colors });
   dog.pose();
   return dog;
 }
