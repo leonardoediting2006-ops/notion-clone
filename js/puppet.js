@@ -524,13 +524,14 @@ export function createPuppet(options = {}) {
 
   puppet.pose = ({
     t = 0, x = 0, y = 0, z = 0, flip = 1, back = false,
-    sit = 0, seat = 0.46, lean = 0, breathe = 1, walk = 0, walkPhase = 0,
+    sit = 0, seat = 0.46, lean = 0, breathe = 1, walk = 0, walkPhase = 0, fall = 0,
     look = [0, 0], blink, eyes = {}, brow = {}, mouth = {}, head = {}, cute = 0, tear = 0,
     armL = {}, armR = {}, // each: { to: [x, y], bend: ±1 } (reach a point) or { a: shoulderAngle, e: elbowAngle }
   } = {}) => {
     const sc = o.height / 1.7;
     root.position.set(x, y, z);
     rig.scale.set(flip * sc, sc, sc);
+    rig.rotation.z = fall; // tipping over about the feet (a comic tumble)
     state.flip = flip; state.sit = sit;
     const bob = Math.abs(Math.sin(walkPhase)) * 0.03 * walk;
     const hipY = lerp(THIGH + SHIN, seat + 0.08, sit) + bob;

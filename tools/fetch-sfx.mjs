@@ -5,6 +5,7 @@
 //   node tools/fetch-sfx.mjs dog-stare         → shorts/dog-stare/sfx/*.ogg (+ CREDITS.md)
 //   node tools/fetch-sfx.mjs dog-yawn          → shorts/dog-yawn/sfx/*.ogg (+ CREDITS.md)
 //   node tools/fetch-sfx.mjs dog-tail          → shorts/dog-tail/sfx/*.ogg (+ CREDITS.md)
+//   node tools/fetch-sfx.mjs dog-time          → shorts/dog-time/sfx/*.ogg (+ CREDITS.md)
 //
 // Source: the ESC-50 dataset on GitHub (github.com/karolpiczak/ESC-50), 5-second clips cut
 // from freesound.org field recordings. We only use clips whose ORIGINAL freesound licence is
@@ -51,6 +52,7 @@ const SRC = {
   "3-156907-A-15": ["Water drop", "Elfman-Rox", "CC0", 156907],
   "4-188293-A-15": ["Water Drop", "willstepp", "CC0", 188293],
   "4-223125-A-14": ["starlings2.wav", "keweldog", "CC0", 223125],
+  "5-261464-A-23": ["Werewolf breathing and sniffing", "kd_jack", "CC0", 261464],
 };
 // Kenney's interface sounds (github.com/Calinou/kenney-interface-sounds, a mirror of kenney.nl/assets/interface-sounds): CC0
 const RAW_KN = "https://raw.githubusercontent.com/Calinou/kenney-interface-sounds/master/addons/kenney_interface_sounds/";
@@ -174,6 +176,15 @@ SETS["dog-stare"] = {
     },
     breath: yw.breath, whimper: h.whimper, bark_1: h.bark_1,
     tick: yw.tick, pluck: yw.pluck, chime: yw.chime,
+  };
+}
+
+// "Your dog knows how long you've been gone": the dog-tail sounds plus a ticking clock, real sniffing and a soft pad
+{
+  const h = SETS["dog-hero"], st = SETS["dog-stare"], tl = SETS["dog-tail"];
+  SETS["dog-time"] = {
+    ...tl, clock: h.clock, pad: st.pad,
+    sniff: { in: [{ clip: "5-261464-A-23", ss: 0.1, t: 1.6, gain: 9, af: "highpass=f=250" }], post: "afade=t=in:d=0.04,afade=t=out:st=1.3:d=0.3" },
   };
 }
 

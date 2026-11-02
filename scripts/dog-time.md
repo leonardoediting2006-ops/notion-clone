@@ -1,6 +1,6 @@
 # Your dog knows how long you've been gone
 
-Seamless-loop Short · ~23 s · 96 words · fast pace (~4.2 words/s) · 1080×1920, 60 fps · **toon style** (flat 2D people in a 3D cartoon world)
+Seamless-loop Short · ~24.4 s (the recorded voiceover) · 96 words · fast pace (~3.9 words/s) · 1080×1920, 60 fps · **toon style** (flat 2D people in a 3D cartoon world)
 
 A relatable "you leave, you come home" moment, one simple fact (he notices how long you were away), one surprising idea (he may be *smelling* time), and a warm ending. No on-screen text: highlights only.
 
@@ -87,3 +87,23 @@ Sources: Rehn & Keeling, Applied Animal Behaviour Science (2011), "The effect of
 - **New pieces:** a pie-shaped "away timer" (a wedge that fills, over your head); a sun that moves across the sky with shadows that rotate and lengthen (move the light per frame); two growing bars; a big wall clock prop with spinning hands; wavy scent ribbons that fade (a translucent ribbon mesh with a drifting texture); small scent swirls near his nose; a head-tilt and a sniff pose for the dog; a running-in-circles "zoomies" path; a scientist with a clipboard (the puppet from `dog-tail`).
 - **Real SFX (CC0/CC-BY, no synthesised sounds):** birdsong, wind, a creaking gate, gravel steps, a clock tick, sniffing (the ESC-50 "breathing and sniffing" clip), a soft heartbeat, a chime, a pluck, a happy whimper, quick paws on gravel. Cut them with `tools/fetch-sfx.mjs` (new set `dog-time`).
 - Frame budget: about 1,400 frames; render on a GPU PC if you can.
+
+## Final build (animated from the recorded `Compound_Clip_8.srt`)
+
+Eleven shots in three outdoor places, a different smooth camera move in each, no words on screen (a pie timer for "how long you were away", two bars, a fading scent ribbon, hearts and emoji icons; only the word-by-word captions stay):
+
+| # | Words | Place · action · camera |
+|---|---|---|
+| 1 | Your dog can tell how long you've been gone. | Gate, street side. You walk past; he watches you go (big glossy eyes in frame 1) · push-in. The pie timer starts to fill. |
+| 2 | Come home after 30 minutes, and he's happy. | You come back and wave; he's up, tail going; small green wedge · side orbit. |
+| 3 | Come home after 2 hours, and he goes wild. | Park: the timer and the sun swing (shadows move), you jog back, he runs rings round you and knocks you over · crane up. |
+| 4 | In one study, dogs were more excited after 2 hours apart… | Back garden: two lawns, a scientist, two bars (short green, tall orange) · pan across. |
+| 5 | …than after 30 minutes. | The calm dog yawns; the short bar pulses · push-in. |
+| 6 | He doesn't own a clock, | He tilts his head at a big wall clock whose hands spin · side push-in. |
+| 7 | so how does he know? | A 🤔 over his tilted head, the clock behind him · slow orbit. |
+| 8 | Some researchers think he smells time. | Close on his nose sniffing the doormat, scent puffs rise, a pink ribbon appears · dolly-in. |
+| 9 | Your scent fades from the house, and the weaker it gets, the longer you've been gone. | The ribbon along the path fades while the timer fills and the sun swings · tracking shot, then crane up. |
+| 10 | So that wild welcome? It's his way of saying, "I waited for you." | You come in at the gate, he sprints, rears up, hearts · orbit round the hug. |
+| 11 | So the next time you walk out the door, | You leave; he sits at the gate; the camera returns to the opening shot (the loop). |
+
+Made more shareable: a cute face in frame 1, a pattern change every ~2 s, one slapstick beat (the knock-over), one funny beat (the dog and the clock), a joyful peak, a warm ending, and a comment prompt ("30 min or 2 hours?"). All sound is real recordings (see `shorts/dog-time/sfx/CREDITS.md`).
