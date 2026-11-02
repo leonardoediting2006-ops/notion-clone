@@ -80,7 +80,7 @@ Sources: Quaranta, Siniscalchi & Vallortigara, Current Biology (2007), "Asymmetr
 (Add the sound-credit line from `shorts/dog-tail/sfx/CREDITS.md` if any clip is CC-BY.)
 
 **Pinned comment**
-> Which way does YOUR dog's tail lean when you come home? Left or right (his left and right!) 👇🐶 Not every dog does it, so tell me what yours does.
+> Which way does YOUR dog's tail lean when you come home? Reply L or R (his left or right!) 👇🐶 Not every dog does it, so tell me what yours does.
 
 ## Build notes (toon style)
 
