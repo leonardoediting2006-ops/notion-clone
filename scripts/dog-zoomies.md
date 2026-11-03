@@ -1,105 +1,112 @@
-# He's about to lose his mind (why your dog gets the zoomies)
+# Why does your dog sprint in circles? (the zoomies explained)
 
-Hard-loop Short · ~16 s · 66 words · very fast (~4.2 words/s) · 1080×1920, 60 fps · **toon style** · built for a fast hook and constant motion
+Seamless-loop Short · ~28 s · 120 words · fast delivery (~4.3 words/s) · 1080×1920, 60 fps · **toon style** · a clear question up front, a cut every ~1 s
 
-A funny, relatable, high-energy video (the formula's "wildcard" slot): one simple fact (the zoomies have a name and a cause), one thing to *spot* (the play bow), one thing to *try* (run away, don't chase), and a loop that restarts on the exact moment before the explosion.
+**What this video is about, in one sentence:** why dogs suddenly sprint around like crazy (the zoomies), what causes it, how to read it, and what to do. Every line below is something you can *see* on screen at the same moment.
 
-## Voiceover (record exactly this, fast and punchy, first word at 0.00 s)
+## Voiceover (record exactly this: clear, fast, first word at 0.00 s)
 
-> He's about to lose his mind.
-> It's called the zoomies.
-> After a bath. After a poop. At three a.m.
-> It's stored-up energy, bursting out.
-> And it usually means he's happy.
-> But watch for the bow first. Front legs down, butt up. It means: let's play!
+> Why does your dog sprint in circles?
+> It's called the zoomies, and lots of dogs get them.
+> It often happens after a bath, after being cooped up, or late at night.
+> Vets call it a frenetic random activity period.
+> Nobody knows the exact cause, but it's usually extra energy bursting out.
+> Most of the time, it means he's happy.
+> Puppies do it the most, but plenty of dogs never stop.
+> Sometimes you'll see a play bow first: front legs down, butt up.
+> That means, let's play!
 > So don't chase him. Run away, and he'll chase you.
-> And clear the floor first.
-> So the next time you see this,
+> Just clear the floor first, so he doesn't slip.
+> If he seems scared, ask your vet.
+> So the next time your dog goes crazy, ask yourself:
 
-The last line is **deliberately unfinished** and runs into the first on the loop:
-*"So the next time you see this, **he's about to lose his mind.**"* ("this" is the play bow the video ends on.)
+The last line is **deliberately unfinished** and runs into the first line on the loop:
+*"So the next time your dog goes crazy, ask yourself: **why does your dog sprint in circles?**"* A first-time viewer hears a complete, clear question.
+
+## Clarity rules (why the first version was hard to follow)
+
+1. **Say the subject in the first sentence, in the words the viewer would type:** "your dog", "sprint in circles", then the name, "the zoomies".
+2. **One idea per sentence**, in the order the viewer's mind asks them: *What is it? → When does it happen? → Why? → Is it good or bad? → Who does it? → What should I do?*
+3. **Explain a word the moment it appears** ("play bow: front legs down, butt up").
+4. **No vague "he" or "this" at the start**; every line names the dog or the thing.
+5. **Show what you say:** each line has its own matching picture, so the video can be followed with the sound off.
 
 ## The first 1.5 seconds (the hook, frame by frame)
 
-The viewer must see motion, a face and a promise before they can swipe. No slow push-in, no establishing shot.
+The question is spoken while the viewer *sees* the answer to "what?" (a dog sprinting in circles), so they understand the topic instantly and want to know why.
 
 | Time | Picture | Voice |
 |---|---|---|
-| 0.00–0.15 | **Frame 1 is the play bow**: front legs down, butt up, tail high, big glossy eyes locked on the lens, close and low. (This is also the last frame, so the loop is a wind-up.) | "He's…" |
-| 0.15–0.45 | **He explodes** straight at and past the camera: a fast, smooth whip of the camera follows him round a corner; dust puffs and speed streaks. | "…about to lose" |
-| 0.45–0.95 | **Cut on the motion** (he exits right, enters left): a second place, side tracking, he drifts round a flowerbed on two legs, ears flapping. | "…his mind." |
-| 0.95–1.40 | **Reaction cut**: the flat 2D owner's eyes pop wide, a gust blows his hair back, the dog blurs past behind him. | (breath) |
-| 1.40–… | The idea gets its name while he keeps running (no pause). | "It's called the zoomies." |
+| 0.00–0.15 | **Frame 1 is the play bow**: close, low, front legs down, butt up, big glossy eyes on the lens. (It is also the last frame: the loop is a wind-up.) | "Why…" |
+| 0.15–0.60 | **He explodes** past the lens and the camera whips after him round a corner; dust puffs and speed streaks. | "…does your dog…" |
+| 0.60–1.10 | **Cut on the motion** (exits right, enters left): side tracking, he runs a tight circle round a flowerbed. | "…sprint in…" |
+| 1.10–1.60 | **Reaction cut**: the flat 2D owner's eyes pop, hair blown back, the dog streaks past behind him. | "…circles?" |
 
-By 1.5 s: three different angles, two places, a face, a person and a clear promise ("he's about to lose his mind") have already happened.
+Alternative hooks to test against it (same first 1.5 s picture): *"Your dog isn't crazy. This is why."* · *"Why does your dog go crazy at 3 a.m.?"*
 
-## Beat sheet (times are the plan at ~4.2 words/s; the real `.srt` re-times everything)
+## Beat sheet (times are the plan at ~4.3 words/s; the real `.srt` re-times everything)
 
-About 15 shots in 16 s: a cut every ~1 s, and the camera never rests. **No words on screen** (only the word-by-word captions): icons, arrows, a battery, rings and speed streaks do the explaining.
+About 25 shots in 28 s. **No words on screen** (only the word-by-word captions): icons, arrows, a battery, rings and trails do the explaining. The camera is always moving, always smooth.
 
 | Time | Line | Shot · place · motion |
 |---|---|---|
-| 0.00–0.45 | He's about to lose | **Bow → launch.** Low close-up of the bow, then he blasts past the lens; camera whips round after him. |
-| 0.45–0.95 | his mind. | **Garden, side track.** He drifts round the flowerbed. |
-| 0.95–1.40 | (beat) | **Owner reaction** (flat 2D person): eyes pop, hair blown back, dog streaks behind. |
-| 1.40–2.40 | It's called the zoomies. | **Orbit lap.** Fast 140° orbit round the owner while he runs rings, speed streaks, dust. |
-| 2.40–3.10 | After a bath. | **Back garden, tub.** He leaps out of the tub, shakes (a spray of droplets), bolts. Hard cut. |
-| 3.10–3.80 | After a poop. | **Park path.** The owner holds a bag; a look of pure relief on his face; he bolts. Hard cut. |
-| 3.80–4.50 | At three a.m. | **Night garden.** Moon, stars, the sky dims; the owner in pyjamas on the porch, eyes huge; he laps the lawn. |
-| 4.50–5.80 | It's stored-up energy, bursting out. | **Battery.** A battery icon fills to full above him while he vibrates; it bursts into sparks and he fires off, camera punches in then whips. |
-| 5.80–7.30 | And it usually means he's happy. | **Slow-motion** (speed ramp): grinning face, tongue out, ears flying, hearts; the camera orbits close. |
-| 7.30–8.70 | But watch for the bow first. | **Park, low angle.** He trots up, stops, and drops into the bow; a ring pulses round him. |
-| 8.70–9.90 | Front legs down, butt up. | **Side close-up, slow-mo.** Arrows pop onto the lowered front legs and the raised rear. |
-| 9.90–10.90 | It means: let's play! | **Two-shot.** He bows to the owner; the owner bows back; both explode into a game of tag (whip cut). |
-| 10.90–12.20 | So don't chase him. | **Camera in front of the owner**, who runs straight at the lens with the dog sprinting right behind him (the camera backs away fast). A ❌ over the "chasing" owner flips to ✅ when he turns and runs away. |
-| 12.20–13.30 | Run away, and he'll chase you. | **High crane** over the same chase, whipping round a corner. Hearts trail the dog. |
-| 13.30–14.50 | And clear the floor first. | **Porch deck, time-lapse.** The owner sweeps pots and a lamp out of the way at triple speed; the dog flashes by twice. |
-| 14.50–16.00 | So the next time you see this, | **Final wind-up.** He trots in from the side and drops into the bow, camera pushing in fast but landing at rest on the exact opening frame. He holds the bow with a tiny shiver. Loops. |
+| 0.00–1.60 | Why does your dog sprint in circles? | **Hook (4 cuts, see above).** Bow → launch → circle round the flowerbed → owner's shocked face. |
+| 1.60–2.70 | It's called the zoomies, | **Orbit lap.** Fast 140° orbit round the owner while he runs rings, speed streaks, dust. |
+| 2.70–3.70 | and lots of dogs get them. | **Montage, 3 quick cuts (0.35 s each):** a golden dog, a white dog and a big dark dog all zooming in three different places (garden, park, back garden). |
+| 3.70–4.90 | It often happens after a bath, | **Back garden, tub.** He leaps out of the tub, shakes (a spray of droplets), bolts. |
+| 4.90–6.10 | after being cooped up, | **Garden gate pen.** He is stuck behind a little fence, pacing; the owner opens it and he blasts out; camera whips with him. |
+| 6.10–7.00 | or late at night. | **Night garden.** Moon, stars, the sky dims; the owner in pyjamas on the porch, eyes huge; he laps the lawn. |
+| 7.00–8.90 | Vets call it a frenetic random activity period. | **A vet** (flat 2D person in a white coat) nods at the camera while the dog behind zig-zags at random; a dotted zig-zag trail draws itself on the lawn. |
+| 8.90–10.00 | Nobody knows the exact cause, | The vet **shrugs**, a ❓ pops over his head; the dog stops dead and looks at him. |
+| 10.00–11.70 | but it's usually extra energy bursting out. | **Battery.** A battery icon fills to full above the dog while he vibrates; it bursts into sparks and he fires off; camera punches in, then whips. |
+| 11.70–13.60 | Most of the time, it means he's happy. | **Slow motion** (speed ramp): a grinning face, tongue out, ears flying, hearts; the camera orbits close. |
+| 13.60–14.90 | Puppies do it the most, | **A puppy** (a small, round dog) tumbles and zooms across the lawn, tripping over its own ears. |
+| 14.90–16.20 | but plenty of dogs never stop. | **An old grey-muzzled dog** starts slowly, then flies; the owner's jaw drops. |
+| 16.20–19.00 | Sometimes you'll see a play bow first: front legs down, butt up. | **Park, low angle.** He trots up, stops and drops into the bow, a ring pulses round him; then a **side close-up in slow motion** with arrows popping onto the lowered front legs and the raised rear. |
+| 19.00–20.00 | That means, let's play! | **Two-shot.** He bows to the owner, the owner bows back; both explode into a game of tag (whip cut), hearts. |
+| 20.00–21.00 | So don't chase him. | **Camera behind the owner** as he chases the dog, who sprints away; a red ❌ over the owner. |
+| 21.00–22.40 | Run away, and he'll chase you. | The owner turns and **runs straight at the lens** with the dog right behind him (the camera backs away fast, then cranes up); the ❌ flips to a green ✅. |
+| 22.40–24.50 | Just clear the floor first, so he doesn't slip. | **Porch deck, time-lapse.** The owner sweeps pots and a lamp out of the way at triple speed; then the dog skids across a rug and stops just short of the steps. |
+| 24.50–26.10 | If he seems scared, ask your vet. | **A different mood, still moving.** A dog pressed low behind the owner's legs, ears back, shaking; the vet's calm face glides in; slow dolly. |
+| 26.10–28.20 | So the next time your dog goes crazy, ask yourself: | **Final wind-up.** The happy dog trots in and drops into the bow; the camera pushes in fast but lands at rest on the exact opening frame. He holds the bow with a tiny shiver. Loops. |
 
-## Dynamic motion rules (apply to every video from now on)
+## Dynamic motion rules
 
-1. **Cut every ~1 s** (never hold a shot longer than 1.5 s); the first 1.5 s has three cuts.
-2. **Start mid-action.** Frame 1 is a pose with energy in it, never an empty room.
-3. **The camera is always moving**, but always eased (no shake, no jitter): whips, orbits, cranes, tracking dollies. At least one move per shot.
-4. **Cut on motion:** a character leaves the frame on the right and enters the next shot from the left, so cuts feel like one move (this keeps it fast and smooth).
-5. **Speed ramps** on the emotional beats (one or two 0.6 s slow-motion moments), fast everywhere else.
-6. **Squash and stretch** on the dog (stretch along the run, squash on the stop), dust puffs on every turn, speed streaks behind him.
-7. **Scale punch**: the field of view tightens a few percent on the beat of a key word, then settles.
-8. **Different place or angle every beat**; use the whole world (garden, park, tub, porch, night).
-9. **Nothing sits still:** even the "calm" moments have a moving camera and a moving tail or ears.
+Follow section 6b of `FORMULA.md`: a cut every ~1 s, three cuts in the first 1.5 s, the camera always moving and always eased, cuts on motion (leave right, enter left), one or two speed ramps, squash and stretch, dust and speed streaks, small field-of-view punches on key words, a different place or angle each beat.
 
 ## Why this script
 
 | Finding | Choice |
 |---|---|
-| Your videos were too slow, including the hook. | A cut every ~1 s, a hook that is already moving at frame 1, three cuts in the first 1.5 s. |
-| The explainers plateau at 23–35K; the wildcard slot is for finding what breaks it. | A funny, high-energy video instead of a calm explanation. |
-| Viewers leave around 9–15 s; replays now count as views. | A 16 s hard loop (formula experiment #2): short enough to finish, and the loop restarts at the wind-up. |
-| High-arousal positive emotion spreads (awe, amusement). | Comedy and chaos: wet-dog bolts, a 3 a.m. lap, the owner knocked flat by a speed streak. |
-| Share and comment triggers. | Three relatable moments (bath, poop, 3 a.m.) to tag a friend about, and a one-letter reply ("B, P or 3?"). Save-worthy tips: run away instead of chasing; clear the floor. |
-| "Watch for the bow" is a thing to spot. | A testable moment, like "watch his tail". |
+| Feedback: the hook was not good and the topic was hard to follow. | A plain question in the first words that matches what is on screen, then a clear order (what, when, why, is it good, who, what to do). |
+| Feedback: make it longer. | 28 s with five real payoffs: the name, the triggers, the cause, the play bow, the tip. |
+| Your videos were too slow. | ~25 shots in 28 s, constant camera motion. |
+| Explainers plateau at 23–35K; the wildcard slot is for finding what breaks it. | A funny, high-energy video instead of a calm one. |
+| Viewers leave around 9–15 s. | The question is answered by name at 1.6 s, and a new picture or payoff arrives every ~1 s. |
+| Share and comment triggers. | Relatable moments to tag a friend about (bath, cooped up, 3 a.m.), a testable tip (run away, don't chase), a one-letter reply (pinned comment). |
 
 ## Fact-check (keep claims inside what is known)
 
-- **The name and the cause.** Cornell's Riney Canine Health Center calls the zoomies "FRAPs" (frenetic random activity periods) and says there is **no known specific cause**; it happens most in puppies and young dogs but can happen all life, and often follows excitement. "Stored-up energy" is the common explanation, so the script says *usually*.
-- **Triggers.** After a bath is a commonly reported trigger; "after a poop" and "at night" are widely repeated owner and vet observations, not studied in detail. Treat them as "this happens", not as science.
-- **Happy.** The script says "usually means he's happy" (excitement and play). Do **not** say it is *always* happiness: vets advise checking in if the zoomies are excessive or he seems afraid or anxious.
-- **The play bow.** The bow (front legs down, rear up) is a well-documented play signal (Bekoff, "Play signals as punctuation", *Behaviour* 1995: it marks what follows as play). The research is mostly observational; and the link between a bow and zoomies has not been studied. Say "it means: let's play", never "it always comes before zoomies".
-- **Run away, don't chase** is common trainer advice (an invitation to play that keeps you in control). **Clear the floor**: Cornell notes a dog zooming round may hurt himself or break something.
+- **Name and cause.** Cornell's Riney Canine Health Center calls the zoomies "FRAPs" (frenetic random activity periods) and says there is **no known specific cause**; it is most common in puppies and young dogs but dogs keep getting the zoomies once in a while for life; it often follows excitement. "Usually extra energy" is the common explanation, so the script says *usually*.
+- **Triggers.** After a bath is a commonly reported trigger; "after being cooped up" (boredom, restraint) and "late at night" are widely reported by vets and behaviourists. Treat them as "often happens", not as tested science.
+- **Happy.** "Most of the time, it means he's happy" (excitement and play). Do not say *always*; vets advise a check if it is excessive or he seems afraid or anxious (the vet line covers that).
+- **The play bow.** The bow (front legs down, rear up) is a well-documented play signal (Bekoff, "Play signals as punctuation", *Behaviour* 1995); the research is mostly observational and nobody has studied whether a bow comes before zoomies, so the script says "sometimes you'll see".
+- **Run away, don't chase** is common trainer advice (it keeps him coming to you and you in control). **Clear the floor**: Cornell notes a dog zooming round may hurt himself or break something.
+- Do **not** say: "every dog", "always", "scientists proved", or any medical claim about why.
 
 ## Upload kit
 
 **Title options** (pick one)
-1. Why Your Dog Gets the Zoomies 🐶💨
-2. He's About to Lose His Mind 🐶 (Zoomies Explained)
-3. Why Dogs Run in Circles After a Bath 🐶
+1. Why Your Dog Sprints in Circles (The Zoomies Explained) 🐶💨
+2. Why Dogs Get the Zoomies 🐶
+3. Why Your Dog Goes Crazy at 3 AM 🐶
 
 **Tags**
-`dog zoomies, why do dogs get zoomies, dog zoomies after bath, dog FRAP, frenetic random activity period, dog running in circles, dog play bow, dog 3am zoomies, dog behavior, dog facts, funny dog, cute dog, dog and owner, dog shorts, pet facts, animal facts, shorts`
+`dog zoomies, why do dogs get zoomies, dog zoomies after bath, dog FRAP, frenetic random activity period, dog running in circles, dog play bow, dog 3am zoomies, why does my dog run in circles, dog behavior, dog facts, funny dog, cute dog, dog and owner, dog shorts, pet facts, animal facts, shorts`
 
 **Description**
 ```
-He's about to lose his mind. 🐶💨 Zoomies (vets call them FRAPs) are bursts of energy that often come after a bath, a poop, or late at night. Look for the play bow first, and try running away so he chases YOU. Clear the floor before you do!
+Why does your dog sprint in circles? 🐶💨 Those bursts are called the zoomies (vets say FRAPs). They often come after a bath, after being cooped up, or late at night, and usually mean he's happy. Look for the play bow, try running away so he chases YOU, and clear the floor first!
 #shorts #dogs #zoomies
 
 Sources: Cornell University Riney Canine Health Center, "What are zoomies?"; Bekoff, "Play signals as punctuation: the structure of social play in canids", Behaviour (1995).
@@ -107,11 +114,12 @@ Sources: Cornell University Riney Canine Health Center, "What are zoomies?"; Bek
 (Add the sound-credit line from `shorts/dog-zoomies/sfx/CREDITS.md` if any clip is CC-BY.)
 
 **Pinned comment**
-> When does YOUR dog get the zoomies? Reply B (after a bath), P (after a poop) or 3 (3 a.m.) 👇🐶 And tell me what his zoomies look like!
+> When does YOUR dog get the zoomies? Reply B (after a bath), N (at night) or Z (out of nowhere) 👇🐶 And tell me what his zoomies look like!
 
 ## Build notes (toon style)
 
-- New short folder `shorts/dog-zoomies/`, built on the toon toolkit and the shots of `shorts/dog-tail/` and `shorts/dog-time/` (garden, park, back garden). New places: a **tub with bubbles and a hose** in the garden, a **night version of the garden** (dark blue sky, moon, stars, lit window), a **porch deck** with pots and a lamp.
-- **New pieces:** speed streaks (flat white quads that trail the dog), dust puffs (small sprites on every turn), a **squash-and-stretch** helper on the dog, a **battery icon** (graphic, fills then bursts), ✅/❌ icons, a **ring** that pulses round the bow, a **water spray** (droplet sprites) for the shake, a **speed-ramp time warp** (slow-motion on two shots: the pose time is remapped, so every frame is still reproducible), a **field-of-view punch**, a "play bow" pose for the dog (front legs down, rear up) and a quick "run" for the flat owner (the walk cycle at double speed with a lean).
-- **Real SFX (CC0/CC-BY, no synthesised sounds):** quick paws on gravel (the three step clips at high rate), one or two playful barks (the small alert bark, pitched up), water splash (ESC-50 splash clips) for the tub, a wind rustle, crickets for 3 a.m. (ESC-50 crickets), a soft chime for "happy", a real heartbeat-style thump for the battery charge, birdsong for the day shots. Cut them with `tools/fetch-sfx.mjs` (new set `dog-zoomies`).
-- Frame budget: about 960 frames; render on a GPU PC if you can.
+- New short folder `shorts/dog-zoomies/`, built on the toon toolkit and the places of `shorts/dog-tail/` and `shorts/dog-time/` (garden, park, back garden). New places and props: a **tub with bubbles and a hose**, a **small gate pen**, a **night version of the garden** (dark blue sky, moon, stars), a **porch deck** with pots, a lamp and a rug.
+- **New characters:** a **vet** (the lab-coat puppet), a **puppy** (the hero dog at 0.45 scale with a rounder head), an **old dog** (grey colours), a **big dark dog**, and the golden and white dogs.
+- **New pieces:** speed streaks and a dotted zig-zag trail (flat ribbons on the ground), dust puffs, a squash-and-stretch helper, a battery icon, ✅/❌/❓ icons, a pulsing ring round the bow, a water spray (droplet sprites), a **speed-ramp time warp** for the slow-motion shots (the pose time is remapped, so every frame is still reproducible), a field-of-view punch, a "play bow" pose (front legs down, rear up) and a skid for the slip.
+- **Real SFX (CC0/CC-BY, no synthesised sounds):** quick paws on gravel (the step clips at a fast rate), a playful bark (the small alert bark, pitched up), water splash clips (ESC-50) for the tub and shake, wind, crickets for the night, birdsong for the day, a soft chime for "happy", a soft thump for the battery charge, a whimper for "scared". Cut them with `tools/fetch-sfx.mjs` (new set `dog-zoomies`).
+- Frame budget: about 1,700 frames; render on a GPU PC if you can.

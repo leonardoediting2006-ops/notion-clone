@@ -107,6 +107,7 @@ Publishing: one video a day when possible, never more than two days without one.
 - **Cut every ~1 s** (never hold a shot longer than 1.5 s) and keep the camera moving in every shot, always eased and smooth: whips, orbits, cranes, tracking dollies.
 - **Cut on motion** (leave right, enter left), add one or two **speed ramps**, **squash and stretch**, dust and speed streaks, and a small **field-of-view punch** on key words.
 - **Talk faster:** 4.2 words/s or more. 16–20 s hard loops are the default for fun topics; 24–27 s only when there is a real second payoff.
+- **Be clear before you are clever:** the first sentence names the subject in the words the viewer would type ("your dog", "sprint in circles"), the picture shows the same thing, one idea per sentence, every new word is explained the moment it appears, and every line has a matching picture (so it works with the sound off). Avoid a vague "he" or "this" at the start.
 - Template that follows these rules: `scripts/dog-zoomies.md`.
 
 ## 7. Before rendering: the 100K checklist
