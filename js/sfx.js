@@ -16,7 +16,10 @@ const LIB = new URL("../assets/sfx/", import.meta.url).href;
 const EXTS = ["wav", "mp3", "ogg", "flac", "m4a"];
 const isRender = new URLSearchParams(location.search).has("render");
 
-export function createSfx(short, { voiceover = "voiceover", voiceGain = 1 } = {}) {
+// mix (optional, used by tools/render.mjs): { gain, duck: { depth, attack, release, threshold } }; gain scales all the sound effects
+// (the voice is not touched) and duck lowers them while the
+// voiceover speaks, so the effects never mask a word (depth 0.4 = up to -4.4 dB; threshold in dBFS of the voice).
+export function createSfx(short, { voiceover = "voiceover", voiceGain = 1, mix = null } = {}) {
   const cues = [];
   const urls = new Map(); // name -> resolved URL (or null)
 
@@ -72,14 +75,15 @@ export function createSfx(short, { voiceover = "voiceover", voiceGain = 1 } = {}
     if (voice) cues.push({ t: 0, name: voiceover, gain: voiceGain, rate: 1, pan: 0, offset: 0, dur: null, fadeIn: 0, fadeOut: 0, loop: false, voice: true }), urls.set(voiceover, voice);
     // for tools/render.mjs
     window.__sfx = cues.filter((c) => urls.get(c.name)).map((c) => ({ ...c, url: urls.get(c.name) }));
+    window.__sfxMix = mix;
   })());
 
-  if (!isRender) preview(short, cues, urls);
+  if (!isRender) preview(short, cues, urls, mix);
   return sfx;
 }
 
 // ---- live playback in the browser preview (Web Audio), following the timeline
-function preview(short, cues, urls) {
+function preview(short, cues, urls, mix) {
   const ctx = new AudioContext();
   const buffers = new Map();
   const playing = new Set();
@@ -106,10 +110,11 @@ function preview(short, cues, urls) {
     src.connect(g).connect(pan).connect(ctx.destination);
     const now = ctx.currentTime;
     const end = c.dur ?? (b.duration - c.offset) / c.rate;
-    g.gain.setValueAtTime(c.fadeIn && into < c.fadeIn ? 0 : c.gain, now);
-    if (c.fadeIn && into < c.fadeIn) g.gain.linearRampToValueAtTime(c.gain, now + c.fadeIn - into);
+    const gain = c.gain * (c.voice ? 1 : mix?.gain ?? 1); // the preview applies the effects gain (the render also ducks them under the voice)
+    g.gain.setValueAtTime(c.fadeIn && into < c.fadeIn ? 0 : gain, now);
+    if (c.fadeIn && into < c.fadeIn) g.gain.linearRampToValueAtTime(gain, now + c.fadeIn - into);
     if (c.fadeOut) {
-      g.gain.setValueAtTime(c.gain, now + Math.max(0, end - into - c.fadeOut));
+      g.gain.setValueAtTime(gain, now + Math.max(0, end - into - c.fadeOut));
       g.gain.linearRampToValueAtTime(0, now + Math.max(0, end - into));
     }
     const off = c.loop ? (into * c.rate) % b.duration : c.offset + into * c.rate;

@@ -64,12 +64,13 @@ try {
 
   // soundtrack: sound-effect cues + voiceover, mixed sample-accurately
   let cues = await page.evaluate(() => window.__sfx ?? []);
+  const mixOpts = await page.evaluate(() => window.__sfxMix ?? null);
   if (opts["no-sfx"]) cues = cues.filter((c) => c.voice);
   if (opts.audio) cues = [...cues.filter((c) => !c.voice), { t: 0, url: resolvePath(opts.audio), gain: 1, voice: true }];
   let audioFile = null;
   if (cues.length && !still) {
     audioFile = out.replace(/\.mp4$/i, "") + "-audio.wav";
-    await mixCues(cues, duration, audioFile);
+    await mixCues(cues, duration, audioFile, mixOpts ?? {});
     const nv = cues.filter((c) => c.voice).length;
     console.log(`Soundtrack: ${cues.length - nv} sound effects${nv ? " + voiceover" : " (no voiceover found)"} → ${audioFile}`);
   }

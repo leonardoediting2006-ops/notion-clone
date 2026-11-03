@@ -1,33 +1,36 @@
-# Sound effects — real recordings
+# Sound effects: real recordings, cleaned and cut
 
-Cut from the [ESC-50 dataset](https://github.com/karolpiczak/ESC-50) (clips of freesound.org field
-recordings) and Sonic Pi's CC0 sample library by `tools/fetch-sfx.mjs`. Only clips whose original licence is CC0 or CC-BY are used.
+Every sound in this folder is a cut of a real field recording (freesound.org, via the ESC-50 dataset and Sonic Pi's CC0 sample
+library). Nothing is synthesised. `tools/forge-comfort-sfx.py` downloads the originals and makes these files (spectral-gating
+noise reduction, band-limiting, fades, level). The cue sheet that places them on the picture is the end of `main.js`.
 
-| Clip | Original recording | Licence |
+| Files | Original recording | Licence |
 |---|---|---|
-| 4-187769-A-14 | "binaural-birds-06-05-2013.flac" by dwareing — https://freesound.org/s/187769/ | CC0 |
-| 4-223125-A-14 | "starlings2.wav" by keweldog — https://freesound.org/s/223125/ | CC0 |
-| 1-29532-A-16 | "wind3.wav" by eliasheuninck — https://freesound.org/s/29532/ | CC0 |
-| 4-117627-A-25 | "footsteps - gravel pavement.wav" by soundmary — https://freesound.org/s/117627/ | CC0 |
-| 5-173568-A-33 | "creaking door.wav" by Bratok999 — https://freesound.org/s/173568/ | CC0 |
-| 2-118625-A-30 | "Door Open and Close - Ortf.wav" by E-Audio — https://freesound.org/s/118625/ | CC0 |
-| 3-156907-A-15 | "Water drop" by Elfman-Rox — https://freesound.org/s/156907/ | CC0 |
-| 4-188293-A-15 | "Water Drop" by willstepp — https://freesound.org/s/188293/ | CC0 |
-| sp:drum_bass_soft | "drum_bass_soft (Sonic Pi sample)" by menegass — https://freesound.org/s/100052/ | CC0 |
-| 1-30709-A-23 | "breath.wav" by UncleSigmund — https://freesound.org/s/30709/ | CC0 |
-| 5-217158-A-0 | "barkingdog_in_dream.mp3" by Taira Komori — https://freesound.org/s/217158/ | CC-BY 3.0 |
-| 5-231762-A-0 | "FX_Dog Barking.wav" by davidmenke — https://freesound.org/s/231762/ | CC0 |
-| kn:tick_001 | "tick_001 (Kenney Interface Sounds)" by Kenney — https://kenney.nl/assets/interface-sounds | CC0 |
-| kn:pluck_001 | "pluck_001 (Kenney Interface Sounds)" by Kenney — https://kenney.nl/assets/interface-sounds | CC0 |
-| sp:perc_bell | "perc_bell (Sonic Pi sample)" by AlaskaRobotics — https://freesound.org/s/221515/ | CC0 |
-| 3-170377-A-38 | "TicTac of a wall clock" by felix.blume — https://freesound.org/s/170377/ | CC0 |
-| sp:ambi_sauna | "ambi_sauna (Sonic Pi sample)" by hullum — https://freesound.org/s/415551/ | CC0 |
-| 5-261464-A-23 | "Werewolf breathing and sniffing" by kd_jack — https://freesound.org/s/261464/ | CC0 |
-| 2-70936-A-42 | "police.wav" by guitarguy1985 — https://freesound.org/s/70936/ | CC0 |
+| applause | "Polite Clapping with no Yelling" by dianadesim — https://freesound.org/s/130330/ | CC0 |
+| bell_1, bell_2, bell_3, bell_long | "Angelus Bell.aif" by Peaveycroquette — https://freesound.org/s/78381/ | CC BY |
+| breath_out | "Breath human Sci2.wav" by cidchili — https://freesound.org/s/54962/ | CC0 |
+| drip_1, drip_2, drip_3, pop_1, pop_2, pop_3 | "Water drop" by Elfman-Rox — https://freesound.org/s/156907/ | CC0 |
+| gasp | "Frightened Breathing.aiff" by nickrave — https://freesound.org/s/112557/ | CC0 |
+| glow | "ambi_glass_rub (Sonic Pi sample)" by ani_music — https://freesound.org/s/198403/ | CC0 |
+| heart_1, heart_2 | "drum_bass_soft (Sonic Pi sample)" by menegass — https://freesound.org/s/100052/ | CC0 |
+| pad_step, thump | "Footsteps_Carpet.wav" by mlsulli — https://freesound.org/s/234855/ | CC0 |
+| paper_pile | "Fire Crackling 01.wav" by kingsrow — https://freesound.org/s/181563/ | CC0 |
+| paw_1, paw_2, paw_3, paw_4 | "wooden panel footstep 3" by Yoyodaman234 — https://freesound.org/s/223162/ | CC0 |
+| siren | "police.wav" by guitarguy1985 — https://freesound.org/s/70936/ | CC0 |
+| snap, snap_low | "perc_snap (Sonic Pi sample)" by SoundCollectah — https://freesound.org/s/109400/ | CC0 |
+| sniffle_1, sniffle_2, sniffle_3, sniffle_4 | "Breath" by mcroce — https://freesound.org/s/234335/ | CC0 |
+| snore | "Dog Snores" by mingusassin — https://freesound.org/s/234145/ | CC0 |
+| splat_1 | "Water splash 2.wav" by Adam_N — https://freesound.org/s/164593/ | CC0 |
+| splat_2 | "Water splash 1.wav" by Adam_N — https://freesound.org/s/164594/ | CC0 |
+| splat_3 | "120115_05 stones drop bath.WAV" by toiletrolltube — https://freesound.org/s/174797/ | CC0 |
+| squeak_1, squeak_2, squeak_3 | "creaking door.wav" by Bratok999 — https://freesound.org/s/173568/ | CC0 |
+| thrush_a, thrush_b, thrush_c, thrush_d | "Song thrush (pevchiy drozd)" by urupin — https://freesound.org/s/122616/ | CC0 |
+| twinkle_1, twinkle_2, twinkle_3 | "perc_bell (Sonic Pi sample)" by AlaskaRobotics — https://freesound.org/s/221515/ | CC0 |
+| whimper_a, whimper_b, whimper_c | "barkingdog_in_dream.mp3" by Taira Komori — https://freesound.org/s/217158/ | CC BY |
+| woof_low, woof_soft | "LBS_FX DOG Small Alert Bark001.wav" by LittleBigSounds — https://freesound.org/s/163459/ | CC0 |
 
-## Video description credit (CC-BY sounds)
+## Video description credit (CC BY sounds)
 
 ```
-Sounds: "barkingdog_in_dream.mp3" by Taira Komori (freesound.org, CC BY 3.0).
+Sounds: "Angelus Bell" by Peaveycroquette and "barkingdog_in_dream" by Taira Komori (freesound.org, CC BY).
 ```
-

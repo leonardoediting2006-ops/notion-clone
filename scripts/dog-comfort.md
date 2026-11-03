@@ -75,7 +75,7 @@ Your dog isn't actually asking to play fetch. 🐶💛 When you're crying and he
 #shorts #dogs #dogfacts
 
 Source: Custance & Mayer, "Empathic-like responding by domestic dogs (Canis familiaris) to distress in humans: an exploratory study", Animal Cognition (2012).
-Sounds: "barkingdog_in_dream.mp3" by Taira Komori (freesound.org, CC BY 3.0).
+Sounds: "Angelus Bell" by Peaveycroquette and "barkingdog_in_dream" by Taira Komori (freesound.org, CC BY).
 ```
 
 **Pinned comment**
@@ -85,5 +85,11 @@ Sounds: "barkingdog_in_dream.mp3" by Taira Komori (freesound.org, CC BY 3.0).
 
 - `shorts/dog-comfort/` (built on `js/toon.js`, `js/puppet.js`, `js/toonworld.js`, `js/herodog.js`; the park, front garden and back garden of the earlier shorts).
 - **New pieces:** the chewed lilac bunny (a bent ear, stuffing, a button eye with an X stitch, a torn seam, mud patches, drool), thought bubbles with emoji, a god-ray sprite, a marble pedestal with a golden crown, a doctor's cap and a siren (rotating red and blue beams) on the dog's head, tear drops from both eyes, a rain cloud that turns into a sun and a rainbow, paper and parcels falling on the owner, pink "emergency" lighting, a swirling whip-orbit.
-- **Real SFX (CC0 / CC-BY, no synthesised sounds):** birdsong, wind, gravel steps, a thump, water drops (the drool and tears), a heartbeat, a breath, a whimper, a bark, a pad (a low, sad bed), a chime and a pluck for the icon pops, a police siren. Cut them with `node tools/fetch-sfx.mjs dog-comfort`; credits in `shorts/dog-comfort/sfx/CREDITS.md`.
+- **Sound design: real recordings only, cleaned and placed one by one on the action** (49 sounds, lossless FLAC, 155 cues; no wind, no hum, no synthesised or "UI" sounds). `python3 tools/forge-comfort-sfx.py` (needs `numpy scipy soundfile noisereduce`) downloads the original freesound recordings (CC0 / CC BY, via ESC-50 and Sonic Pi's CC0 samples), removes their background noise with spectral gating, band-limits them with causal filters (no pre-ringing), fades and levels them, and writes `shorts/dog-comfort/sfx/*.flac` and its `CREDITS.md`. The cue sheet is the end of `main.js`:
+  - **the dog:** claw-and-pad steps on the paving (a real wooden footstep pitched up, speeding up on the bolt and the run), a whimper, a soft woof, a low woof, a real dog snore for the nap, a sniff of the air;
+  - **the bunny:** a squeak (a real creaking door, pitched up) at every squeeze and trot, a wet plop in your lap (real water splashes) and slow drips, a soft plush thump (a real footstep on carpet, pitched down);
+  - **you:** a shaky gasp, sniffles, a long breath out when the weight lifts, tear drops (a real water drop, pitched);
+  - **the icons:** every pop is a tiny real water-drop pip plus a real bell; the three "safety, dopamine, comfort" bells rise a third and a fifth (the same bell, pitched), the three sad bubbles fall; a finger snap on the ❌ and the bandage; a glass shimmer under the hero toy; real polite applause under the crown; a real police siren for the emergency;
+  - **ambience:** one song thrush, a phrase at a time: sparse and quiet while you are sad, fuller when the clouds part. No continuous noise bed.
+  - **mix:** `tools/mix.mjs` ducks the effects 3 dB under the voice (fast attack, slow release) and keeps everything under a limiter; the effects sit about 10 dB below the voice.
 - ~2,130 frames at 60 fps: render on a PC with a GPU (about 30–45 minutes) with `voiceover.wav` placed in `shorts/dog-comfort/`.

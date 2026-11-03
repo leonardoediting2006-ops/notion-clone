@@ -561,35 +561,111 @@ burst(T0(15) + 0.1, PLAZA_TOY.clone().add(V(0, 0.4, 0)), 10, { ch: ["✨"], spre
 burst(T0(22) + 0.2, V(OWN.x + 0.9, 0.9, OWN.z + 0.6), 10, { ch: ["💛", "✨"], spread: 0.5, rise: 0.7, size: 0.2, gap: 0.2 }); // the happiness he is giving away
 burst(T0(20) + 0.3, V(OFF.p + PLAZA_TOY.x - OFF.p, 1.2, PLAZA_TOY.z), 8, { ch: ["💎", "✨"], spread: 0.7, rise: 0.4, size: 0.2, gap: 0.08 });
 
-const sfx = createSfx(short);
-sfx.loop(0, T0(17), "birds_b", { gain: 0.3, fadeIn: 0.1, fadeOut: 0.3 });
-sfx.loop(T0(4) - 0.1, T0(14) + 0.1, "pad", { gain: 0.3, fadeIn: 0.5, fadeOut: 0.5 });          // a low, sad pad while you cry
-sfx.loop(T0(17) - 0.05, T0(18), "birds", { gain: 0.14, fadeIn: 0.1, fadeOut: 0.15 });
-sfx.loop(T0(19) - 0.05, T0(20), "wind", { gain: 0.45, fadeIn: 0.1, fadeOut: 0.15 });
-sfx.loop(T0(21) - 0.1, DURATION, "birds_b", { gain: 0.34, fadeIn: 0.3, fadeOut: 0.1 });
-const stepTimes = (t0, n, dt) => Array.from({ length: n }, (_, i) => t0 + i * dt);
-sfx.steps(stepTimes(0.32, 4, 0.12), ["step_1", "step_2", "step_3"], { gain: 0.3, jitter: 0.3 });                 // he bolts to you
-sfx.steps(stepTimes(T0(5) + 0.3, 5, 0.3), ["step_3", "step_1", "step_2"], { gain: 0.2 });                        // he wanders off
-sfx.steps(stepTimes(T0(6), 8, 0.15), ["step_2", "step_3", "step_1"], { gain: 0.28, jitter: 0.3 });                // he trots over with it
-sfx.steps(stepTimes(T0(18), 8, 0.12), ["step_1", "step_3", "step_2"], { gain: 0.3, jitter: 0.3 });                // he runs with it
-sfx.steps(stepTimes(T0(17) + 0.2, 2, 0.5), ["step_3", "step_1"], { gain: 0.15 });
-for (const [tt, g] of [[T.drop1 + 0.28, 0.5], [T.drop2 + 0.4, 0.5], [T.hands + 0.4, 0.5]]) sfx.add(tt, "thump", { gain: g, rate: 0.75 });        // the toy lands
-[0.3, 0.55, 0.8].forEach((d) => sfx.add(T.lap1 + d, "drop_2", { gain: 0.5, rate: 1.0 + d * 0.2 }));              // slobber drips
-for (let tt = T0(4) + 0.05; tt < T0(6); tt += 0.34) sfx.add(tt, "drop_1", { gain: 0.3, rate: 0.9 + 0.2 * ((tt * 7) % 1) });          // tears
-sfx.add(T0(5) + 0.1, "pluck", { gain: 0.25, rate: 0.7 });
-sfx.add(T0(11) + 0.15, "siren", { gain: 0.22, dur: 2.4, fadeOut: 0.4 });
-for (const [tt, r] of [[C.heartbreak, 0.85], [C.grief, 0.75], [C.burnout, 0.65]]) sfx.add(tt - 0.05, "pluck", { gain: 0.3, rate: r });
-for (const [tt, r] of [[C.safety, 1.0], [C.dopamine, 1.2], [C.comfort, 1.4]]) sfx.add(tt - 0.05, "chime", { gain: 0.2, rate: r, dur: 1.0, fadeOut: 0.4 });
-sfx.add(T0(15) + 0.05, "chime", { gain: 0.25, dur: 2.0, fadeOut: 0.6 });
-sfx.add(T0(20) + 0.1, "chime", { gain: 0.25, dur: 1.5, fadeOut: 0.5, rate: 1.3 });
-sfx.add(T0(19) + 0.1, "bark_1", { gain: 0.14, rate: 0.7 });
-sfx.add(at("aren't") + 0.55, "pluck", { gain: 0.3, rate: 0.6 });
-for (let tt = T0(22) + 0.1, i = 0; tt < T0(23) + 0.3; i++) { sfx.add(tt, "heart", { gain: 0.4 }); tt += 0.78; }
-sfx.add(T0(23) + 0.7, "breath", { gain: 0.5, dur: 1.4, fadeOut: 0.5 });                                         // you breathe out
-sfx.add(T0(23) + 0.9, "chime", { gain: 0.28, dur: 2.0, fadeOut: 0.8 });
-sfx.add(T0(23) + 1.0, "whimper", { gain: 0.14, rate: 1.1, dur: 1.0, fadeOut: 0.4 });
-sfx.add(T0(2) + 0.05, "drop_1", { gain: 0.4 });
-sfx.add(0.05, "pluck", { gain: 0.2, rate: 1.2 });
+// ===================== sound design: real recordings only (see sfx/CREDITS.md), no beds of noise, no wind =====================
+// Every sound is a clean, de-noised cut of a real recording (tools/forge-comfort-sfx.py). They are placed one by one on the action:
+// paws on the paving, the squeaky bunny, the wet drop in your lap, tears, a shaky breath, a real bell for every icon that pops,
+// the dog's own voice (a whimper, a woof, a snore). The only sustained sound is a song thrush, one phrase at a time, so the
+// park never sounds empty and never sounds noisy. The soundtrack ducks a little under the voice (see tools/mix.mjs).
+const sfx = createSfx(short, { mix: { gain: 1.5, duck: { depth: 0.3, attack: 0.012, release: 0.28, threshold: -42 } } });
+const OWNp = -0.22, DOGp = 0.26;                                   // you sit on the left of the frame, he stands on the right
+const wob = (i, k = 0.05) => 1 + k * Math.sin(i * 12.9898 + 1.7);  // repeatable little pitch/level variety, never random
+const snd = (t, name, gain, o = {}) => sfx.add(t, name, { gain, ...o });
+const paws = (t0, n, dt, g0, g1 = g0, pan = DOGp) => { for (let i = 0; i < n; i++) snd(t0 + i * dt, `paw_${(i % 4) + 1}`, lerp(g0, g1, n > 1 ? i / (n - 1) : 0) * wob(i, 0.18), { pan, rate: wob(i, 0.04) }); };
+const drip = (t, g = 0.4, i = 0, pan = OWNp) => snd(t, `drip_${(i % 3) + 1}`, g, { pan, rate: wob(i, 0.06) });
+const pops = (t, i, g = 0.5, pan = 0) => snd(t, `pop_${(i % 3) + 1}`, g, { pan });
+
+// -- the thrush: single phrases, sparse and quiet while you are sad, fuller when the clouds part
+for (const [tt, nm, g, pan] of [[0.06, "thrush_c", 0.2, 0.4], [3.9, "thrush_a", 0.1, -0.5], [8.4, "thrush_d", 0.1, 0.5], [12.6, "thrush_a", 0.1, -0.4], [17.5, "thrush_b", 0.16, 0.45],
+  [21.4, "thrush_d", 0.14, -0.4], [T0(17) + 0.12, "thrush_a", 0.14, 0.3], [T0(19) + 0.1, "thrush_d", 0.14, -0.3], [T0(21) + 1.2, "thrush_a", 0.1, 0.4], [T0(22) + 1.5, "thrush_d", 0.1, -0.4],
+  [T0(23) + 1.0, "thrush_b", 0.3, 0.45], [T0(23) + 2.0, "thrush_c", 0.26, -0.5], [T0(23) + 2.35, "thrush_a", 0.24, 0.5], [T0(24) + 0.05, "thrush_d", 0.2, 0.3]]) snd(tt, nm, g, { pan });
+
+// -- 1 · the hook: the bunny squeaks as he holds it out to the lens, then he bolts
+snd(0.02, "squeak_1", 0.5);
+paws(0.2, 8, 0.065, 0.3, 0.5);
+// -- 2/3 · he drops it in your lap (wet plop, squeak, drips) and you cannot throw it: he pushes your hand down
+paws(T0(2) + 0.12, 3, 0.1, 0.3, 0.16);
+snd(T0(2) + 0.25, "gasp", 0.3, { pan: OWNp });
+snd(T.drop1 + 0.28, "thump", 0.65, { pan: -0.05 });
+snd(T.drop1 + 0.28, "splat_1", 0.55, { pan: -0.05 });
+snd(T.drop1 + 0.3, "squeak_2", 0.45, { pan: -0.05 });
+[0.3, 0.6, 0.85].forEach((d, i) => drip(T.lap1 + d, 0.4, i, -0.05));
+snd(T.lap1 + 0.1, "sniffle_1", 0.4, { pan: OWNp });
+snd(T0(3) + 0.36, "snap", 0.55); pops(T0(3) + 0.36, 1, 0.35);
+snd(T0(3) + 0.62, "thump", 0.3, { pan: 0.1, rate: 1.2 });
+snd(T0(3) + 0.72, "whimper_a", 0.4, { pan: DOGp });
+// -- 4/5 · crying, then the pile of papers and parcels
+for (let tt = T0(4) + 0.08, i = 0; tt < T0(6) - 0.1; tt += 0.46 + 0.14 * Math.sin(i * 1.9), i++) drip(tt, 0.32 + 0.1 * wob(i, 0.5), i);
+snd(T0(4) + 0.3, "sniffle_2", 0.4, { pan: OWNp });
+snd(T0(4) + 0.65, "gasp", 0.35, { pan: OWNp });
+snd(T0(5) + 0.1, "paper_pile", 0.5);
+[0.55, 0.7, 0.88, 1.0, 1.12, 1.28].forEach((d, i) => snd(T0(5) + d, i % 2 ? "pad_step" : "thump", 0.3 + 0.07 * (i % 3), { pan: OWNp * 0.4, rate: 0.95 + 0.05 * (i % 3) }));
+snd(T0(5) + 1.0, "breath_out", 0.5, { pan: OWNp });
+paws(T0(5) + 0.3, 4, 0.3, 0.2, 0.12);
+snd(T0(5) + 0.5, "whimper_c", 0.32, { pan: DOGp });
+// -- 6 · he trots back with the toy, squeaking at every few steps
+paws(T0(6), 8, 0.15, 0.25, 0.55);
+[0.3, 0.75, 1.05].forEach((d, i) => snd(T0(6) + d, `squeak_${(i % 3) + 1}`, 0.3 + 0.05 * i, { pan: 0.05 * i }));
+// -- 7/8 · the dirty, slobbery toy, close up, then dropped "directly into your lap"
+drip(C.dirty + 0.15, 0.4, 0, DOGp * 0.4); drip(C.dirty + 0.55, 0.36, 1, DOGp * 0.4);
+snd(C.slobbery + 0.05, "splat_2", 0.5, { pan: 0 });
+snd(C.slobbery + 0.5, "squeak_1", 0.3, { pan: 0 });
+drip(C.slobbery + 0.95, 0.3, 2, DOGp * 0.4);
+snd(T.drop2 + 0.4, "thump", 0.65, { pan: -0.05 });
+snd(T.drop2 + 0.38, "splat_3", 0.5, { pan: -0.05 });
+snd(T.drop2 + 0.4, "squeak_3", 0.45, { pan: -0.05 });
+[0.75, 1.0].forEach((d, i) => drip(T.drop2 + d, 0.36, i + 1, -0.05));
+snd(T0(8) + 0.95, "sniffle_3", 0.36, { pan: OWNp });
+// -- 9/10 · "you think he is oblivious": a thought bubble, then a happy, wagging dog who has no idea
+pops(T0(9) + 0.05, 0, 0.55); snd(T0(9) + 0.07, "bell_1", 0.22, { rate: 1.12 });
+snd(T0(10) + 0.32, "woof_soft", 0.5, { pan: DOGp });
+paws(T0(10) + 0.62, 2, 0.14, 0.22, 0.18);
+snd(T0(10) + 0.9, "sniffle_4", 0.3, { pan: OWNp });
+// -- 11 · "emergency care": a siren, a bandage and an ambulance pop, a serious woof
+snd(T0(11) + 0.08, "siren", 0.42, { dur: 2.3, fadeOut: 0.45 });
+snd(T0(11) + 0.28, "snap", 0.5); snd(T0(11) + 0.3, "bell_2", 0.34);
+snd(T0(11) + 0.42, "snap_low", 0.5, { pan: OWNp }); pops(T0(11) + 0.42, 2, 0.35, OWNp);
+snd(T0(11) + 1.0, "woof_soft", 0.45, { pan: DOGp, rate: 1.05 });
+// -- 12 · puzzled: a question mark pops and he whines, head tilted
+pops(T0(12) + 0.12, 2, 0.55); snd(T0(12) + 0.12, "bell_3", 0.2, { rate: 1.1 });
+snd(T0(12) + 0.35, "whimper_b", 0.42, { pan: DOGp });
+snd(T0(12) + 0.95, "sniffle_3", 0.22, { pan: DOGp, rate: 1.22 });     // he sniffs the air, head tilted
+snd(T0(12) + 1.15, "thrush_a", 0.1, { pan: -0.4 });
+// -- 13 · three sad thought bubbles; each pop is a bell pitched lower than the last
+[[C.heartbreak, 0.84], [C.grief, 0.75], [C.burnout, 0.64]].forEach(([tt, r], i) => { pops(tt - 0.05, i, 0.5); snd(tt - 0.05, "bell_1", 0.34, { rate: r }); });
+// -- 14/15 · the toy alone, then the hero reveal: glass shimmer, a long bell, a few sparkles
+snd(T0(14) + 0.45, "glow", 0.55, { dur: 3.0, fadeIn: 0.8, fadeOut: 1.0 });
+snd(T0(14) + 1.0, "twinkle_1", 0.3, { pan: -0.2 });
+snd(T0(15) + 0.05, "bell_long", 0.5);
+[0.12, 0.38, 0.68].forEach((d, i) => snd(T0(15) + d, `twinkle_${i + 1}`, 0.28, { pan: [-0.35, 0.3, 0][i] }));
+// -- 16 · safety, dopamine, comfort: three bells that rise (the same real bell, a third and a fifth higher), with a pop each
+[[C.safety, "bell_1", 0], [C.dopamine, "bell_2", 1], [C.comfort, "bell_3", 2]].forEach(([tt, b, i]) => { pops(tt - 0.05, i, 0.45); snd(tt - 0.05, b, 0.42, { pan: [-0.25, 0, 0.25][i] }); });
+snd(T0(16) + 0.4, "twinkle_2", 0.3);
+snd(T0(16) + 0.2, "woof_soft", 0.38, { pan: DOGp, rate: 1.12 });
+// -- 17 · asleep with it
+snd(T0(17) + 0.04, "snore", 0.55); pops(T0(17) + 0.1, 2, 0.28, 0.2);
+// -- 18 · runs to you with it (squeaking), 19 · guards it
+paws(T0(18) + 0.02, 8, 0.115, 0.3, 0.55, 0);
+snd(T0(18) + 0.22, "squeak_2", 0.28); snd(T0(18) + 0.62, "squeak_3", 0.3);
+snd(T0(19) + 0.12, "woof_low", 0.36, { pan: 0.05 });
+// -- 20 · the trophy: a bell, a crown of gems, polite applause
+snd(T0(20) + 0.08, "bell_long", 0.5);
+snd(T0(20) + 0.3, "twinkle_3", 0.3);
+snd(T0(20) + 0.34, "applause", 0.34, { dur: 1.0, fadeIn: 0.15, fadeOut: 0.5 });
+// -- 21 · "when they drop it in your hands, they aren't asking you to throw it"
+snd(T.hands + 0.4, "thump", 0.6, { pan: -0.05 });
+snd(T.hands + 0.38, "squeak_2", 0.4, { pan: -0.05 });
+snd(T.hands + 0.4, "splat_2", 0.32, { pan: -0.05 });
+snd(C.throwit - 0.2, "snap", 0.5); pops(C.throwit - 0.2, 1, 0.3);
+snd(at("aren't") + 0.55, "whimper_a", 0.3, { pan: DOGp, rate: 0.9 });
+snd(C.throwit + 0.05, "thump", 0.26, { pan: 0.1, rate: 1.2 });
+// -- 22/23 · "giving away the only thing they own": a heartbeat; then the clouds part, you breathe out, the sun and the rainbow
+snd(T0(22) + 0.2, "twinkle_1", 0.2, { pan: 0.2 }); snd(T0(22) + 0.9, "twinkle_2", 0.2, { pan: -0.2 }); snd(T0(22) + 1.6, "twinkle_3", 0.2, { pan: 0.1 });
+for (let tt = T0(22) + 0.1, i = 0; tt < T0(23) + 0.25; tt += 0.78, i++) { snd(tt, "heart_1", 0.55 + 0.06 * Math.min(i, 3)); snd(tt + 0.2, "heart_2", 0.4 + 0.05 * Math.min(i, 3)); }
+snd(T0(23) + 0.7, "breath_out", 0.5, { pan: OWNp });
+snd(T0(23) + 0.7, "glow", 0.4, { dur: 2.4, fadeIn: 0.6, fadeOut: 0.9 });
+snd(T0(23) + 0.92, "bell_long", 0.5);
+[0.95, 1.1, 1.3].forEach((d, i) => snd(T0(23) + d, `twinkle_${i + 1}`, 0.3, { pan: [-0.3, 0.3, 0][i] }));
+snd(T0(23) + 1.05, "whimper_b", 0.2, { pan: DOGp, rate: 1.1 });
 
 // ===================== overlays =====================
 const captions = wordCaptions(document.getElementById("caption"), words, { maxChars: 20 });
