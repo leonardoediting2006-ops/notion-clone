@@ -65,6 +65,7 @@ shorts/
   dog-yawn/           "Why your dog yawns when you yawn" (60 fps, fast-paced, four places: home, a lab with 29 dogs, a park; loops seamlessly)
   dog-tail/           "Which way your dog wags his tail" (60 fps, toon style: flat 2D people in a 3D cartoon world, ten shots in three outdoor places, loops seamlessly)
   dog-time/           "Your dog knows how long you've been gone" (60 fps, toon style, eleven shots, pie timer / bars / scent ribbon instead of text, loops seamlessly)
+  dog-comfort/        "Your dog drops a slobbery toy in your lap when you cry" (60 fps, toon style, 24 shots, thought bubbles / rainbow / crown instead of text, loops seamlessly)
   dog-leash/          "He slept by the door holding his leash" (60 fps story: night hall, winter flashback)
 characters/           Character Lab: preview every human preset (?only=dad, &face for a close-up)
 js/avatar.js          photorealistic premade people (Rocketbox) with walk/run/sit in code
@@ -263,7 +264,7 @@ sfx.steps([1.2, 1.8, 2.4], ["step_1", "step_2"]);          // footsteps with nat
 
 Options: `gain`, `rate` (speed/pitch), `pan` (-1..1), `offset`, `dur`, `fadeIn`, `fadeOut`.
 The library is in `assets/sfx/` (see its README for sources and how to drop in real recordings).
-`node tools/fetch-sfx.mjs dog-hero` (or `dog-welcome`, `dog-stare`, `dog-yawn`, `dog-tail`, `dog-time`) downloads real field recordings (CC0 / CC-BY, from the ESC-50
+`node tools/fetch-sfx.mjs dog-hero` (or `dog-welcome`, `dog-stare`, `dog-yawn`, `dog-tail`, `dog-time`, `dog-comfort`) downloads real field recordings (CC0 / CC-BY, from the ESC-50
 dataset of freesound.org clips) and cuts them into `shorts/dog-hero/sfx/` with a `CREDITS.md`.
 Put `voiceover.wav` (or .mp3) in the short's folder and it is mixed in automatically.
 `npm run render -- shorts/<name> --audio-only` mixes just the soundtrack (`out/<name>-audio.wav`) in
