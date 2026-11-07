@@ -79,7 +79,7 @@ const texMat = (tex, rx, ry) => { const t = tex.clone(); t.needsUpdate = true; t
 
 // ---------- textures: hard wood planks (with knots and grain), wallpapers ----------
 const plankTex = canvasTex(512, 512, (x) => {
-  const cols = ["#b97a4a", "#c58654", "#a96d42", "#cf9059", "#b57547", "#c28350"], pw = 512 / 6;
+  const cols = ["#c8803c", "#d68c3a", "#b87232", "#e09a44", "#c47a36", "#d28538"], pw = 512 / 6;
   for (let i = 0; i < 6; i++) {
     const j = (i * 83 + 120) % 512;
     for (const [y0, y1, ci] of [[0, j, i], [j, 512, (i + 3) % 6]]) {
@@ -93,13 +93,13 @@ const plankTex = canvasTex(512, 512, (x) => {
   }
 });
 const paperBed = canvasTex(256, 256, (x) => {
-  x.fillStyle = "#d4cdf0"; x.fillRect(0, 0, 256, 256);
-  for (let i = 0; i < 8; i++) { x.fillStyle = i % 2 ? "rgba(255,255,255,0.28)" : "rgba(150,130,210,0.16)"; x.fillRect(i * 32, 0, 32, 256); }
+  x.fillStyle = "#b9a8ff"; x.fillRect(0, 0, 256, 256);
+  for (let i = 0; i < 8; i++) { x.fillStyle = i % 2 ? "rgba(255,255,255,0.30)" : "rgba(120,90,230,0.22)"; x.fillRect(i * 32, 0, 32, 256); }
   x.fillStyle = "rgba(255,255,255,0.55)"; for (let r = 0; r < 4; r++) for (let c = 0; c < 4; c++) { x.beginPath(); x.arc(32 + c * 64 + (r % 2) * 32, 32 + r * 64, 4, 0, 6.3); x.fill(); }
 });
 const paperHall = canvasTex(256, 256, (x) => {
-  x.fillStyle = "#f1dfb9"; x.fillRect(0, 0, 256, 256);
-  x.strokeStyle = "rgba(205,160,100,0.45)"; x.lineWidth = 3;
+  x.fillStyle = "#ffd98a"; x.fillRect(0, 0, 256, 256);
+  x.strokeStyle = "rgba(235,140,60,0.5)"; x.lineWidth = 3;
   for (let r = 0; r < 4; r++) for (let c = 0; c < 4; c++) { const cx = c * 64 + 32, cy = r * 64 + 32; x.beginPath(); x.moveTo(cx, cy - 22); x.lineTo(cx + 22, cy); x.lineTo(cx, cy + 22); x.lineTo(cx - 22, cy); x.closePath(); x.stroke(); }
 });
 const rugTex = canvasTex(256, 256, (x) => {
@@ -216,21 +216,21 @@ const den = { inside: null };
 
 // ===================== light, sky and mood =====================
 const skyCanvas = (stops, deco) => { const c = document.createElement("canvas"); c.width = 540; c.height = 960; const x = c.getContext("2d"); const gr = x.createLinearGradient(0, 0, 0, 960); stops.forEach(([p, col]) => gr.addColorStop(p, col)); x.fillStyle = gr; x.fillRect(0, 0, 540, 960); deco?.(x); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; };
-const nightSky = skyCanvas([[0, "#0a0e2c"], [0.55, "#1a2a68"], [1, "#4a5fb0"]], (x) => { let s = 9; const r = () => ((s = (s * 16807) % 2147483647) / 2147483647); for (let i = 0; i < 130; i++) { x.fillStyle = `rgba(255,255,255,${0.35 + 0.6 * r()})`; x.beginPath(); x.arc(r() * 540, r() * 700, 0.8 + 1.8 * r(), 0, 6.3); x.fill(); } });
+const nightSky = skyCanvas([[0, "#0b0f3a"], [0.5, "#2234a8"], [1, "#6d7dff"]], (x) => { let s = 9; const r = () => ((s = (s * 16807) % 2147483647) / 2147483647); for (let i = 0; i < 130; i++) { x.fillStyle = `rgba(255,255,255,${0.35 + 0.6 * r()})`; x.beginPath(); x.arc(r() * 540, r() * 700, 0.8 + 1.8 * r(), 0, 6.3); x.fill(); } });
 const duskSky = skyCanvas([[0, "#2c2f78"], [0.38, "#7b58a6"], [0.7, "#e98e7e"], [1, "#ffc78a"]], (x) => { x.fillStyle = "rgba(255,248,224,0.95)"; x.beginPath(); x.arc(400, 170, 46, 0, 6.3); x.fill(); x.fillStyle = "rgba(255,248,224,0.18)"; x.beginPath(); x.arc(400, 170, 96, 0, 6.3); x.fill(); let s = 5; const r = () => ((s = (s * 16807) % 2147483647) / 2147483647); for (let i = 0; i < 40; i++) { x.fillStyle = `rgba(255,255,255,${0.3 + 0.5 * r()})`; x.beginPath(); x.arc(r() * 540, r() * 240, 0.8 + 1.4 * r(), 0, 6.3); x.fill(); } });
 const daySky = W.skyTexture();
 const MOODS = {
-  night: { bg: nightSky, hemi: [0x7a90e8, 0x2f2c4a, 2.0], key: [0xc8d8ff, 1.55], lamp: 2.4 },
+  night: { bg: nightSky, hemi: [0x7388ff, 0x40306a, 2.05], key: [0xb8d0ff, 1.6], lamp: 2.6 },
   day: { bg: daySky, hemi: [0xfff6e4, 0xd8cfa0, 2.3], key: [0xfff0d2, 1.5], lamp: 0 },
   dusk: { bg: duskSky, hemi: [0xb9a8ff, 0x6a5a78, 1.75], key: [0xffb57a, 1.25], lamp: 0 },
 };
-const hemi = new THREE.HemisphereLight(0x7a90e8, 0x2f2c4a, 2.0);
+const hemi = new THREE.HemisphereLight(0x7388ff, 0x40306a, 2.05);
 const key = new THREE.DirectionalLight(0xc8d8ff, 1.55);
 key.castShadow = true;
 key.shadow.mapSize.set(2048, 2048);
 Object.assign(key.shadow.camera, { left: -7, right: 7, top: 7, bottom: -7, near: 0.5, far: 40 });
 key.shadow.bias = -0.0006; key.shadow.normalBias = 0.02; key.shadow.radius = 4;
-const lamp = new THREE.PointLight(0xffc880, 2.4, 7, 1.3);
+const lamp = new THREE.PointLight(0xffb060, 2.6, 7, 1.3);
 lamp.position.set(-1.35, 0.95, 1.9);
 scene.add(hemi, key, key.target, lamp);
 
@@ -468,8 +468,8 @@ function intruderState(t, k) { // the shadow that creeps down the hall in the la
   if (k !== 17) return null;
   const u = U(t, k);
   const come = ease.inOut(prog(u, 0.45, 1.35)), flee = ease.inOut(prog(u, 1.45, 1.95));
-  const z = lerp(lerp(4.0, 2.05, come), 4.2, flee);
-  return { x: lerp(0.95, 0.5, come) + 0.1 * flee, z, ry: flee > 0.02 ? 0.3 : Math.PI + 0.1 * (1 - come), pose: { t, walk: come > 0.01 && come < 0.99 || flee > 0.02 && flee < 0.99 ? 0.8 : 0, crouch: 0.4 * (1 - flee), ears: -0.6, cute: 0, wag: 0, snarl: 0, sad: 0.5 * flee }, show: ease.out(prog(u, 0.35, 0.55)) * (1 - prog(u, 1.95, 2.1)) };
+  const z = lerp(lerp(4.0, 2.05, come), 3.8, flee);
+  return { x: lerp(0.95, 0.5, come) + 0.65 * flee, z, ry: flee > 0.02 ? 0.3 : Math.PI + 0.1 * (1 - come), pose: { t, walk: come > 0.01 && come < 0.99 || flee > 0.02 && flee < 0.99 ? 0.8 : 0, crouch: 0.4 * (1 - flee), ears: -0.6, cute: 0, wag: 0, snarl: 0, sad: 0.5 * flee }, show: ease.out(prog(u, 0.35, 0.55)) * (1 - prog(u, 1.55, 1.75)) };
 }
 
 // ---------- cameras (each a slow, eased move; positions in house or den coordinates) ----------
@@ -488,7 +488,11 @@ function cameraAt(t, k) {
     case 14: { const a = lerp(0.6, -0.5, e); return { pos: orb(V(0.0, 0.0, 0.1), lerp(2.25, 1.85, e), a, lerp(0.9, 0.5, e)), look: V(0.1, 0.32, 0.0), fov: lerp(46, 50, e) }; }
     case 15: { const p = ease.glide(s); return { pos: V(lerp(0.35, -0.3, p), 1.3 - 0.1 * bump(p), lerp(1.7, -1.5, p)), look: mixv(V(0.0, 0.5, 0.0), V(-1.7, 0.95, -3.3), ease.inOut(prog(s, 0.0, 0.8))), fov: lerp(52, 54, s) }; }
     case 16: return { pos: V(lerp(-0.7, 0.9, e), lerp(0.95, 0.7, e), lerp(3.5, 2.8, e)), look: V(lerp(-0.6, 0.0, e), 0.3, lerp(1.0, 0.45, e)), fov: 52 };
-    case 17: { const top = V(0.0, 3.5, 1.0), lookTop = V(0.05, 0.0, 1.55); const d = ease.inOut(prog(u, 1.0, L)); return { pos: mixv(top, HOOK.pos, d), look: mixv(lookTop, HOOK.look, d), fov: lerp(55, HOOK.fov, d) }; }
+    case 17: { // from just behind the doorway (he guards it, the dark hall beyond) the camera glides over him and out to the opening frame
+      const A = V(0.05, 1.3, -2.0), Mid = V(-0.05, 1.75, 1.2), LA = V(0.0, 0.5, 3.0);
+      const d = ease.inOut(prog(u, 1.0, L)), bz = (a, m, b, k) => a.clone().multiplyScalar((1 - k) * (1 - k)).add(m.clone().multiplyScalar(2 * (1 - k) * k)).add(b.clone().multiplyScalar(k * k));
+      const dogLook = V(0.05, 0.3, -0.05), k1 = ease.inOut(prog(u, 0.55, 1.2)), k2 = ease.inOut(prog(u, 1.6, L)); // he stays the subject while the camera passes over him
+      return { pos: bz(A, Mid, HOOK.pos, d), look: mixv(mixv(LA, dogLook, k1), HOOK.look, k2), fov: lerp(56, HOOK.fov, d) }; }
     // the den: local coordinates
     case 9: return { pos: V(lerp(0.9, 0.0, e), lerp(1.9, 1.2, e), lerp(10.5, 6.4, e)), look: V(0.0, 1.0, -0.8), fov: lerp(52, 50, e) };
     case 10: return { pos: V(lerp(-1.2, -0.35, e), lerp(0.75, 0.6, e), lerp(3.6, 2.7, e)), look: V(0.05, 0.42, 0.0), fov: lerp(52, 46, e) };
@@ -664,8 +668,109 @@ onUpdate((t) => {
   captions(t);
 });
 
-// ===================== sound: real recordings only, placed on the action (cue sheet added below) =====================
+// ===================== sound: real recordings only (see sfx/CREDITS.md), placed one by one on the action =====================
+// Night is quiet: a hall clock ticking, the boards creaking, the dog breathing. By day a thrush. Every icon that pops is a real water-drop pip
+// plus a real bell (descending when something shuts down, rising when something is gained); wood knocks build the barricade; a till rings for
+// "expensive". The soundtrack ducks a little under the voice (tools/mix.mjs).
 const sfx = createSfx(short, { mix: { gain: 1.5, duck: { depth: 0.3, attack: 0.012, release: 0.28, threshold: -42 } } });
+const wob = (i, k = 0.05) => 1 + k * Math.sin(i * 12.9898 + 1.7);   // repeatable little pitch / level variety, never random
+const snd = (t, name, gain, o = {}) => sfx.add(t, name, { gain, ...o });
+const paws = (t0, n, dt, g0, g1 = g0, pan = 0) => { for (let i = 0; i < n; i++) snd(t0 + i * dt, `paw_${(i % 4) + 1}`, lerp(g0, g1, n > 1 ? i / (n - 1) : 0) * wob(i, 0.18), { pan, rate: wob(i, 0.04) }); };
+const pip = (t, i, g = 0.45, pan = 0) => snd(t, `pop_${(i % 3) + 1}`, g, { pan });
+const knock = (t, i, g = 0.5) => snd(t, `knock_${(i % 3) + 1}`, g, { rate: wob(i, 0.03) });
+
+// -- the hall clock (right wall), a quiet tick-tock at night; in shot 4 the night races by
+for (let tt = 0.5, i = 0; tt < DURATION - 0.3; tt += 1.0, i++) {
+  const k = shotOf(tt);
+  if (PLACE[k - 1] === "h" && MOOD[k - 1] === "night" && k !== 4 && k !== 8) snd(tt, i % 2 ? "tock" : "tick", 0.07, { pan: 0.55 });
+}
+for (let i = 0, tt = T0(4) + 0.05; tt < T1(4) - 0.1; i++) { snd(tt, i % 2 ? "tock" : "tick", 0.26, { pan: 0.5, rate: lerp(1.3, 2.3, i / 16) }); tt += lerp(0.12, 0.05, Math.min(1, i / 14)); }
+
+// -- 1 · the hook: a board creaks as he settles, a sleepy breath
+snd(0.03, "creak_1", 0.4);
+snd(0.2, "breath_out", 0.22, { rate: 1.3 });
+// -- 2 · cold floor, then the bed
+snd(C.cold - 0.02, "twinkle_2", 0.26); snd(C.cold + 0.1, "twinkle_3", 0.2, { pan: 0.2 }); snd(C.cold + 0.22, "twinkle_1", 0.2, { pan: -0.2 });
+snd(C.cold + 0.45, "creak_2", 0.3);
+pip(C.over - 0.05, 0, 0.5); snd(C.over - 0.05, "bell_2", 0.34);
+// -- 3 · (day) the front door opens, you carry the bed in, a till rings for "expensive", you set it down, he sniffs it
+snd(T0(3) + 0.04, "door_creak", 0.5, { pan: 0.1 });
+snd(T0(3) + 0.08, "thrush_c", 0.26, { pan: 0.4 });
+for (let i = 0; i < 6; i++) snd(T0(3) + 0.3 + i * 0.27, `step_wood_${(i % 4) + 1}`, lerp(0.3, 0.62, i / 5), { rate: wob(i, 0.04) });
+for (let i = 0; i < 6; i++) snd(T0(3) + 0.5 + i * 0.22, "thump", 0.1, { pan: 0.35, rate: 1.5 });   // his tail on the floor
+snd(C.expensive - 0.02, "cash", 0.5); snd(C.expensive + 0.05, "twinkle_1", 0.3);
+snd(T0(3) + 1.62, "thump", 0.42); snd(T0(3) + 1.66, "pad_step", 0.35, { rate: 0.85 });
+snd(T0(3) + 1.72, "sniffle_1", 0.26, { pan: 0.35, rate: 1.25 });
+// -- 4 · the night passes (the ticks above), the moon crosses the window
+snd(T0(4), "glow", 0.35, { dur: 1.6, fadeIn: 0.5, fadeOut: 0.6 });
+snd(T0(4) + 0.5, "breath_out", 0.2, { rate: 1.3 });
+// -- 5 · the hard wood: a creak, knocks on wood at "hard" and "wood", a heartbeat at "doorway"
+snd(C.hard1 - 0.12, "creak_1", 0.4, { rate: 0.9 });
+knock(C.hard1 + 0.02, 0, 0.5); knock(C.wood + 0.02, 1, 0.5);
+snd(T0(5) + 0.55, "snore", 0.3);
+snd(C.doorway - 0.04, "heart_1", 0.45); snd(C.doorway + 0.18, "heart_2", 0.35); snd(C.doorway + 0.02, "bell_1", 0.2, { rate: 0.8 });
+// -- 6 · (day) the morning: a thrush, you sigh at the dog in your way, a groan, "stubborn"
+snd(T0(6), "thrush_a", 0.22, { pan: -0.4 }); snd(T0(6) + 0.9, "thrush_b", 0.18, { pan: 0.4 });
+snd(T0(6) + 0.15, "breath_out", 0.4, { rate: 0.85 });
+snd(T0(6) + 0.5, "creak_3", 0.3);
+snd(C.stubborn - 0.2, "whimper_b", 0.25, { rate: 0.9 });
+pip(C.stubborn - 0.15, 1, 0.5); snd(C.stubborn - 0.15, "bell_3", 0.2, { rate: 1.1 });
+// -- 7 · not a cooler spot: frost shimmer, a thermometer pops, a snap for the cross
+snd(C.cooler - 0.28, "twinkle_3", 0.26); pip(C.cooler, 2, 0.45);
+snd(C.cooler + 0.55, "snap", 0.55); pip(C.cooler + 0.55, 0, 0.3);
+// -- 8 · the choke point: a heartbeat, the arrows tick in, a shield pings
+for (const d of [0, 0.6, 1.2]) { snd(C.choke - 0.1 + d, "heart_1", 0.5); snd(C.choke + 0.12 + d, "heart_2", 0.38); }
+for (let i = 0; i < 5; i++) snd(C.choke - 0.05 + i * 0.13, i % 2 ? "tock" : "tick", 0.2, { rate: 1.4 + 0.15 * i });
+pip(C.point - 0.05, 1, 0.45); snd(C.point - 0.05, "bell_2", 0.34);
+// -- 9 · the den at dusk: an evening bird, the moon, a soft rustle
+snd(T0(9) + 0.12, "thrush_a", 0.12, { pan: -0.5 }); snd(T0(9) + 0.7, "twinkle_1", 0.14);
+snd(T0(9) + 0.3, "leaves", 0.1);
+// -- 10 · the wolf at the entrance: breathing, an alarm of two bell pings for "dangerous", sleeping pups
+snd(T0(10) + 0.35, "breath_out", 0.3, { rate: 1.1, pan: 0.1 });
+snd(C.dangerous - 0.05, "bell_3", 0.4); snd(C.dangerous + 0.09, "bell_3", 0.4); pip(C.dangerous - 0.05, 2, 0.4);
+snd(C.sleep, "snore", 0.18, { pan: -0.3, rate: 1.2 });
+// -- 11 · drafty (leaves blow in), exposed (a light on the wolf, eyes in the bush), a low growl
+snd(C.drafty - 0.08, "leaves", 0.36); snd(C.drafty + 0.5, "leaves", 0.26, { rate: 1.1 });
+snd(C.exposed, "glow", 0.4, { dur: 1.8, fadeIn: 0.4, fadeOut: 0.8 });
+pip(C.exposed + 0.25, 1, 0.35, 0.4); pip(C.exposed + 0.32, 2, 0.35, 0.5);
+snd(C.exposed + 0.5, "growl", 0.3, { pan: 0.5 });
+// -- 12 · the strike: the shadow springs, the wolf stands and bars the way, it yelps and flees
+snd(T0(12) + 0.04, "growl", 0.5, { pan: 0.4 }); snd(T0(12) + 0.15, "snap", 0.5);
+snd(T0(12) + 0.2, "woof_low", 0.55, { pan: 0.4 });
+snd(T0(12) + 0.34, "woof_low", 0.5, { pan: -0.1, rate: 0.8 });
+snd(T0(12) + 0.5, "thump", 0.6); knock(T0(12) + 0.5, 0, 0.45);
+snd(T0(12) + 0.68, "whimper_a", 0.4, { pan: 0.5, rate: 1.2 });
+// -- 13 · he fits himself into the doorway: steps, a creak, a flop and a sigh, then the width bar
+paws(T0(13) + 0.1, 9, 0.12, 0.3, 0.2);
+snd(T0(13) + 1.05, "creak_2", 0.4); snd(T0(13) + 1.5, "thump", 0.55); snd(T0(13) + 1.55, "breath_out", 0.3, { rate: 1.3 });
+snd(C.threshold - 0.1, "snap", 0.45); snd(C.threshold - 0.08, "bell_1", 0.3, { rate: 1.2 });
+// -- 14 · "a living barricade": three quick wood knocks, a long bell, a shower of twinkles
+[0, 0.1, 0.2].forEach((d, i) => knock(C.living - 0.06 + d, i, 0.55));
+snd(C.living - 0.1, "glow", 0.35, { dur: 2.0, fadeIn: 0.4, fadeOut: 0.8 });
+snd(C.barricade - 0.05, "bell_long", 0.5);
+[0, 0.08, 0.16].forEach((d, i) => snd(C.barricade + d, `twinkle_${i + 1}`, 0.28, { pan: [-0.3, 0.3, 0][i] }));
+// -- 15 · the senses shut down: four pips as the icons light, four bells that fall as they go dark, the sleeper breathes
+snd(T0(15) + 0.08, "creak_3", 0.2);
+[0, 1, 2, 3].forEach((i) => pip(C.asleep + i * 0.1, i, 0.3));
+[0.95, 0.8, 0.67, 0.56].forEach((r, i) => snd(C.shut + i * 0.14, "bell_1", 0.34, { rate: r }));
+snd(C.asleep + 0.3, "breath_out", 0.3, { rate: 0.8, pan: -0.2 }); snd(C.completely + 0.2, "breath_out", 0.28, { rate: 0.8, pan: -0.2 });
+snd(C.down + 0.1, "heart_1", 0.35);
+// -- 16 · he leaves the soft bed for the hard floor
+snd(T0(16) + 0.1, "breath_out", 0.25, { rate: 1.3 });
+snd(T0(16) + 0.6, "pad_step", 0.32, { rate: 0.8 });
+paws(T0(16) + 0.95, 8, 0.125, 0.3, 0.3);
+snd(C.comfort - 0.1, "twinkle_2", 0.3); snd(C.comfort - 0.08, "bell_2", 0.22, { rate: 0.9 });
+snd(T0(16) + 2.15, "creak_1", 0.4); snd(T0(16) + 2.25, "thump", 0.6); snd(T0(16) + 2.32, "breath_out", 0.4, { rate: 1.2 });
+snd(C.floor2 - 0.1, "whimper_c", 0.18, { rate: 0.9 });
+// -- 17 · the dark hall: soft steps, a creak under the shadow, the dog's low warning, a yelp, then calm
+for (let i = 0; i < 6; i++) snd(T0(17) + 0.5 + i * 0.16, "pad_step", 0.13, { pan: 0.2, rate: 0.9 + 0.04 * i });
+snd(T0(17) + 0.75, "creak_2", 0.3, { pan: 0.2 });
+snd(T0(17) + 0.55, "breath_out", 0.2, { rate: 1.3 });
+snd(C.coming - 0.05, "growl", 0.35);
+snd(T0(17) + 1.5, "whimper_a", 0.3, { pan: 0.2, rate: 1.25 });
+
+// ===================== colour grade: vivid and saturated (a CSS filter on the 3D canvas; the DOM captions are not touched) =====================
+renderer.domElement.style.filter = "saturate(1.4) contrast(1.07) brightness(1.02)";
 
 // ===================== overlays =====================
 const captions = wordCaptions(document.getElementById("caption"), words, { maxChars: 20 });

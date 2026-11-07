@@ -66,6 +66,7 @@ shorts/
   dog-tail/           "Which way your dog wags his tail" (60 fps, toon style: flat 2D people in a 3D cartoon world, ten shots in three outdoor places, loops seamlessly)
   dog-time/           "Your dog knows how long you've been gone" (60 fps, toon style, eleven shots, pie timer / bars / scent ribbon instead of text, loops seamlessly)
   dog-comfort/        "Your dog drops a slobbery toy in your lap when you cry" (60 fps, toon style, 24 shots, thought bubbles / rainbow / crown instead of text, loops seamlessly)
+  dog-doorway/        "Why your dog sleeps in your doorway" (60 fps, toon style, 17 shots with cross-dissolves, vivid colour, a house and a wolf den, loops seamlessly)
   dog-leash/          "He slept by the door holding his leash" (60 fps story: night hall, winter flashback)
 characters/           Character Lab: preview every human preset (?only=dad, &face for a close-up)
 js/avatar.js          photorealistic premade people (Rocketbox) with walk/run/sit in code
