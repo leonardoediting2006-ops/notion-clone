@@ -1,0 +1,34 @@
+# Sound effects: real recordings, cleaned and cut
+
+Every sound in this folder is a cut of a real field recording (freesound.org, via the ESC-50 dataset and Sonic Pi's CC0 sample
+library). Nothing is synthesised. `tools/forge-clothes-sfx.py` downloads the originals and makes these files (spectral-gating
+noise reduction, band-limiting, fades, level). The cue sheet that places them on the picture is the end of `main.js`.
+
+| Files | Original recording | Licence |
+|---|---|---|
+| bell_1, bell_2, bell_3, bell_long | "Angelus Bell.aif" by Peaveycroquette — https://freesound.org/s/78381/ | CC BY |
+| breath_out | "Breath human Sci2.wav" by cidchili — https://freesound.org/s/54962/ | CC0 |
+| door_close | "Door Open and Close - Close Mic.wav" by E-Audio — https://freesound.org/s/118624/ | CC0 |
+| door_creak | "creaking door.wav" by Bratok999 — https://freesound.org/s/173568/ | CC0 |
+| gasp | "Frightened Breathing.aiff" by nickrave — https://freesound.org/s/112557/ | CC0 |
+| glow | "ambi_glass_rub (Sonic Pi sample)" by ani_music — https://freesound.org/s/198403/ | CC0 |
+| heart_1, heart_2 | "drum_bass_soft (Sonic Pi sample)" by menegass — https://freesound.org/s/100052/ | CC0 |
+| pad_step, thump | "Footsteps_Carpet.wav" by mlsulli — https://freesound.org/s/234855/ | CC0 |
+| paw_1, paw_2, paw_3, paw_4 | "wooden panel footstep 3" by Yoyodaman234 — https://freesound.org/s/223162/ | CC0 |
+| pop_1, pop_2, pop_3 | "Water drop" by Elfman-Rox — https://freesound.org/s/156907/ | CC0 |
+| rustle_1, rustle_2, rustle_3 | "Fire Crackling 01.wav" by kingsrow — https://freesound.org/s/181563/ | CC0 |
+| snap, snap_low | "perc_snap (Sonic Pi sample)" by SoundCollectah — https://freesound.org/s/109400/ | CC0 |
+| sniffle_1, sniffle_2, sniffle_3, sniffle_4 | "Breath" by mcroce — https://freesound.org/s/234335/ | CC0 |
+| snore | "Dog Snores" by mingusassin — https://freesound.org/s/234145/ | CC0 |
+| step_wood_1, step_wood_2, step_wood_3, step_wood_4 | "footsteps on wood" by Mydo1 — https://freesound.org/s/198962/ | CC0 |
+| swash_1, swash_2 | "perc_swash (Sonic Pi sample)" by qubodup — https://freesound.org/s/60009/ | CC0 |
+| thrush_a, thrush_b, thrush_c | "Song thrush (pevchiy drozd)" by urupin — https://freesound.org/s/122616/ | CC0 |
+| tick, tock | "TicTac of a wall clock" by felix.blume — https://freesound.org/s/170377/ | CC0 |
+| twinkle_1, twinkle_2, twinkle_3 | "perc_bell (Sonic Pi sample)" by AlaskaRobotics — https://freesound.org/s/221515/ | CC0 |
+| whimper_a, whimper_b, whimper_c | "barkingdog_in_dream.mp3" by Taira Komori — https://freesound.org/s/217158/ | CC BY |
+
+## Video description credit (CC BY sounds)
+
+```
+Sounds: "Angelus Bell" by Peaveycroquette and "barkingdog_in_dream" by Taira Komori (freesound.org, CC BY).
+```
