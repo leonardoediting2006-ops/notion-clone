@@ -10,7 +10,7 @@ Seamless-loop Short · ~46 s (the recorded voiceover, `Compound_Clip_5.srt`) · 
 
 The last line runs into the first on the loop: *"Which is why… **your dog isn't actually being naughty** when they sleep on your dirty clothes."* The closing frame is the opening frame (the golden dog in his nest of clothes, glossy eyes on the lens).
 
-> Heads-up: the `.srt` reads "deep into the **fat**," (line 483, 36.4 s). If the recording says "fabric", change that one word in `voiceover.srt` so the caption matches.
+> **Caption bait (on purpose):** the caption at 36.4 s reads "deep into the **fart**," while the voice says it right ("fat" in the original `.srt`). It is one word on line 483 of `voiceover.srt` and is not tied to any animation cue, so it is safe to change or undo: put `fat,` (or `fabric,`) back to remove it. Another safe swap, if you want a second one: `deprivation` → `depravation` (line 411). Do **not** change `receptors`, `mask`, `sensory`, `oxytocin` or other words the animation is timed to (`at("…")` in `main.js`), or the page will lose its cue.
 
 ## Shot list (times follow the recorded `.srt`)
 
@@ -73,8 +73,12 @@ Your dog isn't actually being naughty when he sleeps on your dirty clothes. 🐶
 Sounds: "Angelus Bell" by Peaveycroquette and "barkingdog_in_dream" by Taira Komori (freesound.org, CC BY).
 ```
 
-**Pinned comment**
+**Pinned comment** (pick one)
 > Where does YOUR dog nest? L = your laundry, J = a jacket, C = the couch, B = his own bed 👇🐶
+
+> There's a typo in this video 👀 Find it and tell me what the word should be 👇 (and tell me where your dog sleeps while you're at it 🐶)
+
+**Bait tips:** don't mention the typo in the title or first line of the description (it should feel like a real slip); don't correct it for the first few hours; when people comment, reply with one short line ("what typo? 👀") to keep the thread going. Keep it mild: a vulgar word in the captions can limit ads or get a Short age-restricted, and the words must never be a slur or about a real person.
 
 ## Build notes (toon style)
 
