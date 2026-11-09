@@ -7,6 +7,7 @@ import * as W from "../../js/toonworld.js";
 import { createSheet, drape, settle, commit, pileTop, colliders } from "../../js/cloth.js";
 import { loadSrt, wordCaptions } from "../../js/voiceover.js";
 import { createSfx } from "../../js/sfx.js";
+import { buildOutside } from "./outside.js";
 
 // "Why your dog sleeps on your dirty clothes" — toon style: flat 2D people in a 3D cartoon world, the 3D hero dog.
 // 20 shots in one flat, a slow eased camera move in each, a real cross-dissolve at every cut, no on-screen text (icons only), vivid colour.
@@ -119,10 +120,9 @@ const house = { door: null, outside: null, pane: null, paneCtx: null, paneTex: n
   // the front door (hinged on the right) with a frame, a knob and a peephole, and a bright garden behind it for when it opens
   ext(g, 0.29, 0.35, 0, 2.15, 4.95, 5.12, whiteM, true); ext(g, 1.25, 1.31, 0, 2.15, 4.95, 5.12, whiteM, true); ext(g, 0.29, 1.31, 2.1, 2.17, 4.95, 5.12, whiteM, true);
   { const leaf = new THREE.Group(); leaf.position.set(1.25, 0, 5.0); g.add(leaf); const d0 = mesh(leaf, roundedBox(0.9, 2.08, 0.06, 0.02), toon(0xff5a4a), -0.45, 1.04, 0); d0.userData.ink = true; mesh(leaf, new THREE.SphereGeometry(0.045, 12, 8), toon(0xffd24a), -0.8, 1.0, -0.05); mesh(leaf, new THREE.CylinderGeometry(0.03, 0.03, 0.02, 12).rotateX(Math.PI / 2), toon(0xffd24a), -0.45, 1.65, -0.04); leaf.traverse((o) => (o.userData.ink = false)); outline(leaf, { width: 0.012, min: 0.02 }); house.door = leaf; }
-  { const o = new THREE.Mesh(new THREE.PlaneGeometry(3, 3), new THREE.MeshBasicMaterial({ color: 0xffffff })); o.position.set(0.8, 1.4, 5.8); o.rotation.y = Math.PI; o.userData.ink = false; g.add(o); house.outside = o; }
-  // the window in the right wall; its pane is a small canvas redrawn while the seasons fly by
-  { const c = document.createElement("canvas"); c.width = 460; c.height = 260; house.paneCtx = c.getContext("2d"); house.paneTex = new THREE.CanvasTexture(c); house.paneTex.colorSpace = THREE.SRGBColorSpace;
-    const p = new THREE.Mesh(new THREE.PlaneGeometry(2.2, 1.3), new THREE.MeshBasicMaterial({ map: house.paneTex })); p.rotation.y = -Math.PI / 2; p.position.set(3.15, 1.55, 1.3); p.userData.ink = false; g.add(p); house.pane = p;
+  // outside the door and the window is the real 3D world (outside.js)
+  // the window in the right wall: an open frame onto the garden
+  {
     ext(g, 3.1, 3.22, 0.88, 0.94, 0.15, 2.45, whiteM, true); ext(g, 3.1, 3.22, 2.16, 2.22, 0.15, 2.45, whiteM, true); ext(g, 3.1, 3.22, 0.88, 2.22, 0.15, 0.21, whiteM, true); ext(g, 3.1, 3.22, 0.88, 2.22, 2.39, 2.45, whiteM, true); ext(g, 3.1, 3.22, 0.88, 2.22, 1.27, 1.33, whiteM, true); ext(g, 3.1, 3.22, 1.5, 1.56, 0.15, 2.45, whiteM, true);
     rbox(g, 0.1, 1.5, 0.3, toon(0xff6a8a), 3.0, 1.55, 0.0, 0.05); rbox(g, 0.1, 1.5, 0.3, toon(0xff6a8a), 3.0, 1.55, 2.6, 0.05); ext(g, 2.95, 3.1, 2.25, 2.3, -0.1, 2.75, woodM); }
   // couch (left wall): a deep seat, back, arms and three cushions
@@ -141,7 +141,7 @@ const house = { door: null, outside: null, pane: null, paneCtx: null, paneTex: n
     house.clock = { min: mk(0.18, 0.016), hour: mk(0.12, 0.022) }; }
   const ceiling = ext(g, -3.3, 3.3, 2.7, 2.76, -2.1, 5.1, toon(0xf3ecde)); ceiling.userData.ink = false; house.ceiling = ceiling;
   outlineStatic(g, { width: 0.012, min: 0.05 });
-  console.log("flat fused", JSON.stringify(W.fuseStatic(g, { skip: [house.door, house.outside, house.pane, house.clock?.min, house.clock?.hour, ceiling] })));
+  console.log("flat fused", JSON.stringify(W.fuseStatic(g, { skip: [house.door, house.clock?.min, house.clock?.hour, ceiling] })));
 }
 
 // ---------- the laundry basket: a woven toon basket with a rim and two handles ----------
@@ -159,15 +159,32 @@ const basket = (() => {
   return g;
 })();
 
+// ===================== the world outside: garden, street, trees, houses, sky =====================
+const outside = buildOutside();
+scene.add(outside.group, outside.sky);
+scene.fog = new THREE.Fog(0xe9f8ff, 45, 260);
+// what the day looks like out there, per shot: a bright summer noon, a time-lapse of days and seasons (13), golden-hour autumn (18, 19)
+function outsideState(t, k) {
+  const base = { light: 1, warm: 0, sunEl: 0.9, sunAz: 0.3, season: 1, moonEl: -1, moonAz: 0 };
+  if (k === 13) {
+    const p = clamp01(U(t, 13) / SL(13)), dd = (0.3 + 1.7 * p) % 1, s = Math.sin(2 * Math.PI * (dd - 0.25));
+    const f = (dd - 0.25) / 0.5, g2 = (((dd + 0.5) % 1) - 0.25) / 0.5;      // the sun crosses between 0.25 and 0.75, the moon between 0.75 and 1.25
+    return { light: clamp01(0.5 + 1.2 * s), warm: clamp01(1 - Math.abs(s) * 3.5), sunEl: f >= 0 && f <= 1 ? 0.06 + 0.2 * Math.sin(Math.PI * f) : -0.5, sunAz: lerp(0.38, -0.38, clamp01(f)), moonEl: g2 >= 0 && g2 <= 1 ? 0.08 + 0.2 * Math.sin(Math.PI * g2) : -0.5, moonAz: lerp(0.38, -0.38, clamp01(g2)), season: 3.99 * p };
+  }
+  if (k === 18) return { ...base, light: 0.85, warm: 1, sunEl: 0.17, sunAz: -0.42, season: 2 };
+  if (k === 19) return { ...base, light: 0.85, warm: 1, sunEl: 0.1, sunAz: Math.PI / 2, season: 2 };
+  return base;
+}
+
 // ===================== the clothes: soft cloth, draped =====================
 const GARMENTS = [ // the nest in front of the door (bottom to top): kind, size, colour, stripe, turn, offset x, offset z
   ["jeans", 1.35, "#2f6fd6", null, 0.35, 0.0, 0.0], ["hoodie", 1.15, "#ff5a36", null, -0.7, -0.14, 0.12], ["tee", 1.0, "#ffd02e", null, 1.1, 0.22, -0.14], ["jacket", 1.1, "#2fbf7a", null, 2.5, -0.05, -0.2],
   ["tee", 0.95, "#3fb0ff", "#ffffff", 2.2, 0.0, 0.16], ["sock", 0.55, "#b25cff", "#ffe14a", 0.4, 0.42, 0.3], ["tee", 0.9, "#ff6aa8", null, -2.0, -0.3, 0.05],
 ];
 const nestSheets = GARMENTS.map(([kind, size, color, stripe, rot, ox, oz], i) => { const s = createSheet({ kind, w: size, d: size, color, stripe, seed: i + 1 }); s.mesh.material.polygonOffset = true; s.mesh.material.polygonOffsetFactor = -i * 0.4; scene.add(s.mesh); s.pl = { x: NP.x + ox, z: NP.z + oz, rot }; return s; });
-const BASKET_GARMENTS = [["tee", 0.95, "#3fe0b0", "#ffffff", 0.2, 0.0, 0.0], ["hoodie", 1.05, "#9a5cff", null, 1.9, 0.05, -0.05], ["jeans", 1.2, "#3a6fc4", null, -1.0, -0.05, 0.1]];
+const BASKET_GARMENTS = [["tee", 0.68, "#3fe0b0", "#ffffff", 0.2, 0.0, 0.0], ["hoodie", 0.72, "#9a5cff", null, 1.9, 0.04, -0.04], ["jeans", 0.82, "#3a6fc4", null, -1.0, -0.04, 0.06]];
 const basketSheets = BASKET_GARMENTS.map(([kind, size, color, stripe, rot, ox, oz], i) => { const s = createSheet({ kind, w: size, d: size, color, stripe, seed: 20 + i }); scene.add(s.mesh); s.pl = { x: BP.x + ox, z: BP.z + oz, rot }; return s; });
-const spill = createSheet({ kind: "tee", w: 0.9, d: 0.9, color: "#ff5a6a", stripe: "#ffffff", seed: 31 }); scene.add(spill.mesh); spill.pl = { x: BP.x + 0.38, z: BP.z - 0.12, rot: 0.9 };   // hangs over the rim
+const spill = createSheet({ kind: "tee", w: 0.72, d: 0.72, color: "#ff5a6a", stripe: "#ffffff", seed: 31 }); scene.add(spill.mesh); spill.pl = { x: BP.x + 0.3, z: BP.z - 0.1, rot: 0.9 };   // hangs over the rim
 const oldShirt = createSheet({ kind: "tee", w: 0.95, d: 0.95, color: "#8f96b4", seed: 41 }); oldShirt.mesh.material.polygonOffset = true; oldShirt.mesh.material.polygonOffsetFactor = -3; scene.add(oldShirt.mesh);   // the one he buries his snout in
 const jacket = createSheet({ kind: "jacket", w: 1.5, d: 1.5, color: "#2f7ae0", seed: 51 }); scene.add(jacket.mesh);   // the old jacket on the couch
 const bundle = (() => { // a scrunched shirt carried in his mouth: a puffy lump with two floppy sleeves
@@ -248,14 +265,18 @@ toonify(dog, { override: [[dog.materials.body, dog.colors.body], [dog.materials.
 outline(dog, { width: 0.012, min: 0.1 });
 scene.add(dog);
 
-// ---------- the oxygen mask: a clear cup over his snout, a strap, a ribbed hose to the old shirt ----------
+// ---------- the oxygen mask: a bold cyan boxy cup over his whole snout, a white rim, a filter with vents, straps back to the ears, and an orange hose to the old shirt ----------
 const mask = (() => {
-  const g = new THREE.Group();
-  const cup = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.1, 0.16, 20, 1, true).rotateX(Math.PI / 2), new THREE.MeshToonMaterial({ color: 0x7fe6ff, transparent: true, opacity: 0.55, gradientMap: toonGradient(), side: THREE.DoubleSide, depthWrite: false })); g.add(cup);
-  const rimR = new THREE.Mesh(new THREE.TorusGeometry(0.1, 0.016, 8, 24), toon(0x2fa8d8)); rimR.position.z = -0.08; g.add(rimR);
-  const rimF = new THREE.Mesh(new THREE.TorusGeometry(0.075, 0.014, 8, 20), toon(0x2fa8d8)); rimF.position.z = 0.08; g.add(rimF);
-  const nub = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.06, 10), toon(0xff5a4a)); nub.position.set(0, -0.07, 0.04); g.add(nub);
-  g.traverse((o) => { if (o.isMesh) o.castShadow = true; o.userData.ink = false; });
+  const g = new THREE.Group(), shell = toon(0x1fc8ff), white = toon(0xffffff), navy = toon(0x1f2f8a), orange = toon(0xff8a1f);
+  const body = new THREE.Mesh(roundedBox(0.34, 0.27, 0.34, 0.06, 3), shell); body.position.set(0, -0.005, 0.335); g.add(body);
+  const rim = new THREE.Mesh(roundedBox(0.37, 0.3, 0.05, 0.03, 2), white); rim.position.set(0, -0.005, 0.185); g.add(rim);
+  const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.075, 0.04, 22).rotateX(Math.PI / 2), white); cap.position.set(0, 0.0, 0.515); g.add(cap);   // the filter
+  for (const [x, y] of [[-0.032, 0.0], [0.032, 0.0], [0, 0.034], [0, -0.034]]) { const v = new THREE.Mesh(new THREE.CylinderGeometry(0.011, 0.011, 0.045, 8).rotateX(Math.PI / 2), navy); v.position.set(x, y, 0.52); g.add(v); }
+  for (const sd of [-1, 1]) { const st = new THREE.Mesh(new THREE.BoxGeometry(0.016, 0.06, 0.26), navy); st.position.set(sd * 0.168, 0.03, 0.06); g.add(st); }   // straps back along the cheeks
+  const nub = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.045, 0.1, 12), orange); nub.position.set(0, -0.19, 0.42); g.add(nub);
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(0.046, 0.013, 8, 14), white); ring.rotation.x = Math.PI / 2; ring.position.set(0, -0.245, 0.42); g.add(ring);
+  g.traverse((o) => { if (o.isMesh) o.castShadow = true; });
+  outline(g, { width: 0.01, min: 0.014 });
   g.visible = false; dog.head.add(g); return g;
 })();
 const hoseMat = toon(0xff9a3a);
@@ -265,7 +286,7 @@ function updateHose(on, a, b, sag) { // from the mask to a point on the shirt, s
   if (!on) return;
   const m1 = a.clone().lerp(b, 0.35).add(V(0, -sag * 0.6, 0)), m2 = a.clone().lerp(b, 0.7).add(V(0, -sag, 0));
   const curve = new THREE.CatmullRomCurve3([a, m1, m2, b]);
-  hoseMesh = new THREE.Mesh(new THREE.TubeGeometry(curve, 28, 0.016, 8), hoseMat); hoseMesh.castShadow = true; hoseMesh.userData.ink = false; scene.add(hoseMesh);
+  hoseMesh = new THREE.Mesh(new THREE.TubeGeometry(curve, 36, 0.03, 10), hoseMat); hoseMesh.castShadow = true; hoseMesh.userData.ink = false; scene.add(hoseMesh);
   hoseMesh.userData.curve = curve;
 }
 
@@ -320,6 +341,54 @@ const portrait = canvasSprite(260, 320, 0.6);
   portrait.tex.needsUpdate = true;
 }
 
+// ===================== inside his head (shot 17): a glass head, a glowing brain, hearts flooding in =====================
+const BR0 = V(0, 80, -120);   // far above the garden, in its own little dream-space
+const glowTex = (() => { const t = canvasTex(128, 128, (x) => { const gr = x.createRadialGradient(64, 64, 0, 64, 64, 64); gr.addColorStop(0, "rgba(255,255,255,1)"); gr.addColorStop(0.35, "rgba(255,255,255,0.45)"); gr.addColorStop(1, "rgba(255,255,255,0)"); x.fillStyle = gr; x.fillRect(0, 0, 128, 128); }); t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping; return t; })();
+const brainW = (() => {
+  const g = new THREE.Group(); g.position.copy(BR0); g.visible = false; scene.add(g);
+  const bgTex = canvasTex(4, 256, (x, w, h) => { const gr = x.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, "#3a1a8a"); gr.addColorStop(0.55, "#a14cd8"); gr.addColorStop(1, "#ff9ac8"); x.fillStyle = gr; x.fillRect(0, 0, w, h); });
+  const bg = new THREE.Mesh(new THREE.SphereGeometry(12, 24, 16), new THREE.MeshBasicMaterial({ map: bgTex, side: THREE.BackSide, fog: false })); bg.userData.ink = false; g.add(bg);
+  const bokeh = [];
+  for (let i = 0; i < 28; i++) { const m = new THREE.Mesh(new THREE.CircleGeometry(0.1 + 0.28 * ((i * 37) % 10) / 10, 24), new THREE.MeshBasicMaterial({ color: [0xffc8e8, 0xc8b0ff, 0xffe0a0, 0xa8e8ff][i % 4], transparent: true, opacity: 0.16 + 0.14 * ((i * 13) % 5) / 5, depthWrite: false })); m.userData.ink = false; m.userData.i = i; g.add(m); bokeh.push(m); }
+  const head = new THREE.Group(); head.scale.setScalar(0.8); g.add(head);
+  const glass = new THREE.MeshToonMaterial({ color: 0xffa53a, transparent: true, opacity: 0.5, gradientMap: toonGradient(), depthWrite: false });
+  const dark = new THREE.MeshToonMaterial({ color: 0xc26a1e, transparent: true, opacity: 0.85, gradientMap: toonGradient(), depthWrite: false });
+  const inkM = new THREE.MeshBasicMaterial({ color: 0x2b1b16, side: THREE.BackSide });
+  const add = (geo, mat, x, y, z, hull = 0) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); head.add(m); if (hull) { const h = new THREE.Mesh(geo, inkM); h.position.copy(m.position); h.scale.setScalar(hull); h.userData.ink = false; head.add(h); m.userData.hull = h; } return m; };
+  add(roundedBox(1.15, 0.95, 1.0, 0.2, 3), glass, 0, 0, 0, 1.035);
+  add(roundedBox(0.58, 0.4, 0.5, 0.09, 2), glass, 0.86, -0.17, 0, 1.06);
+  add(roundedBox(0.1, 0.08, 0.14, 0.02, 1), toon(0x2b1b16), 1.17, -0.01, 0);
+  for (const z of [0.56, -0.56]) add(roundedBox(0.26, 0.58, 0.12, 0.05, 2), dark, -0.44, 0.1, z, 1.06);   // floppy ears at the sides
+  { const eye = add(new THREE.TorusGeometry(0.09, 0.025, 8, 14, Math.PI), toon(0x2b1b16), 0.52, 0.14, 0.52); eye.rotation.z = Math.PI; }   // a shut, happy eye
+  { const cheek = new THREE.Mesh(new THREE.CircleGeometry(0.075, 18), new THREE.MeshBasicMaterial({ color: 0xff7a9a })); cheek.position.set(0.5, -0.1, 0.515); cheek.userData.ink = false; head.add(cheek); }
+  const foldTex = canvasTex(256, 128, (x, w, h) => { x.fillStyle = "#ff6fb0"; x.fillRect(0, 0, w, h); x.strokeStyle = "#c93a86"; x.lineWidth = 5; x.lineCap = "round"; for (let j = 0; j < 9; j++) { x.beginPath(); for (let i = 0; i <= 24; i++) { const px = (i / 24) * w, py = ((j + 0.5) / 9) * h + 7 * Math.sin(i * 1.3 + j * 2.1) + 4 * Math.sin(i * 0.5 + j); i ? x.lineTo(px, py) : x.moveTo(px, py); } x.stroke(); } });
+  const bm = new THREE.MeshToonMaterial({ map: foldTex, gradientMap: toonGradient() }), bm2 = new THREE.MeshToonMaterial({ map: foldTex, color: 0xffd6ea, gradientMap: toonGradient() });
+  const brain = new THREE.Group(); brain.position.set(0.1, 0.16, 0); head.add(brain);
+  const lobe = (z, mat) => { const geo = new THREE.SphereGeometry(0.4, 44, 30), p2 = geo.attributes.position; for (let i = 0; i < p2.count; i++) { const x = p2.getX(i), y = p2.getY(i), zz = p2.getZ(i), f = 1 + 0.07 * Math.sin(x * 12 + y * 5) * Math.cos(zz * 10 + x * 3) + 0.04 * Math.sin(y * 17 + zz * 7); p2.setXYZ(i, x * f, y * f, zz * f); } geo.computeVertexNormals(); const m = new THREE.Mesh(geo, mat); m.scale.set(1.15, 0.85, 0.55); m.position.z = z; return m; };
+  brain.add(lobe(0.2, bm), lobe(-0.2, bm2));
+  const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0xff6fb0, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, opacity: 0.8 })); glow.scale.set(2.4, 2.4, 1); glow.position.copy(brain.position); head.add(glow);
+  const rings = [0, 1, 2].map(() => { const r = new THREE.Mesh(new THREE.TorusGeometry(0.5, 0.018, 8, 44), new THREE.MeshBasicMaterial({ color: 0xffc8e8, transparent: true, opacity: 0, depthWrite: false })); r.position.copy(brain.position); r.userData.ink = false; head.add(r); return r; });
+  g.traverse((o) => { if (o.isMesh && o.material !== bg.material) o.castShadow = false; });
+  outline(head, { width: 0.012, min: 0.02 });
+  return { g, head, brain, glow, rings, bokeh };
+})();
+const oxy = makeStream(170, 0xff6fb0, 0.075);   // oxytocin pouring in from the shirt
+
+// ===================== the golden-hour sunbeam and dust (shot 18) =====================
+const beam = (() => {
+  const near = [[3.15, 0.95, 0.22], [3.15, 0.95, 2.38], [3.15, 2.15, 2.38], [3.15, 2.15, 0.22]], far = [[-0.8, 0.25, -0.3], [-0.8, 0.25, 3.0], [-0.8, 1.5, 3.0], [-0.8, 1.5, -0.3]];
+  const pos = [], colr = [];
+  for (const v of near) { pos.push(...v); colr.push(0.13, 0.085, 0.025); }
+  for (const v of far) { pos.push(...v); colr.push(0, 0, 0); }
+  const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); geo.setAttribute("color", new THREE.Float32BufferAttribute(colr, 3));
+  geo.setIndex([0, 1, 5, 0, 5, 4, 1, 2, 6, 1, 6, 5, 2, 3, 7, 2, 7, 6, 3, 0, 4, 3, 4, 7]);
+  const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ vertexColors: true, blending: THREE.AdditiveBlending, transparent: true, depthWrite: false, side: THREE.DoubleSide }));
+  m.userData.ink = false; m.visible = false; m.renderOrder = 4; m.frustumCulled = false; scene.add(m);
+  const N = 110, dg = new THREE.BufferGeometry(); dg.setAttribute("position", new THREE.BufferAttribute(new Float32Array(N * 3), 3));
+  const dust = new THREE.Points(dg, new THREE.PointsMaterial({ color: 0xffd98a, size: 0.035, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false })); dust.frustumCulled = false; dust.visible = false; dust.userData.ink = false; scene.add(dust);
+  return { m, dust, N };
+})();
+
 // ===================== the story: where everyone is, shot by shot (pure functions of time and shot) =====================
 const U = (t, k) => Math.max(0, t - T0(k));
 const SL = (k) => T1(k) - T0(k);
@@ -339,7 +408,7 @@ function dogState(t, k) {
     case 1: return inNest(lying(t, { headPitch: 0.03 + 0.02 * Math.sin(t * 1.3), headTilt: 0.12 }));
     case 2: return inNest(lying(t, { headPitch: 0.05, headTilt: 0.12 - 0.1 * prog(u, 0.5, 1.5), closed: 0.9 * blink(t) + 0.5 * bump(prog(u, 0.9, 1.7)) * 0 }));
     case 3: { // curled in the basket, head on the rim; he wakes when you gasp
-      const wake = ease.inOut(prog(u, 1.15, 1.5));
+      const wake = ease.inOut(prog(u, 1.85, 2.25));
       return { x: BP.x, z: BP.z + 0.04, ry: Math.PI, rest: "basket", pose: lying(t, { headPitch: -0.28, headTilt: 0.2, closed: lerp(0.95, 0.0, wake), ears: lerp(-0.2, 0.5, wake), sad: 0.1 }) };
     }
     case 4: return { x: -2.55, z: 0.48, ry: 0, rest: "couch", pose: lying(t, { headPitch: 0.1, headTilt: 0.15, closed: 0.92, ears: -0.2, sad: 0 }) };
@@ -362,10 +431,10 @@ function dogState(t, k) {
       const circ = ease.inOut(prog(u, 0.05, 0.75)), lie = ease.inOut(prog(u, 0.7, 1.15)), head = ease.inOut(prog(u, 1.1, 1.55));
       return { x: DN.x + 0.0, z: DN.z + 0.15 * (1 - circ), ry: lerp(-Math.PI * 1.2, 0.0, circ), rest: "nest", pose: lying(t, { lie, walk: (1 - lie) * 0.8, headPitch: lerp(0.1, 0.42, head), headTilt: 0.05, closed: lerp(0, 0.75, head), ears: 0.0, sad: 0.4 }) };
     }
-    case 17: return inNest(lying(t, { headPitch: 0.4, closed: lerp(0.75, 0.97, prog(u, 0.2, 2.2)), ears: -0.1, sad: 0, breathe: 1 }));
-    case 18: return inNest(lying(t, { headPitch: 0.4, closed: 0.97, ears: -0.1, sad: 0 }));
-    case 19: { const up = ease.inOut(prog(u, 1.15, 1.7)); return inNest(lying(t, { headPitch: lerp(0.4, 0.04, up), headTilt: 0.12, closed: lerp(0.97, 0, ease.inOut(prog(u, 0.9, 1.4))), ears: lerp(-0.1, 0.65, up), sad: lerp(0.0, 0.1, up), wag: 0.6 * up, wagSpeed: 11 })); }
-    case 20: { const s = ease.inOut(prog(u, 0.0, L)); return inNest(lying(t, { headPitch: lerp(0.04, 0.03, s), headTilt: 0.12, ears: lerp(0.65, 0.1, s), sad: lerp(0.1, 0.2, s) })); }
+    case 17: return null;   // inside his head: the brain scene
+    case 18: return inNest(lying(t, { headPitch: 0.4, closed: 0.97, ears: -0.1, sad: 0, breathe: 1 }));
+    case 19: return null;   // outside: you run home up the path
+    case 20: return inNest(lying(t, { headPitch: lerp(0.04, 0.03, prog(u, 0.2, 0.7)), headTilt: 0.12, ears: lerp(0.65, 0.1, prog(u, 0.05, 0.7)), sad: lerp(0.1, 0.2, prog(u, 0.2, 0.7)), wag: 0.6 * (1 - prog(u, 0.0, 0.6)), wagSpeed: 11 }));   // he hears you: head up, tail going, then he settles into the opening pose
     default: return null;
   }
 }
@@ -373,14 +442,18 @@ function dogState(t, k) {
 // ---------- you ----------
 function ownerState(t, k) {
   const u = U(t, k);
-  if (k === 3) { // you come home: the door opens, you walk in round the nest, you see him
-    const w = ease.glide(prog(u, 0.45, 1.8)), see = ease.inOut(prog(u, 1.3, 1.6));
+  if (k === 3) { // you come home: the door opens, you walk in round the nest, stop and gasp when you see him
+    const w = ease.glide(prog(u, 0.45, 1.25)), see = ease.out(prog(u, 1.2, 1.4)), calm = 1 - prog(u, 2.3, 2.8) * 0;
     const s1 = prog(w, 0, 0.45), s2 = prog(w, 0.45, 1);                       // round the nest: door -> (0.0, 4.7) -> (-0.25, 3.9)
     const x = w < 0.45 ? lerp(0.85, 0.0, s1) : lerp(0.0, -0.25, s2), z = w < 0.45 ? lerp(5.15, 4.7, s1) : lerp(4.7, 3.9, s2);
-    return { t, x, z, walk: w > 0.01 && w < 0.99 ? 1 : 0, walkPhase: t * 8, y: 0, cute: 0.3, eyes: { open: 1 }, mouth: { open: 0.5 * see, smile: lerp(0.6, -0.2, see) }, brow: { raise: 0.7 * see }, lean: -0.02 * see };
+    return { t, x, z, walk: w > 0.01 && w < 0.99 ? 1 : 0, walkPhase: t * 8, y: 0.05 * bump(prog(u, 1.2, 1.55)), cute: 0.5, eyes: { open: 1, size: 1 + 0.55 * see }, mouth: { open: 1.0 * see, smile: lerp(0.6, -0.4, see), width: 1 - 0.25 * see }, brow: { raise: 1.0 * see }, head: { tilt: -0.08 * see }, lean: -0.05 * see };
   }
   if (k === 5) return { t, x: -0.9, z: 1.9, y: 0, cute: 0.3, eyes: { open: 0.9 }, mouth: { open: 0, smile: 0.3 }, brow: { worry: 0.15 }, head: { tilt: 0.1 }, armR: { to: [0.18, 1.08], bend: 1 }, armL: { to: [-0.17, 0.78], bend: -1 }, look: [0.4, -0.4] };
   if (k === 9) return { t, x: -1.25, z: 2.6, y: 0, cute: 0.2, eyes: { open: 0.8 }, mouth: { open: 0, smile: 0 }, brow: {}, look: [0.5, -0.3], armL: { to: [-0.2, 0.8], bend: -1 }, armR: { to: [0.2, 0.8], bend: 1 } };
+  if (k === 19) { // you run home up the garden path, reach the door and go in
+    const run = ease.inOut(prog(u, 0.08, 1.85)), enter = ease.inOut(prog(u, 2.2, 2.45));
+    return { t, x: 0.8, z: lerp(12.6, 6.0, run) - enter * 1.2, walk: run > 0.01 && run < 0.99 ? 1 : 0, walkPhase: t * 13, y: 0.04 * Math.abs(Math.sin(t * 6.5)) * (run > 0.01 && run < 0.99 ? 1 : 0), cute: 0.5, eyes: { open: 1, happy: 0.5 }, mouth: { open: 0.35, smile: 1, teeth: true }, brow: { raise: 0.45 }, head: { tilt: 0.05 }, show: enter < 0.97 };
+  }
   if (k === 11) { // you open the front door and leave
     const go = ease.inOut(prog(u, 0.1, 0.5)), out = ease.inOut(prog(u, 0.7, 1.0)), zz = lerp(lerp(4.5, 4.7, go), 5.5, out);
     return { t, x: lerp(-0.8, 0.85, go), z: zz, walk: (go > 0.01 && go < 0.99) || (out > 0.01 && out < 0.99) ? 1 : 0, walkPhase: t * 8, y: 0, cute: 0.3, eyes: { open: 1 }, mouth: { open: 0, smile: 0.5 }, brow: {}, show: zz < 5.34 };
@@ -393,8 +466,14 @@ function cameraAt(t, k) {
   const u = U(t, k), L = SL(k), e = ease.glide(clamp01(u / L)), s = clamp01(u / L);
   switch (k) {
     case 1: { const m = ease.glide(s); return { pos: mixv(HOOK.pos, V(0.4, 0.52, 4.3), m), look: mixv(HOOK.look, V(0.55, 0.3, 3.15), m), fov: lerp(HOOK.fov, 43, m) }; }
-    case 2: { const a = lerp(-0.15, -1.15, e); return { pos: orb(V(0.55, 0.0, 3.0), lerp(1.5, 1.9, e), a, lerp(0.5, 0.8, e)), look: V(0.55, 0.3, 3.0), fov: 46 }; }
-    case 3: { const p = ease.inOut(prog(u, 0.9, 2.2)); return { pos: V(lerp(-0.1, -0.6, e), lerp(1.05, 0.95, e), lerp(0.7, 1.3, e)), look: V(lerp(0.4, -1.5, p), lerp(0.95, 0.55, e), lerp(4.6, 3.0, p)), fov: 52 }; }
+    case 2: { const a = lerp(-0.45, -1.35, e); return { pos: orb(V(0.55, 0.0, 3.0), lerp(1.9, 2.3, e), a, lerp(0.7, 0.95, e)), look: V(0.55, 0.42, 3.0), fov: 50 }; }
+    case 3: { // wide on the door as you come in, then in on your face for the gasp, then over to the basket
+      const o = ownerState(t, 3), A = { pos: V(lerp(-0.1, -0.3, e), 1.1, lerp(0.7, 0.9, e)), look: V(0.45, 1.0, 4.7), fov: 52 };
+      const B = { pos: V(o.x + 0.2, 1.55, o.z - 1.9), look: V(o.x, 1.52, o.z), fov: 44 }, Cc = { pos: V(-0.6, 0.95, 1.3), look: V(-1.5, 0.55, 3.0), fov: 52 };
+      const a = ease.inOut(prog(u, 0.85, 1.25)), c2 = ease.inOut(prog(u, 1.8, 2.35));
+      const AB = { pos: mixv(A.pos, B.pos, a), look: mixv(A.look, B.look, a), fov: lerp(A.fov, B.fov, a) };
+      return { pos: mixv(AB.pos, Cc.pos, c2), look: mixv(AB.look, Cc.look, c2), fov: lerp(AB.fov, Cc.fov, c2) };
+    }
     case 4: return { pos: V(lerp(-0.7, -1.0, e), lerp(0.8, 0.75, e), lerp(2.4, 1.9, e)), look: V(-2.7, 0.5, 0.6), fov: 48 };
     case 5: return { pos: V(lerp(0.9, 0.7, e), lerp(1.15, 1.1, e), lerp(3.5, 3.6, e)), look: V(lerp(-1.4, -1.6, e), 0.75, 1.1), fov: 54 };
     case 6: return { pos: V(lerp(0.0, 0.3, e), lerp(0.5, 0.42, e), lerp(4.4, 4.1, e)), look: V(0.55, 0.3, 3.3), fov: 48 };
@@ -404,13 +483,14 @@ function cameraAt(t, k) {
     case 10: return { pos: V(lerp(-0.3, 0.3, e), lerp(0.8, 0.65, e), lerp(4.5, 4.6, e)), look: V(0.55, 0.3, 3.2), fov: 50 };
     case 11: return { pos: V(lerp(-1.0, -0.7, e), 1.05, lerp(1.1, 1.4, e)), look: V(0.65, 0.65, 4.1), fov: 56 };
     case 12: return { pos: V(lerp(1.5, 1.85, e), lerp(1.85, 1.95, e), lerp(0.3, -0.5, e)), look: V(1.9, 1.95, -1.9), fov: lerp(52, 44, e) };
-    case 13: return { pos: V(lerp(-0.4, 0.35, e), 1.55, lerp(1.0, 1.3, e)), look: V(3.2, 1.55, 1.3), fov: 60 };   // far enough back to see the whole window
+    case 13: return { pos: V(lerp(0.0, 1.3, e), 1.55, lerp(1.1, 1.3, e)), look: V(3.2, 1.55, 1.3), fov: lerp(58, 50, e) };   // the whole window, pushing in on the garden
     case 14: return { pos: V(lerp(0.15, 0.4, e), 0.72, 4.8), look: V(0.55, 0.62, 3.0), fov: lerp(54, 50, e) };
     case 15: { const d = dogState(t, 15); return { pos: V(d.x - 0.2, 0.88, lerp(1.0, 1.3, e)), look: V(d.x + 0.32, 0.36, 3.3), fov: 56 }; }   // glides along beside him as he carries the shirt over
     case 16: { const m = ease.inOut(prog(u, 0.3, 1.5)); return { pos: V(lerp(0.95, 0.4, m), lerp(1.0, 0.55, m), lerp(4.6, 4.75, m)), look: V(0.55, lerp(0.5, 0.3, m), lerp(3.0, 3.1, m)), fov: lerp(55, 48, m) }; }   // wide enough to see him turn round on the pile, then in to the snout
-    case 17: { const a = lerp(-0.45, 0.45, e); return { pos: orb(V(0.55, 0.0, 2.8), 1.9, a, lerp(0.6, 0.5, e)), look: V(0.55, 0.3, 3.2), fov: 46 }; }
-    case 18: return { pos: V(lerp(0.2, 0.4, e), lerp(0.58, 0.46, e), lerp(4.75, 4.35, e)), look: V(0.55, 0.28, 3.15), fov: lerp(46, 41, e) };
-    case 19: { const m = ease.glide(s); return { pos: mixv(V(0.4, 0.46, 4.35), HOOK.pos, m), look: mixv(V(0.55, 0.28, 3.15), HOOK.look, m), fov: lerp(41, HOOK.fov, m) }; }
+    case 17: { const a = lerp(0.3, -0.35, e), r = lerp(3.9, 3.4, e); return { pos: V(BR0.x + r * Math.sin(a), BR0.y + 0.3, BR0.z + r * Math.cos(a)), look: V(BR0.x + 0.25, BR0.y + 0.0, BR0.z), fov: 46 }; }   // inside his head: a slow orbit round the glass head
+    case 18: return { pos: V(lerp(-1.9, -1.5, e), 0.55, lerp(4.4, 4.1, e)), look: V(lerp(1.4, 1.2, e), 0.55, lerp(2.7, 2.9, e)), fov: 52 };   // across the room: him in front, the setting sun in the window behind
+    case 19: { const a = ease.inOut(prog(u, 0.9, 1.9)); return { pos: V(lerp(1.9, 2.5, a), lerp(1.1, 1.3, a), lerp(6.6, 8.8, a)), look: V(0.8, 1.25, lerp(11, 5.4, a)), fov: lerp(52, 50, a) }; }   // outside: down the path as you run up it, then round to the door
+    case 20: { const m = ease.glide(clamp01(u / 0.7)); return { pos: mixv(V(0.4, 0.46, 4.35), HOOK.pos, m), look: mixv(V(0.55, 0.28, 3.15), HOOK.look, m), fov: lerp(41, HOOK.fov, m) }; }   // back to the opening frame
     default: return { pos: HOOK.pos.clone(), look: HOOK.look.clone(), fov: HOOK.fov };
   }
 }
@@ -418,21 +498,34 @@ function cameraAt(t, k) {
 // ===================== helpers for the frame =====================
 const _p = V(0, 0, 0), _q = V(0, 0, 0);
 const popK = (t, t0, dur = 0.9) => ease.out(prog(t, t0, t0 + 0.2)) * (1 - prog(t, t0 + dur - 0.2, t0 + dur));
-function hideAll() { for (const s of icons.values()) s.visible = false; for (const b of Object.values(BUB)) b.visible = false; ekg.s.visible = portrait.s.visible = false; scentStream.pts.visible = swarm.pts.visible = false; }
+function hideAll() { beam.m.visible = beam.dust.visible = false; oxy.pts.visible = false; for (const s of icons.values()) s.visible = false; for (const b of Object.values(BUB)) b.visible = false; ekg.s.visible = portrait.s.visible = false; scentStream.pts.visible = swarm.pts.visible = false; }
+// every icon is kept inside the frame (pulled back in from the edges if its world spot is cropped) and kept big enough to read
+const _fp = V(0, 0, 0), _fw = V(0, 0, 0), _fd = V(0, 0, 0);
+function frameFit(p, size, { minH = 0.1, maxH = 0.3, top = 0.82, bottom = -0.45 } = {}) {
+  const dist = Math.max(0.2, camera.position.distanceTo(p)), half = dist * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+  const sz = Math.min(maxH * 2 * half, Math.max(minH * 2 * half, size));
+  _fp.copy(p).project(camera);
+  const hy = sz / (2 * half), hx = (sz / 2) / (half * camera.aspect);
+  _fp.x = Math.min(0.94 - hx, Math.max(-0.94 + hx, _fp.x)); _fp.y = Math.min(top - hy, Math.max(bottom + hy, _fp.y));
+  _fp.z = 0.5; _fp.unproject(camera);
+  camera.getWorldDirection(_fw); _fd.copy(_fp).sub(camera.position).normalize();
+  const depth = p.clone().sub(camera.position).dot(_fw);
+  return { pos: camera.position.clone().addScaledVector(_fd, depth / Math.max(0.2, _fd.dot(_fw))), size: sz };
+}
 function showIcon(ch, pos, size, on, { bob = 0, t = 0 } = {}) {
   if (on <= 0.01) return;
-  const s = ico(ch);
-  s.visible = true; s.position.copy(pos); s.position.y += bob * Math.sin(t * 5);
-  s.scale.setScalar(size * on); s.material.opacity = Math.min(1, on * 1.4);
+  const s = ico(ch), f = frameFit(pos, size);
+  s.visible = true; s.position.copy(f.pos); s.position.y += bob * Math.sin(t * 5);
+  s.scale.setScalar(f.size * on); s.material.opacity = Math.min(1, on * 1.4);
 }
-function setBub(s, on, pos, size) { s.visible = on > 0.01; if (!on) return; s.position.copy(pos); s.scale.set(size * on, size * 0.9 * on, 1); s.material.opacity = Math.min(1, on * 1.5); }
-function showCanvasSprite(o, pos, on) { if (on <= 0.01) return; o.s.visible = true; o.s.position.copy(pos); o.s.scale.set(o.scale * (o.w / o.h) * on, o.scale * on, 1); o.s.material.opacity = Math.min(1, on * 1.4); }
+function setBub(s, on, pos, size) { s.visible = on > 0.01; if (!on) return; const f = frameFit(pos, size, { minH: 0.16, maxH: 0.34 }); s.position.copy(f.pos); s.scale.set(f.size * on, f.size * 0.9 * on, 1); s.material.opacity = Math.min(1, on * 1.5); }
+function showCanvasSprite(o, pos, on, mul = 1) { if (on <= 0.01) return; o.s.visible = true; o.s.position.copy(pos); o.s.scale.set(o.scale * mul * (o.w / o.h) * on, o.scale * mul * on, 1); o.s.material.opacity = Math.min(1, on * 1.4); }
 
 // bursts and flights tied to words
 burst(C.dirty - 0.05, V(0.55, 0.45, 3.4), 5, { ch: ["💨", "🦠", "🧦"], spread: 0.9, rise: 0.8, size: 0.2, gap: 0.05, dur: 0.7 });
 burst(C.portrait + 0.05, V(0.7, 0.9, 3.9), 14, { ch: ["✨", "💖", "⭐", "💛"], spread: 1.0, rise: 0.7, size: 0.2, gap: 0.08, dur: 1.2, spin: 0.5 });
-burst(C.find, V(-0.4, 1.9, 3.0), 4, { ch: ["❗", "✨"], spread: 0.4, rise: 0.5, size: 0.22, gap: 0.06, dur: 0.8 });
-for (let i = 0; i < 12; i++) travel(C.oxytocin + 0.08 + i * 0.16, V(0.55 + 1.0 * Math.cos(i * 1.7), 0.8 + 0.3 * Math.sin(i * 2.3), 3.7 + 0.8 * Math.sin(i * 1.7)), V(0.55, 1.05, 3.75), "💗", { dur: 0.75, size: 0.2, arc: 0.15 });
+burst(T0(3) + 1.2, V(-0.25, 1.85, 3.9), 4, { ch: ["❗", "✨"], spread: 0.4, rise: 0.5, size: 0.22, gap: 0.06, dur: 0.8 });
+for (let i = 0; i < 12; i++) travel(C.oxytocin + 0.08 + i * 0.16, V(BR0.x - 0.95 + 0.25 * Math.sin(i * 1.7), BR0.y - 0.7 + 0.3 * Math.cos(i * 2.3), BR0.z + 0.5 * Math.sin(i * 1.3)), V(BR0.x + 0.05, BR0.y + 0.2, BR0.z + 0.35), "💗", { dur: 0.9, size: 0.3, arc: 0.35 });
 
 // ===================== the dissolve between shots =====================
 const rt = new THREE.WebGLRenderTarget(1080, 1920, { type: THREE.HalfFloatType });
@@ -440,8 +533,6 @@ const veil = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMa
 veil.renderOrder = 1000; veil.frustumCulled = false; veil.visible = false; veil.userData.ink = false;
 camera.add(veil);
 const HALF = 0.2;
-const outsideTex = canvasTex(8, 128, (x) => { const gr = x.createLinearGradient(0, 0, 0, 128); gr.addColorStop(0, "#9fd8f5"); gr.addColorStop(0.55, "#d5eefb"); gr.addColorStop(0.56, "#9ad06a"); gr.addColorStop(1, "#7bbf5a"); x.fillStyle = gr; x.fillRect(0, 0, 8, 128); });
-house.outside.material.map = outsideTex; house.outside.material.needsUpdate = true;
 const doorLamp = new THREE.PointLight(0xffc070, 0, 8, 1.2); doorLamp.position.set(0.8, 1.3, 4.9); scene.add(doorLamp);
 
 // the door: closed, opens inward, closes again (a pure function of time)
@@ -450,28 +541,10 @@ function doorAngle(t) {
   let ang = 0;
   ang = Math.min(ang, -1.55 * (ease.inOut(prog(t, T0(3) + 0.1, T0(3) + 0.5)) - ease.inOut(prog(t, T0(3) + 2.3, T0(3) + 2.75))));
   ang = Math.min(ang, -1.55 * (ease.inOut(prog(t, T0(11) + 0.4, T0(11) + 0.8)) - ease.inOut(prog(t, T0(11) + 0.98, T0(11) + 1.12))));
+  ang = Math.min(ang, -1.55 * (ease.inOut(prog(t, T0(19) + 1.95, T0(19) + 2.3)) - ease.inOut(prog(t, T0(20) + 0.15, T0(20) + 0.45))));
   return ang;
 }
 
-// the pane of the window: the sky, the sun and the moon, a tree that goes through the seasons
-function drawPane(t, k) {
-  const x = house.paneCtx, W2 = 230, H2 = 130; x.setTransform(2, 0, 0, 2, 0, 0);   // drawn on a 230x130 grid, stored at twice that for a crisp pane
-  const u = k === 13 ? U(t, 13) : 0, day = k === 13 ? (u * 1.7) % 1 : 0.25, season = k === 13 ? Math.min(3.99, (u / SL(13)) * 4) : 1;
-  const sunA = day * Math.PI * 2, sh = Math.sin(sunA), dayLight = clamp01(0.5 + sh * 1.2);
-  const mix = (a2, b2, f) => a2.map((v, i) => Math.round(lerp(v, b2[i], f)));
-  const top = mix([14, 20, 70], [110, 195, 250], dayLight), low = mix([60, 60, 120], [220, 240, 255], dayLight);
-  const gr = x.createLinearGradient(0, 0, 0, H2); gr.addColorStop(0, `rgb(${top})`); gr.addColorStop(1, `rgb(${low})`); x.fillStyle = gr; x.fillRect(0, 0, W2, H2);
-  if (dayLight < 0.5) { x.fillStyle = "#fff"; for (let i = 0; i < 16; i++) { x.globalAlpha = 1 - dayLight * 1.6; x.fillRect((i * 41) % W2, (i * 29) % 70, 2, 2); } x.globalAlpha = 1; }
-  const cx = 115 - Math.cos(sunA) * 100, cy = 78 - sh * 66;
-  x.fillStyle = sh > 0 ? "#ffd84a" : "#fff6d8"; x.beginPath(); x.arc(cx, cy, 13, 0, 6.3); x.fill();
-  const seasons = [["#7fd05a", "#5fb04a"], ["#3fa84a", "#2f8a40"], ["#ff9a3a", "#e0662a"], ["#f4fbff", "#cfe6f5"]];
-  const si = Math.floor(season) % 4, [g1, g2] = seasons[si];
-  x.fillStyle = g1; x.beginPath(); x.ellipse(50, 150, 170, 62, 0, 0, 6.3); x.fill(); x.fillStyle = g2; x.beginPath(); x.ellipse(180, 152, 120, 56, 0, 0, 6.3); x.fill();
-  x.fillStyle = "#7a4a2a"; x.fillRect(166, 66, 9, 50);
-  if (si !== 3) { x.fillStyle = g1 === "#7fd05a" ? "#4fc04a" : g1; for (const [a2, b2, r] of [[170, 56, 22], [153, 66, 16], [188, 66, 16], [170, 40, 15]]) { x.beginPath(); x.arc(a2, b2, r, 0, 6.3); x.fill(); } }
-  else { x.strokeStyle = "#7a4a2a"; x.lineWidth = 3; for (const [a2, b2] of [[150, 52], [190, 50], [170, 36]]) { x.beginPath(); x.moveTo(170, 70); x.lineTo(a2, b2); x.stroke(); } x.fillStyle = "#fff"; for (let i = 0; i < 24; i++) x.fillRect((i * 31 + Math.floor(t * 60)) % W2, (i * 23 + Math.floor(t * 90)) % H2, 2, 2); }
-  house.paneTex.needsUpdate = true;
-}
 
 // ===================== the cloth: build once, squash where he lies, drape over him where needed =====================
 let clothReady = false;
@@ -493,21 +566,60 @@ const dogPoseComp = (ds) => { // how heavily he presses on the clothes, and wher
 };
 const BASKET_TOP = (x, z) => { let h = 0.1; for (const s of basketSheets) { const g = s.sampleAt(x, z, "final"); if (g > h) h = g; } return h; };
 
+// shot 17: the heartbeat is integrated so the rings and the heart line never jump while it slows from racing to calm
+function updateBrain(t) {
+  const bpmAt = (x) => lerp(180, 62, prog(x, C.slow - 0.1, C.pulse)), t0 = T0(17), n = 48, dt = (t - t0) / n;
+  let B = 0; for (let i = 0; i < n; i++) B += (bpmAt(t0 + (i + 0.5) * dt) / 60) * dt;
+  const thump = Math.max(0, 1 - ((B % 1) * 5)), w = brainW;
+  w.brain.scale.setScalar(1 + 0.07 * thump); w.glow.material.opacity = 0.5 + 0.4 * thump; w.glow.scale.setScalar(2.2 + 0.5 * thump);
+  w.head.rotation.y = 0.12 * Math.sin(t * 0.6); w.head.position.y = 0.04 * Math.sin(t * 1.2);
+  w.rings.forEach((r, j) => { const f = (B + j / 3) % 1; r.scale.setScalar(0.6 + 2.2 * f); r.material.opacity = 0.55 * (1 - f) * (1 - f); });
+  w.bokeh.forEach((m, i) => { m.position.set(4.5 * Math.sin(i * 1.7 + t * 0.12 * (1 + (i % 3))), 2.6 * Math.cos(i * 2.3 + t * 0.09), -3.5 - (i % 5) * 0.8); m.scale.setScalar(1 + 0.15 * Math.sin(t * 0.8 + i)); });
+  // oxytocin pours from the shirt into the brain
+  const N = oxy.n, nvis = Math.floor(N * prog(t, t0 + 0.05, C.oxytocin + 0.5)), pos = oxy.pts.geometry.attributes.position, col = oxy.pts.geometry.attributes.color;
+  oxy.pts.visible = true;
+  for (let i = 0; i < N; i++) {
+    if (i >= nvis) { pos.setXYZ(i, 0, -50, 0); continue; }
+    const f = (t * 0.45 + i / N) % 1, S = V(BR0.x - 0.95 + 0.2 * Math.sin(i), BR0.y - 0.7 + 0.2 * Math.cos(i * 1.3), BR0.z + 0.2 * Math.sin(i * 2)), E = V(BR0.x + 0.1 + 0.12 * Math.sin(i * 3), BR0.y + 0.13 + 0.1 * Math.cos(i * 2), BR0.z + 0.1 * Math.sin(i)), M = S.clone().lerp(E, 0.5).add(V(0, 0.5 + 0.25 * Math.sin(i), 0.1 * Math.cos(i)));
+    const a = 1 - f, p = S.multiplyScalar(a * a).addScaledVector(M, 2 * a * f).addScaledVector(E, f * f);
+    pos.setXYZ(i, p.x, p.y, p.z); col.setXYZ(i, 1, 0.45 + 0.45 * f, 0.7 + 0.25 * f);
+  }
+  pos.needsUpdate = true; col.needsUpdate = true;
+  // the shirt it came from, the heart line, the heart
+  const fw = V(0, 0, 0); camera.getWorldDirection(fw); const upc = V(0, 1, 0).applyQuaternion(camera.quaternion), rtc = V(1, 0, 0).applyQuaternion(camera.quaternion);
+  showIcon("👕", V(BR0.x - 0.95, BR0.y - 0.7, BR0.z + 0.25), 0.4, popK(t, t0 + 0.05, SL(17) - 0.1), { bob: 0.02, t });
+  const on = popK(t, t0 + 0.25, SL(17) - 0.25), P = camera.position.clone().addScaledVector(fw, 4.1).addScaledVector(upc, 1.3);
+  const bpm = bpmAt(t);
+  drawEkg((B * 60) / bpm, bpm, 1.0 - 0.25 * prog(t, C.slow, C.pulse));
+  showCanvasSprite(ekg, P, on, 1.25);
+  showIcon("❤️", P.clone().addScaledVector(rtc, -0.95), 0.34 * (1 + 0.35 * thump), on, {});
+}
+
 // ===================== one frame of the world, for time t and shot k =====================
 function apply(t, k) {
   hideAll();
   if (!clothReady) buildCloth();
   const u = U(t, k), mood = MOODS[MOOD[k - 1]];
   // light: the flat dims when the door shuts and the house goes silent
-  const q = k === 11 ? prog(t, T0(11) + 0.95, T0(11) + 2.0) : k >= 12 && k <= 14 ? 1 : 0;
+  const q = k === 11 ? prog(t, T0(11) + 0.95, T0(11) + 2.0) : k === 12 || k === 14 ? 1 : 0;
   const base = MOODS.day, quiet = MOODS.quiet;
   const mixCol = (a, b, f) => new THREE.Color(a).lerp(new THREE.Color(b), f);
-  const m1 = k >= 15 ? mood : base;
+  const m1 = k >= 15 && k !== 17 ? mood : base;   // (in his head the light stays neutral so the pinks stay pink)
   hemi.color.copy(mixCol(m1.hemi[0], quiet.hemi[0], q)); hemi.groundColor.copy(mixCol(m1.hemi[1], quiet.hemi[1], q)); hemi.intensity = lerp(m1.hemi[2], quiet.hemi[2], q);
   key.color.copy(mixCol(m1.key[0], quiet.key[0], q)); key.intensity = lerp(m1.key[1], quiet.key[1], q);
   key.position.set(6, 4.2, 1.6); key.target.position.set(-0.3, 0.3, 2.4);
-  doorLamp.intensity = k === 19 ? 2.4 * ease.inOut(prog(t, C.until - 0.2, C.door2)) : k === 20 ? 2.4 * (1 - ease.inOut(prog(t, T0(20), T0(20) + 0.5))) : 0;
-  scene.background = new THREE.Color(m1.bg);
+  const ost = outsideState(t, k);
+  if (k === 13) { // the flat darkens and glows with the days going by outside the window
+    hemi.intensity *= lerp(0.28, 1, ost.light); key.intensity *= lerp(0.1, 1, ost.light);
+    hemi.color.lerp(new THREE.Color(0x6f80ff), (1 - ost.light) * 0.8).lerp(new THREE.Color(0xffb070), ost.warm * 0.5);
+    key.color.lerp(new THREE.Color(0xffa860), ost.warm * 0.7);
+  }
+  if (k === 19) { key.position.set(-3, 3.4, 10.8); key.target.position.set(0.8, 0.4, 7.4); }   // the setting sun lights the front of the house
+  outside.set({ ...ost, t }); scene.fog.color.copy(outside.fogColor);
+  const inHead = k === 17;   // shot 17 happens in his head, far from the flat
+  places.r.visible = !inHead; outside.group.visible = outside.sky.visible = !inHead; brainW.g.visible = inHead; basket.visible = !inHead;
+  scene.fog.near = inHead ? 1e5 : 45; scene.fog.far = inHead ? 2e5 : 260;
+  doorLamp.intensity = k === 19 ? 2.4 * ease.inOut(prog(t, T0(19) + 1.95, T0(19) + 2.4)) : k === 20 ? 2.4 * (1 - ease.inOut(prog(t, T0(20), T0(20) + 0.5))) : 0;
   // camera first (the puppet turns to it)
   const c = window.__cam ? { pos: V(...window.__cam.pos), look: V(...window.__cam.look), fov: window.__cam.fov ?? 50 } : cameraAt(t, k);
   camera.position.copy(c.pos); camera.lookAt(c.look);
@@ -515,8 +627,7 @@ function apply(t, k) {
   camera.updateMatrixWorld(true);
   house.ceiling.visible = camera.position.y < 2.5;
   // the door, the window, the clock
-  const da = doorAngle(t); house.door.rotation.y = da; house.outside.visible = da < -0.08;
-  drawPane(t, k);
+  const da = doorAngle(t); house.door.rotation.y = da;
   const spin = k === 12 ? U(t, 12) * 26 : 0;
   house.clock.min.rotation.z = -(0.6 + spin + 0.4 * Math.sin(spin * 0.7)); house.clock.hour.rotation.z = -(1.0 + spin / 7);
   // you
@@ -526,9 +637,10 @@ function apply(t, k) {
   // ----- the dog and the clothes it meets -----
   const ds = dogState(t, k);
   dog.visible = !!ds;
-  const showNest = k !== 4 && k !== 5 && k !== 12 && k !== 13;
+  const showNest = k !== 4 && k !== 5 && k !== 12 && k !== 13 && k !== 17 && k !== 19;
   const shirtOn = [1, 2, 6, 7, 8, 9, 10, 16, 17, 18, 19, 20].includes(k) || (k === 15 && u > 1.55);
   const comp = ds ? dogPoseComp(ds) : null;
+  nestSheets.forEach((sh) => (sh.mesh.visible = showNest));
   if (showNest) { settle(nestSheets, comp); }
   let y = 0;
   if (ds) {
@@ -544,7 +656,7 @@ function apply(t, k) {
   bundle.visible = carrying;
   if (carrying) { if (bundle.parent !== dog.mouth) dog.mouth.add(bundle); bundle.position.set(0, -0.06, 0.03); bundle.rotation.set(0.4, 0, 0); bundle.scale.setScalar(1.3); bundle.userData.slL.rotation.z = 0.2 * Math.sin(t * 9); bundle.userData.slR.rotation.z = -0.2 * Math.sin(t * 9 + 1); }
   const maskOn = k === 7 ? ease.out(prog(t, C.oxygen - 0.1, C.oxygen + 0.3)) : 0;
-  mask.visible = maskOn > 0.01; mask.scale.setScalar(Math.max(0.01, 1.5 * maskOn)); mask.position.set(0, -0.045, 0.31); mask.rotation.set(0.06, 0, 0);
+  mask.visible = maskOn > 0.01; mask.scale.setScalar(Math.max(0.01, maskOn)); mask.position.set(0, 0, 0); mask.rotation.set(0, 0, 0);
   if (ds) dog.updateMatrixWorld(true);
   // the shirt he buries his snout in: it lies on the pile, and rises into a soft mound round his snout
   oldShirt.mesh.visible = shirtOn && showNest;
@@ -561,7 +673,6 @@ function apply(t, k) {
   if (showNest) nestSheets.forEach(commit);
   // the basket and its clothes (k 3, 15), the old jacket on the couch (k 4, 5)
   const showBasket = k === 3 || k === 15;
-  basket.visible = true;
   basketSheets.forEach((s) => (s.mesh.visible = showBasket)); spill.mesh.visible = showBasket;
   if (showBasket) {
     const bc = ds && ds.rest === "basket" ? (() => { const dx = Math.sin(ds.ry), dz = Math.cos(ds.ry), ax = ds.x - dx * 0.28, az = ds.z - dz * 0.28, bx = ds.x + dx * 0.3, bz = ds.z + dz * 0.3, abx = bx - ax, abz = bz - az, l2 = abx * abx + abz * abz; return (x, z) => { const t2 = clamp01(((x - ax) * abx + (z - az) * abz) / l2), d = Math.hypot(x - (ax + abx * t2), z - (az + abz * t2)), kk = 1 - clamp01((d - 0.12) / 0.22); return kk * kk * (3 - 2 * kk); }; })() : null;
@@ -573,9 +684,9 @@ function apply(t, k) {
   const above = ds ? dog.point("Head", [0, 0.32, 0.1]) : V(0.55, 0.9, 3.8);
   if (k === 2) {
     showIcon("😈", above.clone().add(V(0.0, 0.2, 0)), 0.32, popK(t, C.naughty - 0.05, 1.6), { bob: 0.01, t });
-    showIcon("❌", above.clone().add(V(0.0, 0.2, 0.02)), 0.42, popK(t, C.naughty + 0.25, 1.4), { t });
+    showIcon("❌", above.clone().add(V(0.0, 0.2, 0.02)), 0.5, popK(t, C.naughty + 0.25, 1.4), { t });
   }
-  if (k === 3) showIcon("❗", V(owner.position.x, 1.95, owner.position.z), 0.5, popK(t, C.find - 0.05, 1.0), { bob: 0.02, t });
+  if (k === 3) showIcon("❗", V(owner.position.x, 1.95, owner.position.z), 0.5, popK(t, T0(3) + 1.2, 0.85), { bob: 0.02, t });
   if (k === 4) showIcon("💤", V(-2.45, 0.95 + 0.18 * ((t * 0.7) % 1), 1.0), 0.3, popK(t, C.buried, 9), { t });
   if (k === 5) { owner.parts.headG.localToWorld(_p.set(0.42, 0.78, 0)); setBub(BUB.soft, popK(t, C.soft - 0.3, 1.7), _p.clone(), 0.9); }
   if (k === 6) {
@@ -583,7 +694,7 @@ function apply(t, k) {
     showIcon("❌", above.clone().add(V(-0.25, 0.1, 0.02)), 0.75, popK(t, C.blanket + 0.2, 1.3), { t });
   }
   if (k === 7) {
-    const a = mask.visible ? mask.localToWorld(V(0, -0.075, 0.04)) : null, shirtPt = V(oldShirt.pl.x + 0.1, nestTopRaw(oldShirt.pl.x + 0.1, oldShirt.pl.z - 0.15) + 0.02, oldShirt.pl.z - 0.15);
+    const a = mask.visible ? mask.localToWorld(V(0, -0.26, 0.42)) : null, shirtPt = V(oldShirt.pl.x + 0.1, nestTopRaw(oldShirt.pl.x + 0.1, oldShirt.pl.z - 0.15) + 0.02, oldShirt.pl.z - 0.15);
     updateHose(!!a, a ?? V(), shirtPt, 0.08);
     if (a && hoseMesh) { scentStream.pts.visible = true; const pos = scentStream.pts.geometry.attributes.position, col = scentStream.pts.geometry.attributes.color; for (let i = 0; i < scentStream.n; i++) { const f = ((t * 0.9 + i / scentStream.n) % 1), p = hoseMesh.userData.curve.getPoint(1 - f); pos.setXYZ(i, p.x, p.y + 0.03, p.z); const cc = hue(0.9 + i * 0.013); col.setXYZ(i, cc.r, cc.g, cc.b); } pos.needsUpdate = true; col.needsUpdate = true; }
   } else updateHose(false);
@@ -615,19 +726,23 @@ function apply(t, k) {
   }
   if (k === 12) for (const [i, [dx, dy]] of [[-0.45, 0.45], [0.0, 0.62], [0.45, 0.42]].entries()) showIcon("❓", V(1.9 + dx, 1.95 + dy, -1.85), 0.34, popK(t, C.time - 0.6 + i * 0.18, 1.1), { bob: 0.02, t });
   if (k === 13) {
-    showIcon("⏰", V(2.95, 0.62, 1.3), 0.4, popK(t, C.minutes - 0.4, 2.6), { t });
-    showIcon(Math.floor(U(t, 13) * 3) % 2 ? "⏳" : "⌛", V(2.95, 2.5, 1.3), 0.35, popK(t, T0(13) + 0.1, 2.7), { t });
+    showIcon("⏰", V(2.95, 0.55, 2.7), 0.22, popK(t, C.minutes - 0.4, 2.6), { t });
+    showIcon(Math.floor(U(t, 13) * 3) % 2 ? "⏳" : "⌛", V(2.95, 2.45, 2.6), 0.2, popK(t, T0(13) + 0.1, 2.7), { t });
   }
-  const bpm = k === 14 ? lerp(75, 190, prog(t, C.heart - 0.2, C.spikes + 0.3)) : k === 17 ? lerp(180, 62, prog(t, C.slow - 0.1, C.pulse)) : k === 18 ? 60 : 0;
-  if (k === 14 || k === 17) {
-    const head = ds ? dog.point("Head", [0, 0.5, 0.0]) : V(0.5, 1.0, 3.8);
-    drawEkg(t, bpm, k === 14 ? 1.0 + 0.2 * prog(t, C.heart, C.spikes) : 1.0 - 0.25 * prog(t, C.slow, C.pulse));
+  if (k === 14) {
+    const bpm = lerp(75, 190, prog(t, C.heart - 0.2, C.spikes + 0.3)), head = ds ? dog.point("Head", [0, 0.5, 0.0]) : V(0.5, 1.0, 3.8);
+    drawEkg(t, bpm, 1.0 + 0.2 * prog(t, C.heart, C.spikes));
     showCanvasSprite(ekg, head.clone().add(V(0.0, 0.1, 0.0)), popK(t, T0(k) + 0.3, SL(k) - 0.3));
     const beat = (t * bpm / 60) % 1;
     showIcon("❤️", head.clone().add(V(-0.45, 0.1, 0)), 0.3 * (1 + 0.35 * Math.max(0, 1 - beat * 4)), popK(t, T0(k) + 0.3, SL(k) - 0.3), {});
   }
-  if (k === 17) showIcon("🧠", V(0.55, 1.1, 3.75), 0.45, popK(t, C.oxytocin - 0.1, SL(17) - (C.oxytocin - T0(17)) + 0.1), { bob: 0.015, t });
-  if (k === 18) showIcon("💛", above.clone().add(V(0.0, 0.2 + 0.1 * ((t * 0.5) % 1), 0.1)), 0.26, popK(t, T0(18) + 0.4, SL(18) - 0.5), { t });
+  if (k === 17) updateBrain(t);
+  if (k === 18) {
+    showIcon("💛", above.clone().add(V(0.0, 0.2 + 0.1 * ((t * 0.5) % 1), 0.1)), 0.26, popK(t, T0(18) + 0.4, SL(18) - 0.5), { t });
+    const g = beam.dust.geometry.attributes.position, fall = prog(t, T0(18), T0(18) + 0.6);
+    for (let i = 0; i < beam.N; i++) { const sx = (i * 0.618) % 1, a2 = (i * 0.37) % 1, b2 = (i * 0.71) % 1, x = lerp(3.0, -0.7, sx), yLo = lerp(0.95, 0.25, sx), yHi = lerp(2.15, 1.5, sx), zLo = lerp(0.22, -0.3, sx), zHi = lerp(2.38, 3.0, sx); g.setXYZ(i, x + 0.1 * Math.sin(t * 0.3 + i), lerp(yLo, yHi, a2) + 0.07 * Math.sin(t * 0.5 + i * 1.3), lerp(zLo, zHi, b2) + 0.07 * Math.cos(t * 0.4 + i * 2)); }
+    g.needsUpdate = true; beam.dust.visible = true; beam.m.visible = true; beam.m.material.opacity = fall;
+  }
   drawFx(t);
   // the grade: vivid; the world loses its colour and darkens while his senses shut down
   const sens = k === 14 ? ease.inOut(prog(t, C.sensory - 0.3, C.heart)) * (1 - 0.0) : 0;
@@ -679,8 +794,8 @@ pip(C.naughty - 0.05, 1, 0.5); snd(C.naughty - 0.03, "snap", 0.45); snd(C.naught
 snd(C.dirty - 0.05, "rustle_2", 0.2); snd(C.dirty + 0.1, "sniffle_2", 0.22, { rate: 1.25, pan: 0.1 });
 // -- 3 · you come home: latch, door, steps on the boards, a gasp, he wakes in the basket, the door shuts
 snd(T0(3) + 0.03, "snap", 0.35); snd(T0(3) + 0.1, "door_creak", 0.5); snd(T0(3) + 0.2, "thrush_c", 0.22, { pan: 0.4 });
-steps(T0(3) + 0.55, 7, 0.19, 0.3, 0.55);
-snd(C.find, "gasp", 0.36); snd(T0(3) + 1.25, "breath_out", 0.25, { rate: 1.2, pan: 0.3 }); snd(T0(3) + 1.5, "sniffle_1", 0.22, { rate: 1.2, pan: 0.3 }); snd(T0(3) + 1.3, "rustle_1", 0.2, { pan: 0.3 });
+steps(T0(3) + 0.55, 4, 0.19, 0.3, 0.55);
+snd(C.find, "gasp", 0.36); snd(T0(3) + 1.25, "breath_out", 0.25, { rate: 1.2, pan: 0.3 }); snd(T0(3) + 1.5, "sniffle_1", 0.22, { rate: 1.2, pan: 0.3 }); snd(T0(3) + 1.3, "rustle_1", 0.2, { pan: 0.3 }); snd(T0(3) + 1.95, "rustle_3", 0.2, { pan: -0.3 }); snd(T0(3) + 2.05, "sniffle_2", 0.2, { rate: 1.2, pan: -0.3 });
 snd(T0(3) + 2.45, "door_close", 0.55);
 // -- 4/5 · under the jacket: a snore, a rustle; you think "soft fabric"
 snd(T0(4) + 0.2, "snore", 0.3); snd(C.jacket - 0.1, "rustle_2", 0.2); pip(C.buried, 2, 0.3); snd(T0(4) + 1.3, "snore", 0.25);
@@ -723,22 +838,26 @@ snd(T0(15) + 1.5, "rustle_3", 0.3); snd(T0(15) + 1.55, "thump", 0.32); snd(T0(15
 for (let i = 0; i < 6; i++) snd(T0(16) + 0.1 + i * 0.13, "pad_step", 0.2, { rate: 0.9 + 0.04 * i });
 snd(T0(16) + 0.45, "swash_1", 0.25); snd(T0(16) + 0.95, "thump", 0.5); snd(T0(16) + 1.0, "swash_2", 0.3);
 snd(T0(16) + 1.05, "breath_out", 0.35, { rate: 1.3 }); snd(C.snout, "rustle_1", 0.3); snd(T0(16) + 1.3, "sniffle_3", 0.22, { rate: 1.3 });
-// -- 17 · oxytocin: a bell, hearts that twinkle, and a heartbeat that slows
+// -- 17 · oxytocin: a dreamy glass hum, a bell, hearts that twinkle, and a heartbeat that slows
+snd(T0(17) + 0.05, "glow", 0.28, { dur: 2.6, fadeIn: 0.6, fadeOut: 0.8 });
 snd(C.oxytocin - 0.1, "bell_2", 0.35);
 for (let i = 0; i < 12; i++) snd(C.oxytocin + 0.55 + i * 0.16, `twinkle_${(i % 3) + 1}`, 0.2, { pan: Math.sin(i * 1.9) * 0.4 });
 beats(T0(17) + 0.1, T1(17) - 0.05, 0.4, 0.95, 0.55, 0.4);
 snd(C.slow, "breath_out", 0.3, { rate: 1.3 }); snd(C.pulse + 0.1, "breath_out", 0.28, { rate: 1.3 });
-// -- 18 · he holds on to the shirt and sleeps
+// -- 18 · he holds on to the shirt and sleeps in the last of the sun
+snd(T0(18) + 0.3, "thrush_a", 0.14, { pan: 0.5 });
 for (let tt = T0(18) + 0.3; tt < T1(18) - 0.2; tt += 1.0) { snd(tt, "heart_1", 0.3); snd(tt + 0.2, "heart_2", 0.22); }
 snd(T0(18) + 0.9, "snore", 0.28); snd(T0(18) + 2.1, "snore", 0.22); snd(C.holding, "rustle_1", 0.2);
-// -- 19 · footsteps outside the door, a click, the door, the warm light, his tail thumping
-steps(T0(19) + 0.3, 8, 0.5, 0.08, 0.34);
-snd(C.door2 - 0.5, "snap", 0.4); snd(C.door2 - 0.4, "door_creak", 0.5);
-snd(C.until, "glow", 0.3, { dur: 1.8, fadeIn: 0.5, fadeOut: 0.6 });
-for (let i = 0; i < 4; i++) snd(C.walk + 0.4 + i * 0.2, "thump", 0.12, { pan: 0, rate: 1.5 });
-snd(C.walk + 0.5, "whimper_a", 0.2, { rate: 1.1 }); snd(C.door2 - 0.2, "twinkle_2", 0.25);
-// -- 20 · he settles (the loop begins again with a sigh)
-snd(T0(20) + 0.15, "breath_out", 0.2, { rate: 1.3, dur: 0.45, fadeOut: 0.3 });
+// -- 19 · you run up the garden path: a bird, quick footsteps, the latch, the door, the warm light
+snd(T0(19) + 0.1, "thrush_b", 0.16, { pan: 0.4 });
+steps(T0(19) + 0.2, 9, 0.19, 0.1, 0.34);
+snd(T0(19) + 1.88, "snap", 0.4); snd(T0(19) + 1.95, "door_creak", 0.5);
+snd(T0(19) + 1.95, "glow", 0.3, { dur: 1.2, fadeIn: 0.4, fadeOut: 0.5 });
+// -- 20 · he hears you: a whimper and a thumping tail, the door shuts behind you, and he settles into the opening pose (the loop begins again with a sigh)
+snd(T0(20) + 0.02, "whimper_a", 0.2, { rate: 1.1, dur: 0.5, fadeOut: 0.15 });
+for (let i = 0; i < 3; i++) snd(T0(20) + 0.05 + i * 0.16, "thump", 0.12, { rate: 1.5 });
+snd(T0(20) + 0.12, "door_close", 0.45, { dur: 0.6, fadeOut: 0.1 });
+snd(T0(20) + 0.3, "breath_out", 0.2, { rate: 1.3, dur: 0.4, fadeOut: 0.25 });
 
 // ===================== overlays =====================
 const captions = wordCaptions(document.getElementById("caption"), words, { maxChars: 20 });
