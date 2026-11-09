@@ -69,6 +69,7 @@ shorts/
   dog-doorway/        "Why your dog sleeps in your doorway" (60 fps, toon style, 17 shots with cross-dissolves, vivid colour, a house and a wolf den, loops seamlessly)
   dog-clothes/        "Why your dog sleeps on your dirty clothes" (60 fps, toon style, 20 shots with cross-dissolves, soft-cloth drape and squash under the dog (`js/cloth.js`), a real 3D world outside with trees, houses and seasons (`js/outside.js`), an inside-his-head scene, real SFX, loops seamlessly)
   dog-gaze/           "Why your dog stares at you (it's not a treat)" (60 fps, toon style, 40 shots in 9 places with cross-dissolves: living room, wolves, space/DNA, campfire, lab, glass-head brains, mother and baby; real SFX; loops seamlessly)
+  dog-paw/            "Why your dog paws at you" (60 fps, toon style, 17 fast shots: couch close-ups with your 3D hand, a boss-dog office fantasy, cartoon arms, a hero paw; voice with every silence cut and phrases overlapped; real SFX; loops seamlessly)
   dog-leash/          "He slept by the door holding his leash" (60 fps story: night hall, winter flashback)
 characters/           Character Lab: preview every human preset (?only=dad, &face for a close-up)
 js/avatar.js          photorealistic premade people (Rocketbox) with walk/run/sit in code
