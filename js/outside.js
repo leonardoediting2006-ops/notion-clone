@@ -1,6 +1,6 @@
-import { THREE } from "../../js/engine.js";
-import { toon, toonGradient, outlineStatic } from "../../js/toon.js";
-import * as W from "../../js/toonworld.js";
+import { THREE } from "./engine.js";
+import { toon, toonGradient, outlineStatic } from "./toon.js";
+import * as W from "./toonworld.js";
 
 // The world outside the flat: our front garden and path, a street with neighbour houses, real 3D trees, bushes and flowers,
 // hills, clouds, a sky dome with a sun, a moon and stars, and seasons you can fly through. Everything is in the flat's own

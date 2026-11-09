@@ -7,7 +7,7 @@ import * as W from "../../js/toonworld.js";
 import { createSheet, drape, settle, commit, pileTop, colliders } from "../../js/cloth.js";
 import { loadSrt, wordCaptions } from "../../js/voiceover.js";
 import { createSfx } from "../../js/sfx.js";
-import { buildOutside } from "./outside.js";
+import { buildOutside } from "../../js/outside.js";
 
 // "Why your dog sleeps on your dirty clothes" — toon style: flat 2D people in a 3D cartoon world, the 3D hero dog.
 // 20 shots in one flat, a slow eased camera move in each, a real cross-dissolve at every cut, no on-screen text (icons only), vivid colour.
