@@ -9,6 +9,7 @@ import { buildOutside } from "../../js/outside.js";
 import { buildRoom } from "../dog-gaze/room.js";
 import { buildStage } from "../dog-gaze/worlds.js";
 import { createKit, createDissolve, clamp01, lerp, ease, prog, V, bump, mixv, popK, glowTex } from "../dog-gaze/kit.js";
+import { createIcons3D } from "../../js/icons3d.js";
 import { buildHand, buildHeroPaw, buildToonArms, buildOffice } from "./props.js";
 
 // "Why your dog paws at you" — toon style: flat 2D people in a 3D cartoon world, the 3D hero dog, and your own 3D hand in the close-ups.
@@ -30,7 +31,9 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 scene.add(camera);
 const kit = createKit({ scene, camera });
-const { showIcon, showBubble, inFront, burst } = kit;
+// the icons are 3D toon models (js/icons3d.js), not emoji sprites: sharp at any size
+const ic = createIcons3D({ renderer, scene, camera });
+const { showIcon, showBubble, inFront, burst } = ic;
 
 // ===================== the shots: each begins a hair before the first word of its idea =====================
 const SHOTS = [
@@ -257,7 +260,7 @@ function cameraAt(t, k) {
 // ===================== one frame of the world, for time t and shot k =====================
 const outsideState = (t, k) => (SHOTS[k - 1][2] === "love" ? { light: 1, warm: 0.7, sunEl: 0.25, sunAz: 0.3, season: 1, moonEl: -1, moonAz: 0 } : { light: 1, warm: 0, sunEl: 0.9, sunAz: 0.3, season: 1, moonEl: -1, moonAz: 0 });
 function apply(t, k) {
-  kit.hideAll(); hideRings();
+  kit.hideAll(); ic.hideAll(); hideRings();
   const [, place, mood] = SHOTS[k - 1], m = MOODS[mood], org = ORG[place];
   room.group.visible = outside.group.visible = outside.sky.visible = place === "room";
   stage.group.visible = place === "stage";
@@ -287,7 +290,7 @@ function apply(t, k) {
   heart3d.visible = false; glow.visible = false;
   toonArms.forEach((a) => (a.sh.visible = false));
   if (place === "room") roomFx(t, k); else stageFx(t, k);
-  kit.drawFx(t);
+  ic.drawFx(t);
   renderer.domElement.style.filter = "saturate(1.4) contrast(1.07) brightness(1.02)";
   document.getElementById("vignette").style.opacity = "0.14";
 }
@@ -307,7 +310,7 @@ function roomFx(t, k) {
   }
   if (k === 4) {
     showIcon("⏸️", V(OWN.x, DH.y + 0.38, (DH.z + OWN.z) / 2 + 0.2), 0.3, popK(t, wt(16) + 0.03, T1(4) - wt(16)), { t });
-    showIcon("🥺", V(D.x, DE.y + 0.3, D.z + 0.1), 0.42, popK(t, wt(17) + 0.15, T1(4) - wt(17) - 0.1), { bob: 0.02, t });
+    showIcon("🥺", V(D.x, DE.y + 0.2, D.z + 0.32), 0.36, popK(t, wt(17) + 0.15, T1(4) - wt(17) - 0.1), { bob: 0.02, t });
   }
   if (k === 5) {
     const at = hand.top(0.0);
@@ -327,7 +330,7 @@ function roomFx(t, k) {
   if (k === 13) {
     const at = hand.top(-0.13), ph = Math.max(0, t - wt(71) + 0.1) * 4.6;
     showIcon("🔁", at.clone().add(V(0.0, 0.3, 0.06)), 0.14, popK(t, wt(72) - 0.05, T1(13) - wt(72)), { t });
-    showIcon("🥹", inFront(1.2, 0.3, 0.45), 0.22, popK(t, wt(74) - 0.1, T1(13) - wt(74) + 0.05), { t, bob: 0.02 });
+    showIcon("🥹", inFront(1.2, 0.15, -0.16), 0.2, popK(t, wt(74) - 0.1, T1(13) - wt(74) + 0.05), { t, bob: 0.02 });
     glow.visible = true; glow.position.copy(at).add(V(0, 0.05, 0)); glow.scale.set(0.3, 0.3, 1); glow.material.color.set(0xffd24a); glow.material.opacity = 0.5 + 0.2 * Math.sin(ph);
   }
   if (k === 14) {

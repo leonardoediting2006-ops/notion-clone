@@ -6,6 +6,8 @@
 //   --headed  render in a visible window (forces the GPU)   --cpu  no GPU available (slow)
 //   Sound: the short's sound effects (js/sfx.js) + its voiceover file are mixed in automatically.
 //   --audio voice.wav  use this voiceover   --no-sfx  voiceover only   --audio-only  just out/<name>-audio.wav
+//   --scale 2 (default)  render at 2160x3840 (4K vertical): sharp edges, and YouTube gives 4K uploads a much higher bitrate
+//   --scale 1  fast 1080x1920   --size 1080  render at --scale but save a supersampled 1080x1920 file
 //
 // Needs: ffmpeg on PATH, and `npm install` + `npx playwright install chromium` once.
 // Set CHROMIUM_PATH to use an existing Chrome/Chromium binary instead.
@@ -25,7 +27,9 @@ const { values: opts, positionals } = parseArgs({
     out: { type: "string" },
     audio: { type: "string" },
     frame: { type: "string" },
-    crf: { type: "string", default: "18" },
+    crf: { type: "string", default: "16" },
+    scale: { type: "string", default: "2" }, // render resolution: 1 = 1080x1920, 2 = 2160x3840
+    size: { type: "string" }, // optional output width (e.g. 1080): downscale the render with lanczos (supersampling)
     port: { type: "string", default: "5174" },
     cpu: { type: "boolean", default: !!process.env.SOFTWARE_GL }, // no GPU (cloud/CI): software WebGL
     headed: { type: "boolean", default: false }, // render in a visible window (always uses the GPU)
@@ -40,6 +44,7 @@ if (!shortDir) {
   process.exit(1);
 }
 const name = basename(shortDir);
+const SCALE = Math.min(4, Math.max(1, Number(opts.scale) || 1));
 const still = opts.frame !== undefined;
 const out = opts.out ?? `out/${name}.${still ? "png" : "mp4"}`;
 await mkdir(dirname(out), { recursive: true });
@@ -55,9 +60,9 @@ const browser = await chromium.launch({
 });
 
 try {
-  const page = await browser.newPage({ viewport: { width: 1080, height: 1920 }, deviceScaleFactor: 1 });
+  const page = await browser.newPage({ viewport: { width: 1080, height: 1920 }, deviceScaleFactor: SCALE });
   page.on("pageerror", (e) => console.error("[page error]", e.message));
-  await page.goto(`http://localhost:${opts.port}/${shortDir}/?render`, { waitUntil: "domcontentloaded", timeout: 180000 });
+  await page.goto(`http://localhost:${opts.port}/${shortDir}/?render&scale=${SCALE}`, { waitUntil: "domcontentloaded", timeout: 180000 });
   await page.waitForFunction(() => window.__shortReady === true, null, { timeout: 180000 });
   await page.evaluate(() => document.fonts.ready);
   const { fps, frames, duration } = await page.evaluate(() => ({ fps: window.__short.fps, frames: window.__short.frames, duration: window.__short.duration }));
@@ -97,7 +102,8 @@ try {
   } else {
     const ffArgs = ["-y", "-loglevel", "error", "-f", "image2pipe", "-framerate", String(fps), "-i", "-"];
     if (audioFile) ffArgs.push("-i", audioFile, "-c:a", "aac", "-b:a", "192k");
-    ffArgs.push("-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", opts.crf, "-preset", "medium", "-movflags", "+faststart", out);
+    if (opts.size) ffArgs.push("-vf", `scale=${Number(opts.size)}:-2:flags=lanczos`);
+    ffArgs.push("-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", opts.crf, "-preset", "medium", "-tune", "animation", "-movflags", "+faststart", out);
     const ff = spawn("ffmpeg", ffArgs, { stdio: ["pipe", "inherit", "inherit"] });
     const ffDone = new Promise((ok, fail) => {
       ff.on("error", fail);
@@ -115,7 +121,7 @@ try {
     }
     ff.stdin.end();
     await ffDone;
-    console.log(`\nSaved ${out} (${frames} frames @ ${fps}fps, ${((Date.now() - t0) / 1000).toFixed(1)}s)`);
+    console.log(`\nSaved ${out} (${frames} frames @ ${fps}fps, ${1080 * SCALE}x${1920 * SCALE}${opts.size ? ` → ${opts.size} wide` : ""}, ${((Date.now() - t0) / 1000).toFixed(1)}s)`);
   }
 } finally {
   await browser.close();

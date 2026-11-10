@@ -88,4 +88,9 @@ Stop petting your dog for 5 seconds and see if the paw comes out 👀🐾 Tell m
   of your hand. The hand positions for the wrist, forearm and palm shots are solved the same way, so paw and hand always touch.
 - Pink toe beans are added under his front feet. You see them whenever he lifts a paw.
 - Sound: 124 cues from 36 real recordings (`sfx/CREDITS.md`). Mix at −19 LUFS integrated, peak −1 dBFS.
-- Render: `npm run render -- shorts/dog-paw --headed` (1,366 frames; the voiceover is already in the folder).
+- Icons are 3D toon models (`js/icons3d.js`: hearts, crown, faces, hands, buttons, bubbles, clipboard, mug, toolbox,
+  sparkles…), not emoji sprites, so they stay sharp at any size. They are drawn in their own pass over the scene (never hidden
+  behind the dog) and pop in with a springy bounce.
+- Render: `npm run render -- shorts/dog-paw --headed` (1,366 frames; the voiceover is already in the folder). It renders at 2x by
+  default (2160×3840, 4K vertical): YouTube gives 4K uploads a much higher bitrate, so the Short looks far less blocky.
+  `--size 1080` saves a supersampled 1080×1920 file instead; `--scale 1` is the fast old 1080p render.

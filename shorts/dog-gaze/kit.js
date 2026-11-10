@@ -139,7 +139,7 @@ export function createKit({ scene, camera }) {
 
 // ---------- the cross-dissolve between shots: the old shot keeps moving, is drawn once more into a render target and faded out over the new one ----------
 export function createDissolve({ renderer, scene, camera }) {
-  const rt = new THREE.WebGLRenderTarget(1080, 1920, { type: THREE.HalfFloatType });
+  const rt = new THREE.WebGLRenderTarget(1080, 1920, { type: THREE.HalfFloatType, samples: 4 });   // antialiased like the screen
   const veil = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: rt.texture, transparent: true, depthTest: false, depthWrite: false, toneMapped: false }));
   veil.renderOrder = 1000; veil.frustumCulled = false; veil.visible = false; veil.userData.ink = false;
   camera.add(veil);

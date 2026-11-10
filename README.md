@@ -35,6 +35,8 @@ npm run render -- shorts/hello-3d --frame 90               # one PNG frame (thum
 npm run render -- shorts/hello-3d --out out/v2.mp4 --crf 16
 npm run render -- shorts/hello-3d --headed                 # visible window: guarantees the GPU is used
 npm run render -- shorts/hello-3d --cpu                    # machines with no GPU (cloud/CI), much slower
+npm run render -- shorts/hello-3d --scale 1                # quick 1080x1920 (default --scale 2 = sharp 2160x3840 4K vertical)
+npm run render -- shorts/hello-3d --size 1080              # render at 2x, save a supersampled 1080x1920 file
 ```
 
 Rendering uses your graphics card. The first line it prints is `WebGL renderer: …`. If that says
@@ -81,6 +83,7 @@ js/props.js           furniture, decor & vehicle loader + code-built mailbox, ha
 assets/props/, assets/vehicles/   downloaded models (see assets/CREDITS.md)
 js/textures.js        procedural textures (fur, fabric, denim, plaster, bark, sky…)
 js/trees.js           procedural trees and bushes with leaf cards
+js/icons3d.js         3D toon icons (hearts, crown, faces, hands, buttons, bubbles…) instead of emoji sprites; sharp at any size
 tools/
   server.mjs          tiny static dev server
   render.mjs          headless frame-by-frame MP4 / PNG exporter

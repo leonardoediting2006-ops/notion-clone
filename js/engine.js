@@ -34,7 +34,9 @@ export function createShort({
     antialias: true,
     preserveDrawingBuffer: true,
   });
-  renderer.setPixelRatio(1);
+  // ?scale=2 renders at 2x (2160x3840) for a sharp final video; the preview stays at 1x
+  const SCALE = Math.min(4, Math.max(1, Number(new URLSearchParams(location.search).get("scale")) || 1));
+  renderer.setPixelRatio(SCALE);
   renderer.setSize(WIDTH, HEIGHT, false);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
