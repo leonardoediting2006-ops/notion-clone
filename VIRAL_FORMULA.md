@@ -79,6 +79,7 @@ Narration (about 60 words, ≈3 words per second [M]):
 - Need a faraway or abstract thing (wolves, space, a brain)? Bring it **into the set** [I]: a TV, a window, a storybook, a photo, a snow-globe or a miniature on the table, and push the camera into it. Don't build a new world for it.
 
 ### R2 — Medium shots of what is happening
+- **When the voice says "you", the camera can BE you** (POV): show your 3D legs, shoes and hand (`dog-kibble` shots 3, 6, 8). "Next to your feet" becomes literal, and the dog looks into the lens.
 - The subject fills **55–80 % of the frame height.** Camera at the animal's eye height (or a little above).
 - Show the actual action: the dog pawing the hand, the water in the tank. Not a wide establishing shot, not a symbol.
 - Close-ups only for payoffs (a dial, a paw on a hand, a face reacting). One wide "reveal" per video, on the swoop.
@@ -86,7 +87,7 @@ Narration (about 60 words, ≈3 words per second [M]):
 
 ### R3 — The camera never rests, and it's slow
 - Always moving: slow push-ins, slow orbits, tilt-ups, rises. Never a locked frame, never a shake, never a snap zoom.
-- **At least half the runtime is ONE uncut glide** (the reference: 58 %). Plan it as a path with 3–5 waypoints that changes the view (low side → 3/4 → high) while the idea advances.
+- **Uncut takes carry the explanation.** ≈ 20 s video: one take of ≥ 50 % of the runtime (the reference: 11.3 s = 58 %). Longer videos: every act is one take of **11–14 s** (dog-kibble: a 13.3 s take, 37 % of 36 s) and the takes together are ≥ 50 %. Plan each as a path with 3–5 waypoints that changes the view (low side → 3/4 → high) while the idea advances (`js/camera-path.js`).
 - Speed targets (analyzer units per frame): explanation **1–3**, hook **8–14**, payoff **5–8**. A fast move (≤ 0.25 s) is allowed only as a *swoop* that replaces a cut (pull-back reveal) or in the first second.
 - Keep the camera **outside** things and use see-through materials to look in (see R5).
 
@@ -175,6 +176,7 @@ the `?scale` renderer; `tools/analyze-video.py` (this guide's measuring stick).
 
 | # | Tool | Purpose |
 |---|---|---|
+| ✅ | **Built for dog-kibble:** `js/graphics3d.js` (floor fans, shield dome, floor arrow, alarm rings), `js/camera-path.js` (B3), `js/caption-pixel.js` (B5), `tools/mix.mjs` `lufs` option (B8), hard cuts (no dissolve: B4) | R3, R5, R10, R11 |
 | B1 | `js/graphics3d.js` — flow **arrows** (path-following, translucent, glowing, colour-coded), **tint shells** for body parts/objects, **chevron strips**, ring pulses | the diegetic graphics of R5 |
 | B2 | **See-through volumes** (a clear tank, a glass of water, a window) with the submerged subject still visible and a surface line | R5: show what is hidden |
 | B3 | `longTake(waypoints)` — Catmull-Rom camera path with eased speed, plus `swoop()` (a 0.2 s pull-back) | R3 |

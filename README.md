@@ -75,6 +75,7 @@ shorts/
   dog-clothes/        "Why your dog sleeps on your dirty clothes" (60 fps, toon style, 20 shots with cross-dissolves, soft-cloth drape and squash under the dog (`js/cloth.js`), a real 3D world outside with trees, houses and seasons (`js/outside.js`), an inside-his-head scene, real SFX, loops seamlessly)
   dog-gaze/           "Why your dog stares at you (it's not a treat)" (60 fps, toon style, 40 shots in 9 places with cross-dissolves: living room, wolves, space/DNA, campfire, lab, glass-head brains, mother and baby; real SFX; loops seamlessly)
   dog-paw/            "Why your dog paws at you" (60 fps, toon style, 17 fast shots: couch close-ups with your 3D hand, a boss-dog office fantasy, cartoon arms, a hero paw; voice with every silence cut and phrases overlapped; real SFX; loops seamlessly)
+  dog-kibble/         "Why your dog carries his food to you" (first short built to VIRAL_FORMULA.md: one world, a kitchen nook five steps from the couch; the camera becomes your eyes (3D legs, hand); the explanation lives in the world: a vision fan that collapses when his head goes down, a red blind zone with a shadow wolf, a glowing nervous system, a golden dome; one-word pixel captions; −14 LUFS; seamless loop)
   dog-leash/          "He slept by the door holding his leash" (60 fps story: night hall, winter flashback)
 characters/           Character Lab: preview every human preset (?only=dad, &face for a close-up)
 js/avatar.js          photorealistic premade people (Rocketbox) with walk/run/sit in code
@@ -87,6 +88,9 @@ assets/props/, assets/vehicles/   downloaded models (see assets/CREDITS.md)
 js/textures.js        procedural textures (fur, fabric, denim, plaster, bark, sky…)
 js/trees.js           procedural trees and bushes with leaf cards
 js/icons3d.js         3D toon icons (hearts, crown, faces, hands, buttons, bubbles…) instead of emoji sprites; sharp at any size
+js/caption-pixel.js   one-word pixel-font captions drawn from a built-in bitmap font (same look on every machine, razor sharp at 2x)
+js/camera-path.js     a camera that never stops: waypoints with continuous velocity (Catmull-Rom)
+js/graphics3d.js      diegetic graphics: floor fans (vision / danger zones), shield dome, floor arrows, alarm rings
 tools/
   server.mjs          tiny static dev server
   render.mjs          headless frame-by-frame MP4 / PNG exporter

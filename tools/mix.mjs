@@ -26,7 +26,7 @@ async function decode(file) {
 // http://localhost:port/assets/sfx/x.wav → <repo>/assets/sfx/x.wav ; plain paths pass through
 const toPath = (url) => (/^https?:/.test(url) ? join(ROOT, decodeURIComponent(new URL(url).pathname)) : url);
 
-// opts.gain scales the sound effects as a whole (not the voice).
+// opts.gain scales the sound effects as a whole (not the voice). opts.lufs masters the finished mix to that integrated loudness (e.g. -14).
 // opts.duck = { depth, attack, release, threshold }: the sound effects are lowered while the voiceover speaks (a sidechain
 // ducker: the voice's level decides how far the effects dip, with a quick attack and a slower release so it never pumps).
 export async function mixCues(cues, duration, outFile, opts = {}) {
@@ -90,5 +90,24 @@ export async function mixCues(cues, duration, outFile, opts = {}) {
   // brick-wall limiter so a loud moment never clips
   await run(["-v", "error", "-y", "-f", "f32le", "-ar", String(SR), "-ac", "2", "-i", "-",
     "-af", "alimiter=limit=0.89:level=false", "-c:a", "pcm_s16le", outFile], Buffer.from(inter.buffer));
+  if (opts.lufs != null) await masterLoudness(outFile, opts.lufs);
   return outFile;
+}
+
+// Master the finished mix to a target integrated loudness (e.g. -14 LUFS, true peak <= -1 dBTP): a measuring pass, then a linear
+// gain pass with a limiter, so the dynamics are kept and nothing pumps. VIRAL_FORMULA.md R11: phones want about -14 LUFS.
+async function masterLoudness(file, target) {
+  const tool = (args) => new Promise((ok, fail) => {
+    const p = spawn("ffmpeg", args, { stdio: ["ignore", "pipe", "pipe"] });
+    let err = ""; p.stderr.on("data", (d) => (err += d)); p.on("error", fail);
+    p.on("close", (code) => (code === 0 ? ok(err) : fail(new Error(`ffmpeg: ${err.slice(-400)}`))));
+  });
+  const m = JSON.parse((await tool(["-hide_banner", "-i", file, "-af", `loudnorm=I=${target}:TP=-1:LRA=11:print_format=json`, "-f", "null", "-"])).match(/\{[\s\S]*\}/)[0]);
+  const tmp = file.replace(/\.wav$/i, "") + ".master.wav";
+  await tool(["-v", "error", "-y", "-i", file, "-af",
+    `loudnorm=I=${target}:TP=-1:LRA=11:measured_I=${m.input_i}:measured_TP=${m.input_tp}:measured_LRA=${m.input_lra}:measured_thresh=${m.input_thresh}:offset=${m.target_offset}:linear=true,alimiter=limit=0.89:level=false`,
+    "-ar", String(SR), "-c:a", "pcm_s16le", tmp]);
+  const { rename } = await import("node:fs/promises");
+  await rename(tmp, file);
+  console.log(`Mastered to ${target} LUFS (the mix measured ${m.input_i} LUFS, true peak ${m.input_tp} dB)`);
 }

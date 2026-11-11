@@ -1,7 +1,8 @@
 # Tighten a voiceover for a fast-paced short: cut every pause and let the phrase edges overlap.
 # usage: python tools/tighten-voice.py in.wav out.wav [map.json]
 #   - gaps of >= 0.15 s below -40 dBFS are removed (shorter ones are stop closures inside words and stay)
-#   - each phrase starts while the previous one's tail is still decaying (75 ms at sentence breaks, 40 ms elsewhere),
+#   - each phrase starts while the previous one's tail is still decaying (the next word begins 60 ms before the previous one ends
+#     at sentence breaks, 25 ms elsewhere; 60 ms of soft lead-in/tail are kept so consonants like th-/wh- are never clipped),
 #     never before the previous word's body (> -30 dBFS) has ended, so no syllable is masked
 #   - map.json lists [orig_start, orig_end, new_start] per kept segment (to move word timings onto the new audio)
 # needs numpy + soundfile; peak-normalises the result to -1 dBFS.
@@ -23,10 +24,11 @@ first_on = gaps[0][1] if gaps[0][0] == 0 else 0.0
 last_off = gaps[-1][0] if gaps[-1][1] >= n*0.005-0.01 else len(x)/sr
 inner = [g for g in gaps if g[0] > 0.01 and g[1] < n*0.005-0.01]
 # segments of speech
-segs = []; a = max(0, first_on-0.02)
+LEAD, TAIL = 0.06, 0.06   # keep the soft onset (th-, wh-, f-) and the soft tail (-s, -t) of every phrase
+segs = []; a = max(0, first_on-LEAD)
 for g0, g1 in inner:
-    segs.append([a, g0+0.03, g1-g0]); a = g1-0.015
-segs.append([a, min(len(x)/sr, last_off+0.06), 0])
+    segs.append([a, g0+TAIL, g1-g0]); a = g1-LEAD
+segs.append([a, min(len(x)/sr, last_off+TAIL), 0])
 out = np.zeros(len(x)); pos = 0.0; mp = []
 def last_loud(t0, t1):  # last 5 ms frame above -30 dBFS in [t0,t1]
     k = int(t1/0.005)
@@ -37,11 +39,12 @@ for si, (a, b, gap) in enumerate(segs):
     L = len(seg); fi = int(0.008*sr)
     seg[:fi] *= np.linspace(0, 1, fi)
     if si < len(segs)-1:
-        ov = 0.075 if gap >= 0.3 else 0.04          # overlap phrase edges, more at sentence breaks
-        tl = last_loud(a, b-0.03)                   # where the word's body ends
+        sp = -0.06 if gap >= 0.3 else -0.025        # the next word starts this much before the previous one's end (more at sentence breaks)
+        ov = LEAD + TAIL - sp                       # overlap of the two padded segments
+        tl = last_loud(a, b-TAIL)                   # where the word's body ends
         fo_start = max(tl - a + 0.01, (b - a) - ov - 0.03)
         k0 = int(fo_start*sr); seg[k0:] *= np.cos(np.linspace(0, np.pi/2, L-k0))**2
-        nxt = pos + max(fo_start, (b - a) - 0.03 - ov)
+        nxt = pos + max(fo_start, (b - a) - ov)
     else:
         fo = int(0.05*sr); seg[-fo:] *= np.linspace(1, 0, fo); nxt = pos + L/sr
     s = int(pos*sr); out[s:s+L] += seg
