@@ -5,6 +5,9 @@
 [GSAP](https://gsap.com/) for animation. No framework and no build step.
 Three.js and GSAP are included in `lib/`, so everything works offline.
 
+> **Making a new short? Read [`VIRAL_FORMULA.md`](VIRAL_FORMULA.md) first** (the studio's production rules: one world, medium shots,
+> a continuous camera, explanations drawn inside the 3D world instead of emojis). `CLAUDE.md` points Claude to it automatically.
+
 ## Preview
 
 ```bash
@@ -87,6 +90,8 @@ js/icons3d.js         3D toon icons (hearts, crown, faces, hands, buttons, bubbl
 tools/
   server.mjs          tiny static dev server
   render.mjs          headless frame-by-frame MP4 / PNG exporter
+  analyze-video.py    measures a video against the viral formula: hard cuts, camera/motion energy, longest take, loudness, silent gaps
+  tighten-voice.py    cuts every pause in a voiceover and overlaps the phrase edges
   fetch-sfx.mjs       downloads REAL recorded sound effects (CC0/CC-BY, ESC-50) and cuts them for a short
 ```
 
