@@ -43,7 +43,7 @@ const kit = createKit({ scene, camera });
 const ic = createIcons3D({ renderer, scene, camera });
 
 // ===================== the shots (a hard cut only where the idea changes) =====================
-const CUT = [0, at(6) - 0.03, at(14) - 0.03, at(40), at(49), at(99), at(105) - 0.02, at(119) - 0.02, at(145) - 0.02];   // hook 1, hook 2, you (POV), reaction, kitchen, arrival (POV), calm nerves + dome (3/4 from the room), clean rug + your hand pets him (POV), the loop
+const CUT = [0, at(6) - 0.03, at(14) - 0.03, at(40), at(49), at(99), at(119) - 0.02, at(145) - 0.02];   // 1 hook, 2 track, 3 you (POV), 4 reaction, 5 kitchen, 6 arrival + calm nerves + dome (3/4 from the room), 7 clean rug + your hand pets him (POV), 8 the loop
 const shotOf = (t) => { let k = 1; for (let i = 1; i < CUT.length; i++) if (t >= CUT[i]) k = i + 1; return k; };
 const seg = (t, a, b) => ease.inOut(prog(t, a, b));
 const wob = (x) => Math.sin(x);
@@ -98,6 +98,7 @@ const hand = buildHand(); scene.add(hand.group);                                
 const piece = (i) => { const m = kibbleMesh(i); scene.add(m); return m; };
 const C1 = Array.from({ length: 6 }, (_, i) => piece(i)), C2 = Array.from({ length: 6 }, (_, i) => piece(i + 2));
 const HKC = Array.from({ length: 5 }, (_, i) => piece(i + 1)), HKX = Array.from({ length: 8 }, (_, i) => piece(i + 3));
+const heapW = (i, o) => o.set(BOWL.x + bowl.heap[i].userData.hx, bowl.heap[i].userData.hy, BOWL.z + bowl.heap[i].userData.hz);
 const slot = (i) => V(((i % 3) - 1) * 0.05, 0.07 + 0.012 * (i % 2), 0.0 + 0.035 * Math.floor(i / 2));     // where a carried piece sits in the mouth (mouth-local)
 const RINGPOS = (c, i, r) => V(c.x + r * Math.cos(i * 2.2 + 0.4), 0.02, c.z + r * 0.8 * Math.sin(i * 2.2 + 0.4));
 const REST = Array.from({ length: 6 }, (_, i) => RINGPOS(DROPM, i, 0.05 + 0.04 * (i % 3)));    // the little pile on the rug
@@ -159,7 +160,7 @@ function wolfState(t) {
 // ---------- the dog, shot by shot ----------
 function dogState(t) {
   const k = shotOf(t);
-  if (k === 1 || k === 9) {                                              // the hook: trots toward the camera with a full mouth
+  if (k === 1 || k === 8) {                                              // the hook: trots toward the camera with a full mouth
     const u = k === 1 ? t : t - DURATION, tp = u;
     const p = hookPos(u);
     return { x: p.x, z: p.z, ry: HRY, look: [0, 0.15], pose: base(tp, { ...TROT, headPitch: 0.04, ears: 0.4, jawOpen: 0.2 + 0.1 * Math.sin(tp * 11), wag: 0.6, wagSpeed: 10 }), carry: 5, u };
@@ -186,7 +187,7 @@ function dogState(t) {
     return { x: O_D.x, z: O_D.z, ry: RY_D, look: [-0.35, 0.5 * sitK - 0.4 * (1 - up)], pose: base(t, { sit: sitK, crouch: 0.1 * (1 - up), headPitch: lerp(P_DROP, 0.0, up) - 0.22 * sitK, headTilt: 0.14 * sitK + 0.05 * wob(t * 2), ears: 0.55, wag: 0.8 * sitK, wagSpeed: 10, sad: 0.3 * wait }) };
   }
   if (k === 5) return dogAct2(t);
-  if (k >= 6 && k <= 8) return dogAct3(t);
+  if (k === 6 || k === 7) return dogAct3(t);
   return null;
 }
 
@@ -267,15 +268,21 @@ function ownerState(t) {
     return { ...sit, lean: 0.12 * down, eyes: { open: 1 + 0.15 * glance, size: 1 + 0.15 * glance }, mouth: { smile: lerp(0.5, 0.1, down) - 0.45 * skept, open: 0.12 * down * (1 - skept) }, brow: { raise: 0.5 * down * (1 - skept), worry: 0.3 * skept },
       look: ownerLookAt(headWorld()), head: { tilt: 0.1 * skept + 0.05 * wob(t * 1.4) }, armL: skept > 0.1 ? { to: [lerp(-0.2, 0.18, skept), lerp(0.62, 0.78, skept)], bend: -1 } : { to: [-0.2, 0.62], bend: -1 }, armR: skept > 0.1 ? { to: [lerp(0.2, -0.18, skept), lerp(0.62, 0.8, skept)], bend: 1 } : { to: [0.2, 0.62], bend: 1 } };
   }
-  if (k === 7) {                                                                       // the wide shot of the dome: you sit up, watching over him
-    const protect = seg(t, at(114) - 0.3, at(114) + 0.3), l = ownerLookAt(headWorld()), swallowBeat = bump(prog(t, at(111), at(111) + 0.7));
-    const warm = seg(t, at(119), at(124));
-    return { ...sit, lean: 0.06 * protect, eyes: { open: 1, size: 1.12, happy: 0.5 * warm }, mouth: { smile: 0.55 + 0.2 * protect + 0.25 * warm }, brow: { raise: 0.2 * protect }, look: l, head: { tilt: 0.06 }, armL: { to: [-0.2, 0.62], bend: -1 }, armR: { to: [0.3, 0.55], bend: 1 } };
+  if (k === 6) {                                                                       // arrival, calm, the dome: you watch him, worried at first, then sit up as his protector
+    const worry = seg(t, T4, T4 + 0.3) * (1 - seg(t, at(105), at(108))), protect = seg(t, at(114) - 0.3, at(114) + 0.3), warm = seg(t, at(116), at(119));
+    return { ...sit, lean: 0.07 * protect, eyes: { open: 1, size: 1.12 + 0.06 * worry, happy: 0.5 * warm }, mouth: { smile: 0.3 + 0.25 * (1 - worry) + 0.15 * protect + 0.25 * warm, open: 0.06 * worry }, brow: { raise: 0.2 * protect + 0.3 * worry, worry: 0.45 * worry }, look: ownerLookAt(headWorld()), head: { tilt: 0.06 + 0.04 * worry }, armL: { to: [-0.2, 0.62], bend: -1 }, armR: { to: [lerp(0.2, 0.3, protect), lerp(0.62, 0.55, protect)], bend: 1 } };
   }
   return null;
 }
 const ownerLook = (down, skept) => [lerp(0.3, 0.1, down), lerp(0.0, -0.8, down) + 0.5 * skept];
 const ownerLookAt = (p) => [Math.max(-1, Math.min(1, reachX(p) / 0.7)), Math.max(-1, Math.min(1, (1.2 - p.y) / 0.8))];   // the puppet's look: +x right, +y DOWN
+// his head, low-passed (a gaussian over +-0.4 s, kept inside the current shot) so the camera follows him without picking up every chew and nod
+function smoothHead(t, k) {
+  const lo = CUT[k - 1] + 0.02, hi = (CUT[k] ?? DURATION) - 0.02, sum = new THREE.Vector3(); let wsum = 0;
+  for (let o = -0.4; o <= 0.401; o += 0.1) { const w = Math.exp(-(o * o) / (2 * 0.17 * 0.17)); poseDog(Math.min(hi, Math.max(lo, t + o))); sum.addScaledVector(headWorld(), w); wsum += w; }
+  poseDog(t);                                                           // leave him posed at t
+  return sum.multiplyScalar(1 / wsum);
+}
 function headWorld() { return dog.eyes[0].getWorldPosition(tmpV).clone().lerp(dog.eyes[1].getWorldPosition(new THREE.Vector3()), 0.5); }
 function reachX(p) {                                                    // the dog's head in the owner's screen space (x to the camera's right)
   const yaw = Math.atan2(camera.position.x - OWN.x, camera.position.z - OWN.z);
@@ -322,59 +329,56 @@ const cam4 = cameraPath([
   { t: 23.4, pos: [1.35, 0.55, 1.55], look: [0.4, 0.3, -0.1], fov: 46 },
   { t: T4, pos: [1.6, 0.6, 1.75], look: [0.3, 0.25, -0.2], fov: 48 },
 ]);
-// act 3: your eyes, looking down at him at your feet; one wide shot for the golden dome; your eyes again, with your hand petting him
+// act 3: one slow 3/4 shot from the room (he arrives, drops the food, calms down, the dome), then your eyes with your hand petting him
 const cam6 = cameraPath([
-  { t: CUT[5], pos: [-2.6, 1.32, 1.18], look: [-1.0, 0.3, 1.5], fov: 62 },
-  { t: CUT[6], pos: [-2.5, 1.18, 1.15], look: [-1.5, 0.2, 1.3], fov: 60 },
-]);
-const cam7 = cameraPath([
-  { t: CUT[6], pos: [-0.15, 1.05, 2.75], look: [-1.8, 0.5, 1.15], fov: 56 },
+  { t: CUT[5], pos: [0.25, 1.15, 3.15], look: [-1.1, 0.45, 1.45], fov: 56 },
+  { t: 26.3, pos: [-0.2, 1.05, 2.85], look: [-1.75, 0.45, 1.2], fov: 54 },
   { t: 28.2, pos: [0.0, 1.2, 2.95], look: [-1.8, 0.5, 1.15], fov: 56 },
-  { t: CUT[7], pos: [0.25, 1.45, 3.2], look: [-1.8, 0.45, 1.15], fov: 58 },
+  { t: CUT[6], pos: [0.25, 1.45, 3.2], look: [-1.8, 0.45, 1.15], fov: 58 },
 ]);
 const cam8 = cameraPath([
-  { t: CUT[7], pos: [-2.72, 1.12, 1.15], look: [-1.5, 0.3, 1.28], fov: 54 },
+  { t: CUT[6], pos: [-2.72, 1.12, 1.15], look: [-1.5, 0.3, 1.28], fov: 54 },
   { t: 32.0, pos: [-2.68, 1.08, 1.15], look: [-1.5, 0.35, 1.28], fov: 54 },
   { t: 33.0, pos: [-2.6, 1.02, 1.14], look: [-1.45, 0.35, 1.27], fov: 52 },
-  { t: CUT[8], pos: [-2.5, 1.06, 1.14], look: [-1.3, 0.42, 1.25], fov: 48 },
+  { t: CUT[7], pos: [-2.5, 1.06, 1.14], look: [-1.3, 0.42, 1.25], fov: 48 },
 ]);
-const headFollow = (t) => { const k = shotOf(t); return k === 3 ? (t < DROP1[0] - 0.3 ? 0.7 : 0.55) : k === 4 ? 0.3 : k === 5 ? (t < PICK2 - 0.3 ? 0.5 : 0.1) : k === 6 ? 0.6 : k === 7 ? 0.15 : k === 8 ? 0.6 : 0; };
+const headFollow = (t) => { const k = shotOf(t); return k === 3 ? (t < DROP1[0] - 0.3 ? 0.7 : 0.55) : k === 4 ? 0.3 : k === 5 ? (t < PICK2 - 0.3 ? 0.5 : 0.1) : k === 6 ? 0.2 : k === 7 ? 0.6 : 0; };
 function cameraAt(t) {
   const k = shotOf(t);
   if (k === 1) return hookCam(t);
-  if (k === 9) return hookCam(t - DURATION);
+  if (k === 8) return hookCam(t - DURATION);
   if (k === 2) { const u = t - CUT[1], hx = S2.x0 - S2.v * u - 0.85; return { pos: V(Math.max(hx - 0.8, -1.55), 0.6 + 0.05 * u, S2.z + 1.45), look: V(Math.max(hx + 0.1, -1.55), 0.42, S2.z), fov: 46 }; }
   if (k === 3) return cam3(t);
   if (k === 4) return cam3b(t);
   if (k === 5) return cam4(t);
   if (k === 6) return cam6(t);
-  if (k === 7) return cam7(t);
   return cam8(t);
 }
 
 // ===================== light and mood =====================
 const MOODS = {
-  day: { hemi: [0xfff6e4, 0xe0c9a0, 2.3], key: [0xfff0d2, 1.5] },
-  dim: { hemi: [0x8090f0, 0x4a3a78, 1.5], key: [0xaebfff, 0.85] },
-  alarm: { hemi: [0xff6a5a, 0x5a2a3a, 1.5], key: [0xff8a7a, 0.9] },
-  warm: { hemi: [0xfff0d8, 0xe8b890, 2.3], key: [0xffd8a0, 1.5] },
-  gold: { hemi: [0xffe9c0, 0xf0b878, 2.4], key: [0xffcf80, 1.6] },
+  day: { hemi: [0xfff6e4, 0xe0c9a0, 2.3], key: [0xfff0d2, 1.5], rim: [0xfff0d0, 0.35] },
+  dim: { hemi: [0x8a9af2, 0x5a4a88, 1.95], key: [0xb4c4ff, 1.1], rim: [0x8fb0ff, 1.0] },
+  alarm: { hemi: [0xff7a6a, 0x6a3040, 1.8], key: [0xff9080, 1.0], rim: [0xff6050, 1.0] },
+  warm: { hemi: [0xfff0d8, 0xe8b890, 2.3], key: [0xffd8a0, 1.5], rim: [0xffd8a0, 0.4] },
+  gold: { hemi: [0xffe9c0, 0xf0b878, 2.4], key: [0xffcf80, 1.6], rim: [0xffd080, 0.55] },
 };
-const mixMood = (a, b, k) => ({ hemi: [new THREE.Color(a.hemi[0]).lerp(new THREE.Color(b.hemi[0]), k), new THREE.Color(a.hemi[1]).lerp(new THREE.Color(b.hemi[1]), k), lerp(a.hemi[2], b.hemi[2], k)], key: [new THREE.Color(a.key[0]).lerp(new THREE.Color(b.key[0]), k), lerp(a.key[1], b.key[1], k)] });
+const mixMood = (a, b, k) => ({ hemi: [new THREE.Color(a.hemi[0]).lerp(new THREE.Color(b.hemi[0]), k), new THREE.Color(a.hemi[1]).lerp(new THREE.Color(b.hemi[1]), k), lerp(a.hemi[2], b.hemi[2], k)], key: [new THREE.Color(a.key[0]).lerp(new THREE.Color(b.key[0]), k), lerp(a.key[1], b.key[1], k)], rim: [new THREE.Color(a.rim[0]).lerp(new THREE.Color(b.rim[0]), k), lerp(a.rim[1], b.rim[1], k)] });
 function moodAt(t) {
   let m = mixMood(MOODS.day, MOODS.dim, seg(t, at(49) + 0.1, at(52)));                       // "You see, in the animal kingdom": the room goes dim and blue
-  m = mixMood({ hemi: [m.hemi[0], m.hemi[1], m.hemi[2]], key: [m.key[0], m.key[1]] }, MOODS.alarm, 0.55 * bump(prog(t, at(70), AMBUSH + 0.5)) * (0.6 + 0.4 * Math.abs(Math.sin(t * 7))));
+  m = mixMood(m, MOODS.alarm, 0.55 * bump(prog(t, at(70), AMBUSH + 0.5)) * (0.78 + 0.22 * Math.sin(t * 3.4)));
   m = mixMood(m, MOODS.warm, seg(t, at(97), at(98) + 0.3));
   m = mixMood(m, MOODS.gold, seg(t, at(114) - 0.2, at(114) + 0.8));
-  return mixMood(m, MOODS.day, seg(t, CUT[5] - 0.01, CUT[5] + 0.01));
+  return mixMood(m, MOODS.day, seg(t, CUT[7] - 0.01, CUT[7] + 0.01));                  // the loop shot is lit exactly like frame 1
 }
 const hemi = new THREE.HemisphereLight(0xfff6e4, 0xe0c9a0, 2.3);
 const key = new THREE.DirectionalLight(0xfff0d2, 1.5);
+const rim = new THREE.DirectionalLight(0xfff0d0, 0.35);                  // a back light from behind him, off to the side: a bright edge that lifts him off the background
 key.castShadow = true; key.shadow.mapSize.set(2048, 2048);
 Object.assign(key.shadow.camera, { left: -4.5, right: 4.5, top: 4.5, bottom: -4.5, near: 0.5, far: 40 });
 key.shadow.bias = -0.0005; key.shadow.normalBias = 0.02; key.shadow.radius = 4;
 key.position.set(2.5, 4.6, 4.6); key.target.position.set(-1.0, 0.3, 0.6);
-scene.add(hemi, key, key.target);
+scene.add(hemi, key, key.target, rim, rim.target);
 
 // ===================== one frame of the world =====================
 const W0 = V(0, 0, 0), eyeA = V(0, 0, 0), eyeB = V(0, 0, 0);
@@ -409,8 +413,8 @@ function updatePieces(t, st) {
   // the bowl heap: pieces leave it when he picks them up (and a few jump out at the ambush)
   bowl.heap.forEach((m, i) => {
     let vis = true;
-    if (i < 6 && t >= PICK1 && t < T3) vis = false;                         // the first mouthful
-    if (i >= 6 && i < 12 && t >= PICK2 && t < CUT[8]) vis = false;           // the second mouthful (the heap is full again in the last 0.8 s, as in frame 1)
+    if (i < 6 && t >= PICK1 + 0.04 * i && t < T3) vis = false;               // the first mouthful (each piece leaves as its twin takes off)
+    if (i >= 6 && i < 12 && t >= PICK2 + 0.04 * (i - 6) && t < CUT[7]) vis = false;           // the second mouthful (the heap is full again in the last 0.8 s, as in frame 1)
     m.visible = vis;
     const pop = i >= 12 && t >= AMBUSH + 0.1 && t < T4;                       // a few pieces jump out of the bowl when he is startled
     if (pop) {
@@ -419,32 +423,33 @@ function updatePieces(t, st) {
     } else m.position.set(m.userData.hx, m.userData.hy, m.userData.hz);
   });
   // hook: stuffed cheeks and falling crumbs
-  if (k === 1 || k === 2 || k === 9) {
+  if (k === 1 || k === 2 || k === 8) {
     carried(HKC, 5);
     for (const c of crumbs) { const tau = t - c.tc; if (tau < 0 || shotOf(c.tc) !== k) continue; const m = HKX[c.i]; m.visible = true; const drift = (1 - Math.exp(-3 * tau)) / 3; m.position.set(c.p0.x + c.v.x * 0.5 * drift, dropY(c.p0.y, tau, 0.6) + 0.02, c.p0.z + c.v.z * 0.5 * drift); }
   }
-  // act 1: the mouthful travels in his mouth, falls next to your feet and settles into a little pile
+  // act 1: the mouthful flies from the bowl into his mouth, travels with him, falls next to your feet and settles into a little pile
+  const flight = (t0, from, m, i) => { const f = ease.inOut(prog(t, t0, t0 + 0.32)); m.position.copy(from).lerp(dog.mouth.localToWorld(tw.copy(slot(i))), f); m.position.y += 0.1 * Math.sin(Math.PI * f); m.visible = true; };
+  const hw = new THREE.Vector3();
   if ((k === 3 || k === 4) && t >= PICK1) {
     C1.forEach((m, i) => {
-      const d = drops1[i];
-      if (t < d.td) { m.visible = st?.carry ? true : t < PICK1 + 0.2 ? false : true; if (t >= PICK1 + 0.1) { m.visible = true; m.position.copy(dog.mouth.localToWorld(tw.copy(slot(i)))); } else m.visible = false; return; }
-      const tau = t - d.td, f = clamp01(tau / 0.45), R = REST[i].clone();
-      m.visible = true; m.position.set(lerp(d.p0.x, R.x, f), Math.max(dropY(d.p0.y, tau, 0), 0) + (tau > 0.9 ? R.y - 0.02 : 0.02) * clamp01(tau / 0.2) * 0 + (tau > 0.9 ? 0.012 : 0), lerp(d.p0.z, R.z, f));
+      const d = drops1[i]; m.scale.set(1.15, 0.62, 1);
+      if (t < d.td) { if (t < PICK1 + 0.04 * i) m.visible = false; else flight(PICK1 + 0.04 * i, heapW(i, hw), m, i); return; }
+      const tau = t - d.td, f = clamp01(tau / 0.45), R = REST[i];
+      m.visible = true; m.position.set(lerp(d.p0.x, R.x, f), Math.max(dropY(d.p0.y, tau, 0), 0) + (tau > 0.9 ? 0.012 : 0), lerp(d.p0.z, R.z, f));
     });
   }
-  // acts 2/3: the second mouthful: in his mouth, dropped at your feet, then eaten one by one
-  if ((k === 5 && t >= PICK2) || (k >= 6 && k <= 8)) {
+  // acts 2/3: the second mouthful: from the bowl into his mouth, dropped at your feet, then eaten one by one
+  if ((k === 5 && t >= PICK2) || k === 6 || k === 7) {
     C2.forEach((m, i) => {
       const d = drops2[i], te = EAT2[i];
       if (t >= te + 0.15) return;
-      if (t < d.td) { if (t >= PICK2 + 0.3 || k === 5) { m.visible = true; m.position.copy(dog.mouth.localToWorld(tw.copy(slot(i)))); } return; }
-      const tau = t - d.td, f = clamp01(tau / 0.4), R = REST[i];
+      m.scale.set(1.15, 0.62, 1);
+      if (t < d.td) { if (t < PICK2 + 0.04 * i) m.visible = false; else flight(PICK2 + 0.04 * i, heapW(i + 6, hw), m, i); return; }
+      const tau = t - d.td, f = clamp01(tau / 0.4), R = REST[i], grab = prog(t, te - 0.12, te + 0.1);
       m.visible = true;
-      const grab = prog(t, te - 0.12, te + 0.1);
       m.position.set(lerp(d.p0.x, R.x, f), Math.max(dropY(d.p0.y, tau, 0), 0) + (tau > 0.9 ? 0.012 : 0), lerp(d.p0.z, R.z, f));
-      if (grab > 0) { m.position.lerp(dog.mouth.getWorldPosition(tw), grab); m.scale.setScalar(Math.max(0.01, 1 - grab)); } else m.scale.set(1.15, 0.62, 1);
+      if (grab > 0) { m.position.lerp(dog.mouth.getWorldPosition(tw), grab); m.scale.setScalar(Math.max(0.01, 1 - grab)); }
     });
-    C2.forEach((m, i) => { if (t < drops2[i].td) m.scale.set(1.15, 0.62, 1); });
   }
 }
 
@@ -454,23 +459,24 @@ function apply(t) {
   kit.hideAll(); ic.hideAll(); fan.hide(); blind.hide(); ownerFan.hide(); shield.hide(); arrow.hide(); pulse.hide();
   // light
   const m = moodAt(t);
-  hemi.color.copy(m.hemi[0]); hemi.groundColor.copy(m.hemi[1]); hemi.intensity = m.hemi[2]; key.color.copy(m.key[0]); key.intensity = m.key[1];
+  hemi.color.copy(m.hemi[0]); hemi.groundColor.copy(m.hemi[1]); hemi.intensity = m.hemi[2]; key.color.copy(m.key[0]); key.intensity = m.key[1]; rim.color.copy(m.rim[0]); rim.intensity = m.rim[1];
   const dusk = seg(t, at(49) + 0.1, at(52)) * (1 - seg(t, at(97), at(98) + 0.3));
-  outside.set({ light: lerp(1, 0.3, dusk), warm: 0.25 * dusk + 0.5 * seg(t, at(114), at(114) + 1), sunEl: lerp(0.9, 0.12, dusk), sunAz: 0.3, season: 1, moonEl: dusk > 0.3 ? 0.35 : -1, moonAz: 0.2, t });
+  outside.set({ light: lerp(1, 0.3, dusk), warm: (0.25 * dusk + 0.5 * seg(t, at(114), at(114) + 1)) * (1 - seg(t, CUT[7] - 0.01, CUT[7] + 0.01)), sunEl: lerp(0.9, 0.12, dusk), sunAz: 0.3, season: 1, moonEl: dusk > 0.3 ? 0.35 : -1, moonAz: 0.2, t });
   scene.fog.color.copy(outside.fogColor);
   // cast
   const st = poseDog(t);
   // camera: a continuous path; its look-target leans toward his head so he stays framed
   const c = window.__cam ? { pos: V(...window.__cam.pos), look: V(...window.__cam.look), fov: window.__cam.fov ?? 46 } : cameraAt(t);
-  { const w = headFollow(t); if (w > 0 && st) c.look.lerp(headWorld(), w); }
+  { const w = headFollow(t); if (w > 0 && st) c.look.lerp(smoothHead(t, k), w); }
   camera.position.copy(c.pos); camera.lookAt(c.look);
   if (camera.fov !== c.fov) { camera.fov = c.fov; camera.updateProjectionMatrix(); }
   camera.updateMatrixWorld(true);
+  { const fw = new THREE.Vector3(); camera.getWorldDirection(fw); const rt = new THREE.Vector3().crossVectors(fw, V(0, 1, 0)).normalize(), tgt = st ? new THREE.Vector3(st.x, 0.35, st.z) : c.look.clone(); rim.target.position.copy(tgt); rim.position.copy(tgt).addScaledVector(fw, 2.2).addScaledVector(rt, 1.6).add(V(0, 2.4, 0)); }
   const ws = wolfState(t);
   wolf.visible = !!ws;
   if (ws) { wolf.scale.setScalar(ws.scale); wolf.pose({ ...ws.pose, x: ws.x, z: ws.z, y: 0, ry: ws.ry }); wolf.updateMatrixWorld(true); wolfEyes.forEach((g) => { g.material.opacity = 0.9 * ws.glow; g.visible = true; }); }
-  legs3d.visible = k === 3 || k === 6 || k === 8;
-  if (k === 8 && st) {
+  legs3d.visible = k === 3 || k === 7;
+  if (k === 7 && st) {
     const pet = seg(t, at(135) - 0.3, at(135) + 0.4), h = headWorld(), stroke = pet * Math.sin(t * 5.2) * 0.035;
     hand.set({ pos: V(h.x - 0.02 + stroke - 0.3 * (1 - pet), h.y + 0.2 + 0.45 * (1 - pet), h.z), yaw: 0, curl: 0.3, spread: 0.1, squish: 0.1 * pet });
     if (pet < 0.01) hand.hide();
@@ -506,7 +512,7 @@ function graphics(t, k, st) {
     // an alarm while he decides it is not safe
     pulse.set({ x: e.x, z: e.z, size: 1.4, color: 0xff3a3a, on: bump(prog(t, at(89), at(91) + 0.9)) * 0.95 + 0.7 * bump(prog(t, AMBUSH - 0.1, AMBUSH + 0.8)), t });
   }
-  if (k >= 6 && k <= 8) {
+  if (k === 6 || k === 7) {
     // his nervous system, glowing along his spine: tense and jittery on arrival, calm and flowing once he is safe
     const calm = seg(t, at(105), at(107) + 0.3), on = seg(t, T4 + 0.1, T4 + 0.5);
     const head = dog.point("Head"), neck = dog.point("Neck2"), s1 = dog.point("Spine1"), s2 = dog.point("Spine2"), pel = dog.point("Pelvis");
@@ -573,12 +579,22 @@ hum(at(112) - 0.2, 2.0, 0.26, 0.6, 0.7, 1.05); snd(at(114) - 0.05, "bell_1", 0.3
 snd(EAT2.at(-1) + 0.55, "gulp_2", 0.3, { rate: 1.3 }); snd(EAT2.at(-1) + 0.8, "gulp_2", 0.22, { rate: 1.5 }); snd(EAT2.at(-1) + 1.1, "breath_out", 0.16, { rate: 1.1 });
 // your hand arrives and pets him; his tail thumps; the heart; a happy whine
 snd(at(134) - 0.1, "rustle_2", 0.2, { rate: 0.9 }); for (let n = 0; n < 4; n++) snd(at(135) + 0.2 + n * 1.2 * 0.5, `rustle_${(n % 3) + 1}`, 0.14 * wobx(n, 0.2), { rate: 1.1 });
-for (let tt = at(135) + 0.1, i = 0; tt < CUT[8] - 0.1; tt += 0.31, i++) snd(tt, "thump", 0.07 * wobx(i, 0.3), { rate: 1.8 });
+for (let tt = at(135) + 0.1, i = 0; tt < CUT[7] - 0.1; tt += 0.31, i++) snd(tt, "thump", 0.07 * wobx(i, 0.3), { rate: 1.8 });
 snd(at(135) + 0.5, "breath_out", 0.2, { rate: 0.85 }); hum(at(132), 3.3, 0.18, 0.8, 0.8, 1.1);
 twinkles(at(140), 6, 0.12, 0.17, 0.02); snd(at(140) + 0.05, "bell_2", 0.3); snd(at(142) + 0.2, "bell_1", 0.26); snd(at(142) + 0.35, "bell_3", 0.22); snd(at(143) + 0.2, "whimper_a", 0.16, { rate: 1.25 });
 // the loop: trotting back in with a full mouth (the footfalls carry on into the first frame)
-for (let n = 0, i = 0; ; n++) { const tt = DURATION - (Math.PI / 2 + n * Math.PI) / 13; if (tt < CUT[8]) break; snd(tt, `paw_${(i++ % 4) + 1}`, 0.24 * wobx(n, 0.15), { rate: wobx(n, 0.04), pan: n % 2 ? 0.15 : -0.15 }); }
+for (let n = 0, i = 0; ; n++) { const tt = DURATION - (Math.PI / 2 + n * Math.PI) / 13; if (tt < CUT[7]) break; snd(tt, `paw_${(i++ % 4) + 1}`, 0.24 * wobx(n, 0.15), { rate: wobx(n, 0.04), pan: n % 2 ? 0.15 : -0.15 }); }
 
 document.getElementById("grain").style.opacity = "0";
+// ---- motion QA (tools/qa-motion.mjs): a per-frame snapshot of everything that moves, so pops and jerks can be measured ----
+const vec = (v) => [v.x, v.y, v.z];
+window.__qa = Object.assign((t) => {
+  apply(t);
+  const f = V(0, 0, -1).applyQuaternion(camera.quaternion);
+  const out = { cam: vec(camera.position), aim: vec(f), fov: camera.fov, dog: vec(dog.position), dogry: [dog.rotation.y], head: vec(headWorld()), mouth: vec(dog.mouth.getWorldPosition(new THREE.Vector3())), light: [hemi.intensity, key.intensity, hemi.color.r, hemi.color.g, hemi.color.b], dogvis: [dog.visible ? 1 : 0], ownervis: [owner.visible ? 1 : 0], wolfvis: [wolf.visible ? 1 : 0], wolf: vec(wolf.position), hand: vec(hand.group.position), handvis: [hand.group.visible ? 1 : 0] };
+  [...C1, ...C2, ...HKC, ...HKX, ...bowl.heap].forEach((m, i) => { out["p" + i] = [...vec(m.getWorldPosition(new THREE.Vector3())), m.visible ? 1 : 0, m.scale.x]; });
+  [["fan", fan.group], ["blind", blind.group], ["ownerFan", ownerFan.group], ["shield", shield.group], ["arrow", arrow.group]].forEach(([n, g]) => { out[n] = [g.visible ? 1 : 0, g.scale.x, g.position.x]; });
+  return out;
+}, { cuts: CUT, fps: FPS, duration: DURATION });
 window.__dbg = { scene, camera, dog, owner, wolf, DURATION, CUT, at, words, apply, P_BOWL, P_FLOOR, P_DROP, O_E, O_D, BOWL, OWN, DROPM, ownerLookAt, headWorld };
 short.start();
