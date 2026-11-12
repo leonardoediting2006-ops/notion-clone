@@ -138,7 +138,8 @@ const HRY = Math.atan2(HD.x, HD.z);
 // the side-track of shot 2
 const S2 = { x0: 1.55, z: 0.72, v: 1.75 };
 
-const base = (t, o = {}) => ({ t, cute: 1, walk: 0, wag: 0.3, wagSpeed: 8, ears: 0.15, sad: 0, closed: 0, ...o });
+const base = (t, o = {}) => ({ t, cute: 1, walk: 0, wag: 0.3, wagSpeed: 9, ears: 0.15, sad: 0, closed: 0, ...o });   // one tail speed for the whole video: changing it would spin the wag's phase
+const trotP = (amp, speed = 13) => ({ walk: 1, trot: 0.62 * Math.max(0, Math.min(1, amp)), trotSpeed: speed });   // the legs follow his speed: they ramp in and out, never snap
 const TROT = { walk: 1, trot: 0.62, trotSpeed: 13 };
 
 // pick-up / drop / eat times
@@ -163,10 +164,10 @@ function dogState(t) {
   if (k === 1 || k === 8) {                                              // the hook: trots toward the camera with a full mouth
     const u = k === 1 ? t : t - DURATION, tp = u;
     const p = hookPos(u);
-    return { x: p.x, z: p.z, ry: HRY, look: [0, 0.15], pose: base(tp, { ...TROT, headPitch: 0.04, ears: 0.4, jawOpen: 0.2 + 0.1 * Math.sin(tp * 11), wag: 0.6, wagSpeed: 10 }), carry: 5, u };
+    return { x: p.x, z: p.z, ry: HRY, look: [0, 0.15], pose: base(tp, { ...TROT, headPitch: 0.04, ears: 0.4, jawOpen: 0.2 + 0.1 * Math.sin(tp * 11), wag: 0.6 }), carry: 5, u };
   }
   if (k === 2) {                                                          // side-track across the living room
-    const u = t - CUT[1]; return { x: S2.x0 - S2.v * u, z: S2.z, ry: -Math.PI / 2, look: [-0.5, 0.1], pose: base(t, { ...TROT, headPitch: 0.04, ears: 0.4, jawOpen: 0.2 + 0.1 * Math.sin(t * 11), wag: 0.6, wagSpeed: 10 }), carry: 5, u };
+    const u = t - CUT[1]; return { x: S2.x0 - S2.v * u, z: S2.z, ry: -Math.PI / 2, look: [-0.5, 0.1], pose: base(t, { ...TROT, headPitch: 0.04, ears: 0.4, jawOpen: 0.2 + 0.1 * Math.sin(t * 11), wag: 0.6 }), carry: 5, u };
   }
   if (k === 3 || k === 4) {
     const jTrot0 = at(24) - 0.1, jTrot1 = DROP1[0] - 0.25;
@@ -175,16 +176,16 @@ function dogState(t) {
     }
     if (t < jTrot0) {                                                     // lifts his head with a mouthful and looks for you
       const up = seg(t, PICK1 - 0.25, PICK1 + 0.45), turn = seg(t, PICK1 + 0.3, jTrot0);
-      return { eat: up < 0.98 ? { target: BOWL, key: "bowl", lift: up } : null, x: O_E.x, z: O_E.z, ry: lerp(RY_E, -0.62, turn), look: [lerp(0, -0.5, turn), 0.1], pose: base(t, { crouch: 0.2 * (1 - up), headPitch: lerp(P_BOWL, 0.1, up), jawOpen: 0.16 * up, ears: lerp(0.2, 0.5, up), wag: 0.6 }), carry: 6 };
+      return { eat: up < 0.98 ? { target: BOWL, key: "bowl", lift: up } : null, x: O_E.x, z: O_E.z, ry: lerp(RY_E, -0.62, turn), look: [lerp(0, -0.5, turn), 0.1], pose: base(t, { crouch: 0.2 * (1 - up), headPitch: lerp(P_BOWL, 0.1, up), jawOpen: lerp(chew(t, 12), 0.16, up), ears: lerp(0.2, 0.5, up), wag: lerp(0.4, 0.6, up) }), carry: 6 };
     }
     if (t < jTrot1) {                                                     // the trot to the couch
       const f = seg(t, jTrot0, jTrot1), turn = seg(t, jTrot1 - 0.7, jTrot1);
-      return { x: lerp(O_E.x, O_D.x, f), z: lerp(O_E.z, O_D.z, f), ry: lerp(-0.62, RY_D, turn), look: [-0.4, 0.1], pose: base(t, { ...TROT, trotSpeed: 14, headPitch: 0.06, jawOpen: 0.2, ears: 0.45, wag: 0.7, wagSpeed: 10 }), carry: 6 };
+      return { x: lerp(O_E.x, O_D.x, f), z: lerp(O_E.z, O_D.z, f), ry: lerp(-0.62, RY_D, turn), look: [-0.4, 0.1], pose: base(t, { ...trotP(6 * ((t - jTrot0) / (jTrot1 - jTrot0)) * (1 - (t - jTrot0) / (jTrot1 - jTrot0)) / 0.9, 14), headPitch: 0.1, jawOpen: 0.16, ears: 0.5, wag: 0.6 }), carry: 6 };
     }
     const down = seg(t, jTrot1, DROP1[0] - 0.05), L = DROP1.at(-1);
-    if (t < L + 0.1) return { eat: { target: DROPM, key: "drop", lift: 1 - down }, x: O_D.x, z: O_D.z, ry: RY_D, look: [-0.2, -0.5], pose: base(t, { crouch: 0.1 * down, headPitch: lerp(0.1, P_DROP, down), jawOpen: 0.2 + 0.3 * seg(t, DROP1[0] - 0.12, DROP1[0] + 0.05), ears: 0.4, wag: 0.5 }), carry: t < DROP1[0] ? 6 : 0 };
+    if (t < L + 0.1) return { eat: { target: DROPM, key: "drop", lift: 1 - down }, x: O_D.x, z: O_D.z, ry: RY_D, look: [-0.2, -0.5], pose: base(t, { crouch: 0.1 * down, headPitch: lerp(0.1, P_DROP, down), jawOpen: lerp(0.16, 0.5, seg(t, DROP1[0] - 0.12, DROP1[0] + 0.05)), ears: 0.5, wag: 0.6 }), carry: t < DROP1[0] ? 6 : 0 };
     const up = seg(t, L + 0.1, L + 0.55), sitK = seg(t, L + 0.45, L + 1.05), wait = prog(t, at(40), at(48));   // lifts his head, sits and waits for you
-    return { x: O_D.x, z: O_D.z, ry: RY_D, look: [-0.35, 0.5 * sitK - 0.4 * (1 - up)], pose: base(t, { sit: sitK, crouch: 0.1 * (1 - up), headPitch: lerp(P_DROP, 0.0, up) - 0.22 * sitK, headTilt: 0.14 * sitK + 0.05 * wob(t * 2), ears: 0.55, wag: 0.8 * sitK, wagSpeed: 10, sad: 0.3 * wait }) };
+    return { x: O_D.x, z: O_D.z, ry: RY_D, look: [-0.35, 0.5 * sitK - 0.4 * (1 - up)], pose: base(t, { sit: sitK, crouch: 0.1 * (1 - up), headPitch: lerp(P_DROP, 0.0, up) - 0.22 * sitK, headTilt: 0.14 * sitK + 0.05 * wob(t * 2), ears: 0.55, wag: 0.8 * sitK, sad: 0.3 * wait }) };
   }
   if (k === 5) return dogAct2(t);
   if (k === 6 || k === 7) return dogAct3(t);
@@ -195,30 +196,34 @@ function dogState(t) {
 function dogAct2(t) {
   const ea = at(55), tf = at(58) - 0.08, bowlDn = at(63) - 0.15, amb = AMBUSH + 0.1, sc1 = amb + 0.45;
   let pose, look = [0, 0], eat = null, ry = RY_E, carry = 0, x = O_E.x, z = O_E.z;
-  if (t < ea - 0.05) pose = base(t, { headPitch: 0.05, ears: 0.2, wag: 0.3, headYaw: 0.15 * wob(t * 1.3) });                        // calm, head up
-  else if (t < tf) { eat = { target: BOWL, key: "bowl" }; pose = base(t, { crouch: 0.2, headPitch: P_BOWL - 0.05 * wob(t * 9), jawOpen: chew(t, 12), ears: 0.15, wag: 0.25 }); look = [0, -0.7]; }  // "eating alone"
-  else if (t < bowlDn) {                                                                                                      // "terrifying": head snaps up, he scans, trembling
+  if (t < tf) {                                                                                                               // calm, then he lowers his head to eat ("eating alone")
+    const dn = seg(t, ea - 0.3, ea + 0.1);
+    eat = dn > 0.02 ? { target: BOWL, key: "bowl", lift: 1 - dn } : null;
+    pose = base(t, { crouch: 0.2 * dn, headPitch: lerp(0.05, P_BOWL - 0.05 * wob(t * 9), dn), jawOpen: chew(t, 12) * dn, ears: lerp(0.2, 0.15, dn), wag: lerp(0.3, 0.25, dn), headYaw: 0.15 * wob(t * 1.3) * (1 - dn) }); look = [0, -0.7 * dn];
+  } else if (t < bowlDn) {                                                                                                    // "terrifying": head snaps up, he scans, trembling
     const a = seg(t, tf, tf + 0.18);
-    pose = base(t, { headPitch: lerp(P_BOWL, -0.05, a), crouch: 0.2 * (1 - a), ears: -0.8, shiver: 0.7, headYaw: 0.55 * wob((t - tf) * 2.6), squint: 0, pupil: 1.25, wag: 0, sad: 0.6 });
-    look = [0.6 * wob((t - tf) * 2.6), 0];
+    eat = a < 0.98 ? { target: BOWL, key: "bowl", lift: a } : null;
+    pose = base(t, { headPitch: lerp(P_BOWL, -0.05, a), crouch: 0.2 * (1 - a), ears: lerp(0.15, -0.8, a), shiver: 0.7 * a, headYaw: 0.55 * wob((t - tf) * 2.6) * a, squint: 0, pupil: lerp(1, 1.25, a), wag: 0, sad: lerp(0, 0.6, a), jawOpen: chew(t, 12) * (1 - a) });
+    look = [0.6 * wob((t - tf) * 2.6), lerp(-0.7, 0, a)];
   } else if (t < amb) {                                                                                                       // lowers his snout into the bowl and keeps eating, blind to the sides
     const d = seg(t, bowlDn, bowlDn + 0.22);
     eat = d > 0.02 ? { target: BOWL, key: "bowl", lift: 1 - d } : null;
-    pose = base(t, { crouch: 0.2 * d, headPitch: lerp(-0.05, P_BOWL, d) + (d > 0.9 ? -0.04 * wob(t * 10) : 0), jawOpen: d > 0.8 ? chew(t, 12) : 0, ears: -0.6, shiver: 0.35, wag: 0, sad: 0.4, headYaw: lerp(0.55 * wob((bowlDn - tf) * 2.6), 0, d) }); look = [0, -0.6];
+    pose = base(t, { crouch: 0.2 * d, headPitch: lerp(-0.05, P_BOWL, d) + (d > 0.9 ? -0.04 * wob(t * 10) : 0), jawOpen: d > 0.8 ? chew(t, 12) : 0, ears: lerp(-0.8, -0.6, d), shiver: lerp(0.7, 0.35, d), wag: 0, sad: lerp(0.6, 0.4, d), headYaw: lerp(0.55 * wob((bowlDn - tf) * 2.6), 0, d) }); look = [0, -0.6 * d];
   } else if (t < PICK2 - 0.3) {                                                                                               // snaps up at the ambush, then scans the empty kitchen
-    const a = seg(t, amb, amb + 0.14), s = t - sc1;
-    pose = base(t, { headPitch: lerp(P_BOWL, 0.0, a), crouch: 0.2 * (1 - a), ears: -0.9, shiver: 0.8, headYaw: s > 0 ? 0.75 * wob(s * 2.1) : -0.6 * a, wag: 0, sad: 0.7, squint: 0, pupil: 1.3, jawOpen: 0 });
-    look = [s > 0 ? 0.7 * wob(s * 2.1) : -0.6, 0];
+    const a = seg(t, amb, amb + 0.14), s = t - sc1, fade = seg(t, PICK2 - 0.75, PICK2 - 0.3);       // the scan settles as he decides to take his food and go
+    eat = a < 0.98 ? { target: BOWL, key: "bowl", lift: a } : null;
+    pose = base(t, { headPitch: lerp(P_BOWL, 0.0, a), crouch: 0.2 * (1 - a), ears: lerp(-0.6, -0.9, a) * (1 - fade) + -0.5 * fade, shiver: lerp(0.35, 0.8, a) * (1 - fade) + 0.3 * fade, headYaw: (s > 0 ? 0.75 * wob(s * 2.1) : -0.6 * a) * (1 - fade), wag: 0, sad: lerp(0.4, 0.7, a) * (1 - fade) + 0.5 * fade, squint: 0, pupil: lerp(1, 1.3, a) * (1 - fade) + fade, jawOpen: chew(t, 12) * (1 - a) });
+    look = [(s > 0 ? 0.7 * wob(s * 2.1) : -0.6 * a) * (1 - fade), -0.6 * (1 - a)];
   } else if (t < at(94)) {                                                                                                    // takes a mouthful
     const d = seg(t, PICK2 - 0.3, PICK2), up = seg(t, PICK2 + 0.05, PICK2 + 0.5);
     eat = d > 0.02 && up < 0.98 ? { target: BOWL, key: "bowl", lift: up > 0 ? up : 1 - d } : null;
-    pose = base(t, { crouch: 0.2 * d * (1 - up), headPitch: lerp(lerp(0.0, P_BOWL, d), 0.1, up), jawOpen: chew(t, 12) * (1 - up) + 0.16 * up, ears: lerp(-0.5, 0.45, up), shiver: 0.3 * (1 - up), sad: 0.5 * (1 - up), wag: 0.6 * up });
+    pose = base(t, { crouch: 0.2 * d * (1 - up), headPitch: lerp(lerp(0.0, P_BOWL, d), 0.1, up), jawOpen: chew(t, 12) * (1 - up) + 0.16 * up, ears: lerp(-0.5, 0.5, up), shiver: 0.3 * (1 - up), sad: 0.5 * (1 - up), wag: 0.6 * up });
     carry = up > 0.4 ? 6 : 0;
   } else {                                                                                                                   // off to you
     const f = prog(t, at(94) - 0.15, T4 + 0.25), turn = seg(t, at(94) - 0.15, at(94) + 0.35);
     x = lerp(O_E.x, O_E.x - 2.2, ease.in(f)); z = lerp(O_E.z, O_E.z + 2.3, ease.in(f));
     ry = lerp(RY_E, -0.62, turn); look = [-0.4, 0.1]; carry = 6;
-    pose = base(t, { ...TROT, trotSpeed: 14, headPitch: 0.06, jawOpen: 0.2, ears: 0.5, wag: 0.8, wagSpeed: 10 });
+    pose = base(t, { ...trotP(2 * f / 0.8, 14), headPitch: 0.1, jawOpen: 0.16, ears: 0.5, wag: 0.6 });
   }
   return { eat, x, z, ry, look, pose, carry };
 }
@@ -226,10 +231,10 @@ function dogAct2(t) {
 // act 3: at your feet, safe
 function dogAct3(t) {
   const u = t - T4, arrive = DROP2[0] - 0.4;
-  const A0 = { x: 0.55, z: 1.62 };
-  if (t < arrive) {                                                         // trots in toward your feet, tense
-    const f = seg(t, T4 - 0.1, arrive);
-    return { x: lerp(A0.x, O_D.x, f), z: lerp(A0.z, O_D.z, f), ry: lerp(-1.1, RY_D, f), look: [-0.4, 0.1], pose: base(t, { ...TROT, trotSpeed: 14, headPitch: 0.06, jawOpen: 0.2, ears: 0.1, wag: 0, shiver: 0.4, sad: 0.4 }), carry: 6 };
+  const A0 = { x: 1.25, z: 1.95 };
+  if (t < arrive) {                                                         // trots in toward your feet, tense, slowing as he arrives
+    const w = prog(t, T4 - 0.9, arrive), g = lerp(w, ease.out(w), 0.5), amp = Math.min(1, (1.5 - w) / 1.0) * (1 - seg(w, 0.8, 1.0));
+    return { x: lerp(A0.x, O_D.x, g), z: lerp(A0.z, O_D.z, g), ry: lerp(-1.1, RY_D, ease.inOut(w)), look: [-0.4, 0.1], pose: base(t, { ...trotP(amp, 14), headPitch: 0.06, jawOpen: 0.2, ears: 0.1, wag: 0, shiver: 0.4, sad: 0.4 }), carry: 6 };
   }
   // the pieces he eats, in order; the mouth visits each one
   const order = EAT2.map((te, i) => ({ te, p: REST[i] }));
@@ -252,7 +257,7 @@ function dogAct3(t) {
   return {
     eat: eating ? { target, key: "floor", lift: Math.max(petting, finish, 0.85 * chewUp) } : { target: DROPM, key: "drop", lift: 1 - dn },
     x: O_D.x, z: O_D.z, ry: RY_D, look: [-0.25, lerp(-0.5, 0.4, Math.max(lookUp, petting, finish, chewUp))],
-    pose: base(t, { crouch: eating ? 0.25 * settle * (1 - Math.max(petting * 0.8, finish, chewUp)) : 0.1 * dn, headPitch: eating ? lerp(pitchBase, -0.02, Math.max(lookUp, petting * 0.8, finish, chewUp)) + 0.07 * swallow : pitchBase, jawOpen: eating ? Math.max(bite * chew(t, 13), chewUp * 0.32 * Math.abs(Math.sin(t * 10)), lick * 0.35 * Math.abs(Math.sin(t * 9))) : 0.22 * (1 - seg(t, DROP2[0] + 0.05, DROP2[0] + 0.2)), ears: lerp(0.1, -0.05, relax) * (1 - 0.4 * petting), sad: lerp(0.4, 0.15, relax), shiver: 0.4 * (1 - relax), wag: lerp(0, 0.5, relax) + 0.4 * petting, wagSpeed: lerp(7, 10, petting), closed: 0.85 * bliss, headTilt: 0.12 * petting, tilt: 0.1 * petting }),
+    pose: base(t, { crouch: (eating ? lerp(0.1, 0.25, settle) * (1 - Math.max(petting * 0.8, finish, chewUp)) : 0.1 * dn), headPitch: eating ? lerp(pitchBase, -0.02, Math.max(lookUp, petting * 0.8, finish, chewUp)) + 0.07 * swallow : pitchBase, jawOpen: eating ? Math.max(bite * chew(t, 13), chewUp * 0.32 * Math.abs(Math.sin(t * 10)), lick * 0.35 * Math.abs(Math.sin(t * 9))) : 0.22 * (1 - seg(t, DROP2[0] + 0.05, DROP2[0] + 0.2)), ears: lerp(0.1, -0.05, relax) * (1 - 0.4 * petting), sad: lerp(0.4, 0.15, relax), shiver: 0.4 * (1 - relax), wag: lerp(0, 0.5, relax) + 0.4 * petting, closed: 0.85 * bliss, headTilt: 0.12 * petting, tilt: 0.1 * petting }),
     carry: t < DROP2[0] ? 6 : 0, gone, bite, swallow, relax, petting,
   };
 }
@@ -279,7 +284,7 @@ const ownerLookAt = (p) => [Math.max(-1, Math.min(1, reachX(p) / 0.7)), Math.max
 // his head, low-passed (a gaussian over +-0.4 s, kept inside the current shot) so the camera follows him without picking up every chew and nod
 function smoothHead(t, k) {
   const lo = CUT[k - 1] + 0.02, hi = (CUT[k] ?? DURATION) - 0.02, sum = new THREE.Vector3(); let wsum = 0;
-  for (let o = -0.4; o <= 0.401; o += 0.1) { const w = Math.exp(-(o * o) / (2 * 0.17 * 0.17)); poseDog(Math.min(hi, Math.max(lo, t + o))); sum.addScaledVector(headWorld(), w); wsum += w; }
+  for (let o = -0.4; o <= 0.401; o += 0.1) { const w = Math.exp(-(o * o) / (2 * 0.17 * 0.17)); poseDog(Math.min(hi, Math.max(lo, t + o)), false); sum.addScaledVector(headWorld(), w); wsum += w; }
   poseDog(t);                                                           // leave him posed at t
   return sum.multiplyScalar(1 / wsum);
 }
@@ -382,8 +387,20 @@ scene.add(hemi, key, key.target, rim, rim.target);
 
 // ===================== one frame of the world =====================
 const W0 = V(0, 0, 0), eyeA = V(0, 0, 0), eyeB = V(0, 0, 0);
-function poseDog(t) {
-  const st = dogState(t);
+const BLEND = ["headPitch", "crouch", "jawOpen", "ears", "sad", "wag", "shiver", "squint", "headYaw", "headTilt", "tilt", "sit", "closed", "trot", "angry", "cute", "pupil"];
+const BW = [[-0.1, 0.1], [-0.05, 0.2], [0, 0.4], [0.05, 0.2], [0.1, 0.1]];
+// his state with the pose parameters low-passed over about +-0.1 s (kept inside the current shot): the animation has no steps, only curves
+function dogStateF(t) {
+  const st = dogState(t); if (!st) return st;
+  const k = shotOf(t), lo = CUT[k - 1] + 0.01, hi = (CUT[k] ?? DURATION) - 0.01;
+  const ss = BW.map(([o]) => (o === 0 ? st : dogState(Math.min(hi, Math.max(lo, t + o))) ?? st));
+  const pose = { ...st.pose };
+  for (const key of BLEND) { let sum = 0; BW.forEach(([, w], i) => { sum += w * (ss[i].pose[key] ?? (key === "pupil" ? 1 : 0)); }); pose[key] = sum; }
+  const look = [0, 1].map((c) => BW.reduce((m, [, w], i) => m + w * (ss[i].look?.[c] ?? 0), 0));
+  return { ...st, pose, look };
+}
+function poseDog(t, filtered = true) {
+  const st = filtered ? dogStateF(t) : dogState(t);
   dog.visible = !!st; if (!st) return null;
   dog.scale.setScalar(DOGS);
   let x = st.x, z = st.z;
@@ -591,7 +608,7 @@ const vec = (v) => [v.x, v.y, v.z];
 window.__qa = Object.assign((t) => {
   apply(t);
   const f = V(0, 0, -1).applyQuaternion(camera.quaternion);
-  const out = { cam: vec(camera.position), aim: vec(f), fov: camera.fov, dog: vec(dog.position), dogry: [dog.rotation.y], head: vec(headWorld()), mouth: vec(dog.mouth.getWorldPosition(new THREE.Vector3())), light: [hemi.intensity, key.intensity, hemi.color.r, hemi.color.g, hemi.color.b], dogvis: [dog.visible ? 1 : 0], ownervis: [owner.visible ? 1 : 0], wolfvis: [wolf.visible ? 1 : 0], wolf: vec(wolf.position), hand: vec(hand.group.position), handvis: [hand.group.visible ? 1 : 0] };
+  const out = { cam: vec(camera.position), aim: vec(f), fov: [camera.fov], dog: vec(dog.position), dogry: [dog.rotation.y], head: vec(headWorld()), mouth: vec(dog.mouth.getWorldPosition(new THREE.Vector3())), light: [hemi.intensity, key.intensity, hemi.color.r, hemi.color.g, hemi.color.b], dogvis: [dog.visible ? 1 : 0], ownervis: [owner.visible ? 1 : 0], wolfvis: [wolf.visible ? 1 : 0], wolf: vec(wolf.position), hand: vec(hand.group.position), handvis: [hand.group.visible ? 1 : 0] };
   [...C1, ...C2, ...HKC, ...HKX, ...bowl.heap].forEach((m, i) => { out["p" + i] = [...vec(m.getWorldPosition(new THREE.Vector3())), m.visible ? 1 : 0, m.scale.x]; });
   [["fan", fan.group], ["blind", blind.group], ["ownerFan", ownerFan.group], ["shield", shield.group], ["arrow", arrow.group]].forEach(([n, g]) => { out[n] = [g.visible ? 1 : 0, g.scale.x, g.position.x]; });
   return out;
