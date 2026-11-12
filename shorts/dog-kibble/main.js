@@ -154,7 +154,7 @@ const AMBUSH = at(77);
 function wolfState(t) {
   if (t < at(72) - 0.4 || t > AMBUSH + 0.75) return null;
   const a = seg(t, at(72) - 0.4, AMBUSH), lunge = seg(t, AMBUSH, AMBUSH + 0.2), fade = 1 - seg(t, AMBUSH + 0.35, AMBUSH + 0.75);
-  const x = lerp(-1.8, -0.55, a) + 0.7 * lunge, scale = (0.5 + 0.5 * seg(t, at(72) - 0.4, at(72) + 0.3)) * fade;
+  const x = lerp(-1.8, -0.55, a) + 0.7 * lunge, scale = seg(t, at(72) - 0.4, at(72) + 0.35) * fade;
   return { x, z: -0.55, ry: Math.PI / 2, scale: Math.max(0.01, scale), pose: { t, crouch: 1 - 0.8 * lunge, walk: a < 0.98 ? 0.3 : 0, headPitch: 0.1, ears: -0.9, angry: 1, snarl: lunge * 0.8, squint: 0.4, leap: 0.7 * lunge, cute: 0 }, glow: Math.min(1, a * 3) * fade };
 }
 
@@ -214,13 +214,13 @@ function dogAct2(t) {
     eat = a < 0.98 ? { target: BOWL, key: "bowl", lift: a } : null;
     pose = base(t, { headPitch: lerp(P_BOWL, 0.0, a), crouch: 0.2 * (1 - a), ears: lerp(-0.6, -0.9, a) * (1 - fade) + -0.5 * fade, shiver: lerp(0.35, 0.8, a) * (1 - fade) + 0.3 * fade, headYaw: (s > 0 ? 0.75 * wob(s * 2.1) : -0.6 * a) * (1 - fade), wag: 0, sad: lerp(0.4, 0.7, a) * (1 - fade) + 0.5 * fade, squint: 0, pupil: lerp(1, 1.3, a) * (1 - fade) + fade, jawOpen: chew(t, 12) * (1 - a) });
     look = [(s > 0 ? 0.7 * wob(s * 2.1) : -0.6 * a) * (1 - fade), -0.6 * (1 - a)];
-  } else if (t < at(94)) {                                                                                                    // takes a mouthful
-    const d = seg(t, PICK2 - 0.3, PICK2), up = seg(t, PICK2 + 0.05, PICK2 + 0.5);
+  } else if (t < PICK2 + 0.65) {                                                                                              // takes a mouthful
+    const d = seg(t, PICK2 - 0.3, PICK2), up = seg(t, PICK2 + 0.05, PICK2 + 0.65);
     eat = d > 0.02 && up < 0.98 ? { target: BOWL, key: "bowl", lift: up > 0 ? up : 1 - d } : null;
     pose = base(t, { crouch: 0.2 * d * (1 - up), headPitch: lerp(lerp(0.0, P_BOWL, d), 0.1, up), jawOpen: chew(t, 12) * (1 - up) + 0.16 * up, ears: lerp(-0.5, 0.5, up), shiver: 0.3 * (1 - up), sad: 0.5 * (1 - up), wag: 0.6 * up });
     carry = up > 0.4 ? 6 : 0;
   } else {                                                                                                                   // off to you
-    const f = prog(t, at(94) - 0.15, T4 + 0.25), turn = seg(t, at(94) - 0.15, at(94) + 0.35);
+    const f = prog(t, PICK2 + 0.45, T4 + 0.5), turn = seg(t, PICK2 + 0.45, PICK2 + 0.95);
     x = lerp(O_E.x, O_E.x - 2.2, ease.in(f)); z = lerp(O_E.z, O_E.z + 2.3, ease.in(f));
     ry = lerp(RY_E, -0.62, turn); look = [-0.4, 0.1]; carry = 6;
     pose = base(t, { ...trotP(2 * f / 0.8, 14), headPitch: 0.1, jawOpen: 0.16, ears: 0.5, wag: 0.6 });
@@ -301,19 +301,22 @@ function hookCam(u) {
   const rt = V(HD.z, 0, -HD.x);
   return { pos: p.clone().addScaledVector(HD, 1.95).addScaledVector(rt, sway).add(V(0, 0.55 + 0.05 * u, 0)), look: p.clone().addScaledVector(HD, 0.75).add(V(0, 0.4, 0)), fov: 44 + 1.5 * u };
 }
-const JDIR = V(O_D.x - O_E.x, 0, O_D.z - O_E.z).normalize();                    // the way to the couch
-const leadKey = (t, d = 2.15) => { const f = seg(t, at(24) - 0.1, DROP1[0] - 0.25), x = lerp(O_E.x, O_D.x, f), z = lerp(O_E.z, O_D.z, f); return { t, pos: [x + JDIR.x * d, 0.5, z + JDIR.z * d], look: [x + JDIR.x * 0.7, 0.36, z + JDIR.z * 0.7], fov: 44 }; };
 const POV = [-2.72, 1.3, 1.16];                                                   // your eyes on the couch
 const cam3 = cameraPath([
-  { t: CUT[2], pos: [1.9, 0.42, 1.15], look: [0.3, 0.3, 0.05], fov: 44 },
-  { t: 4.9, pos: [1.7, 0.46, 0.95], look: [0.3, 0.32, 0.0], fov: 42 },
-  { t: 5.55, pos: [1.2, 0.5, 1.5], look: [0.2, 0.35, -0.1], fov: 44 },
-  leadKey(5.95), leadKey(6.45),
-  { t: 7.1, pos: POV, look: [-1.1, 0.3, 1.25], fov: 60 },
+  { t: 7.4, pos: POV, look: [-1.1, 0.3, 1.25], fov: 60 },
   { t: 7.9, pos: [-2.71, 1.29, 1.15], look: [-1.45, 0.2, 1.3], fov: 60 },
   { t: 8.7, pos: [-2.7, 1.28, 1.14], look: [-1.0, 0.55, 1.25], fov: 56 },
   { t: CUT[3], pos: [-2.69, 1.27, 1.13], look: [-0.95, 0.65, 1.25], fov: 54 },
 ]);
+// 3.78-7.4 s: one continuous orbit around his head (he is eating, scoops, trots off), swinging from the kitchen side round to your side of the room
+function orbit3(t) {
+  const H = smoothHead(t, 3), w = ease.inOut(prog(t, 3.9, 7.4));
+  const ang = lerp(0.93, -1.68, w), r = t < 5.8 ? lerp(1.9, 2.1, seg(t, 3.9, 5.8)) : lerp(2.1, 1.25, seg(t, 5.8, 7.4)), h = t < 5.8 ? lerp(0.12, 0.2, seg(t, 3.9, 5.8)) : lerp(0.2, 1.1, seg(t, 5.8, 7.4));
+  const pos = V(H.x + Math.sin(ang) * r, H.y + h, H.z + Math.cos(ang) * r), look = H.clone().add(V(0, -0.05, 0)), fov = lerp(44, 46, seg(t, 3.9, 5.8)) + 14 * seg(t, 6.4, 7.4);
+  const k = seg(t, 6.9, 7.4);                                                    // hand over to the POV keys exactly
+  const p0 = cam3(7.4);
+  return { pos: pos.lerp(p0.pos, k), look: look.lerp(p0.look, k), fov: lerp(fov, p0.fov, k) };
+}
 // the reaction: your skeptical face, with him sitting at your feet (a profile-to-front two-shot from the kitchen side)
 const cam3b = cameraPath([
   { t: CUT[3], pos: [0.05, 1.0, 2.75], look: [-1.9, 0.95, 1.05], fov: 52 },
@@ -323,8 +326,8 @@ const cam3b = cameraPath([
 const cam4 = cameraPath([
   { t: CUT[3], pos: [1.8, 0.42, 1.45], look: [0.35, 0.3, 0.1], fov: 44 },
   { t: 12.6, pos: [1.65, 0.5, 1.3], look: [0.35, 0.32, 0.05], fov: 42 },
-  { t: 13.6, pos: [2.6, 1.0, 2.9], look: [0.2, 0.3, -0.3], fov: 52 },
-  { t: 14.0, pos: [1.5, 0.6, 1.55], look: [0.45, 0.4, -0.05], fov: 42 },
+  { t: 13.4, pos: [2.5, 0.95, 2.8], look: [0.2, 0.3, -0.3], fov: 52 },
+  { t: 14.3, pos: [1.5, 0.6, 1.55], look: [0.45, 0.4, -0.05], fov: 42 },
   { t: 15.2, pos: [1.6, 1.5, 1.7], look: [0.35, 0.1, -0.15], fov: 46 },
   { t: 17.0, pos: [0.9, 2.0, 1.2], look: [0.1, 0.0, -0.4], fov: 50 },
   { t: 18.4, pos: [-0.5, 1.5, 2.0], look: [-0.2, 0.15, -0.35], fov: 50 },
@@ -347,13 +350,13 @@ const cam8 = cameraPath([
   { t: 33.0, pos: [-2.6, 1.02, 1.14], look: [-1.45, 0.35, 1.27], fov: 52 },
   { t: CUT[7], pos: [-2.5, 1.06, 1.14], look: [-1.3, 0.42, 1.25], fov: 48 },
 ]);
-const headFollow = (t) => { const k = shotOf(t); return k === 3 ? (t < DROP1[0] - 0.3 ? 0.7 : 0.55) : k === 4 ? 0.3 : k === 5 ? (t < PICK2 - 0.3 ? 0.5 : 0.1) : k === 6 ? 0.2 : k === 7 ? 0.6 : 0; };
+const headFollow = (t) => { const k = shotOf(t); return k === 3 ? 0.55 * seg(t, 7.4, 7.9) : k === 4 ? 0.3 : k === 5 ? lerp(0.5, 0.1, seg(t, PICK2 - 0.7, PICK2 - 0.2)) : k === 6 ? 0.2 : k === 7 ? 0.6 : 0; };
 function cameraAt(t) {
   const k = shotOf(t);
   if (k === 1) return hookCam(t);
   if (k === 8) return hookCam(t - DURATION);
   if (k === 2) { const u = t - CUT[1], hx = S2.x0 - S2.v * u - 0.85; return { pos: V(Math.max(hx - 0.8, -1.55), 0.6 + 0.05 * u, S2.z + 1.45), look: V(Math.max(hx + 0.1, -1.55), 0.42, S2.z), fov: 46 }; }
-  if (k === 3) return cam3(t);
+  if (k === 3) return t < 7.4 ? orbit3(t) : cam3(t);
   if (k === 4) return cam3b(t);
   if (k === 5) return cam4(t);
   if (k === 6) return cam6(t);
@@ -586,7 +589,7 @@ snd(AMBUSH + 0.12, "gasp", 0.3, { rate: 1.1 }); snd(AMBUSH + 0.15, "whimper_b", 
 POP.forEach((pp, i) => { tick(AMBUSH + 0.3 + 0.18 * i, i + 9, 0.2); tick(AMBUSH + 0.75 + 0.2 * i, i + 20, 0.12); });
 beats(AMBUSH + 0.3, at(88), 0.4, 0.5, 0.34, 0.26); for (let i = 0; i < 4; i++) snd(AMBUSH + 0.6 + i * 0.5, "sniffle_1", 0.1, { rate: 1.2, pan: i % 2 ? 0.3 : -0.3 });
 snd(at(89), "bell_3", 0.3, { rate: 0.7 }); snd(at(89) + 0.3, "bell_3", 0.26, { rate: 0.7 });
-snd(PICK2 - 0.2, "crunch_2", 0.22); snd(PICK2 + 0.05, "rustle_2", 0.2); chews(PICK2 - 0.3, PICK2 + 0.3, 0.2, 1); steps(at(94) + 0.15, T4, 14, 0.16);
+snd(PICK2 - 0.2, "crunch_2", 0.22); snd(PICK2 + 0.05, "rustle_2", 0.2); chews(PICK2 - 0.3, PICK2 + 0.3, 0.2, 1); steps(PICK2 + 0.7, T4, 14, 0.14);
 // at your feet: he arrives tense, drops the food, then eats while the heartbeat slows; a swallow; the dome chimes
 steps(T4 - 0.1, DROP2[0] - 0.4, 14, 0.24); beats(T4 + 0.1, at(106), 0.5, 0.65, 0.28, 0.24); beats(at(106), at(114), 0.7, 0.95, 0.22, 0.16);
 DROP2.forEach((td, i) => tick(td + 0.3, i + 30, 0.22)); snd(DROP2[0] + 0.05, "breath_out", 0.14, { rate: 1.2 });
