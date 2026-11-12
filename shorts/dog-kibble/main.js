@@ -216,11 +216,12 @@ function dogAct2(t) {
     look = [(s > 0 ? 0.7 * wob(s * 2.1) : -0.6 * a) * (1 - fade), -0.6 * (1 - a)];
   } else if (t < PICK2 + 0.65) {                                                                                              // takes a mouthful
     const d = seg(t, PICK2 - 0.3, PICK2), up = seg(t, PICK2 + 0.05, PICK2 + 0.65);
+    ry = lerp(RY_E, -0.62, seg(t, PICK2 + 0.3, PICK2 + 0.8));                                  // he turns toward you while he lifts his head (the exit carries on from the same angle)
     eat = d > 0.02 && up < 0.98 ? { target: BOWL, key: "bowl", lift: up > 0 ? up : 1 - d } : null;
     pose = base(t, { crouch: 0.2 * d * (1 - up), headPitch: lerp(lerp(0.0, P_BOWL, d), 0.1, up), jawOpen: chew(t, 12) * (1 - up) + 0.16 * up, ears: lerp(-0.5, 0.5, up), shiver: 0.3 * (1 - up), sad: 0.5 * (1 - up), wag: 0.6 * up });
     carry = up > 0.4 ? 6 : 0;
   } else {                                                                                                                   // off to you
-    const f = prog(t, PICK2 + 0.45, T4 + 0.5), turn = seg(t, PICK2 + 0.45, PICK2 + 0.95);
+    const f = prog(t, PICK2 + 0.65, T4 + 0.5), turn = seg(t, PICK2 + 0.3, PICK2 + 0.8);
     x = lerp(O_E.x, O_E.x - 2.2, ease.in(f)); z = lerp(O_E.z, O_E.z + 2.3, ease.in(f));
     ry = lerp(RY_E, -0.62, turn); look = [-0.4, 0.1]; carry = 6;
     pose = base(t, { ...trotP(2 * f / 0.8, 14), headPitch: 0.1, jawOpen: 0.16, ears: 0.5, wag: 0.6 });

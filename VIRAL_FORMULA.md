@@ -224,7 +224,7 @@ the `?scale` renderer; `tools/analyze-video.py` (this guide's measuring stick).
 
 ## 9. QA before you say "done"
 
-Run `python tools/analyze-video.py out/<name>.mp4` (it works on our renders and on reference videos; needs ffmpeg + numpy), then check:
+Run `python tools/analyze-video.py out/<name>.mp4` (it works on our renders and on reference videos; needs ffmpeg + numpy), and, before rendering, `node tools/qa-motion.mjs shorts/<name> --step 2` (a short opts in by defining `window.__qa`; it flags pops, jerks and flicker in the camera, characters, props and lights), then check:
 
 - [ ] Frame 1 shows the hero, big, doing something; the first word is at t = 0 with its caption.
 - [ ] ≥ 70 % of the runtime in one set; ≤ 3 sets total.
@@ -237,4 +237,5 @@ Run `python tools/analyze-video.py out/<name>.mp4` (it works on our renders and 
 - [ ] Captions: one word, ≈66 % height, readable on a phone.
 - [ ] Voice without gaps (`analyze-video.py` says "no dead air"), ≈ −14 LUFS, peak ≤ −1 dBFS.
 - [ ] The hero returns at the end; last frame = first frame.
+- [ ] `qa-motion` reports no pops/jerks (fade-toggles from opacity 0 are fine), a constant tail speed, legs that ramp with speed, no look-at weight steps.
 - [ ] Looked at stills at **full resolution** for the hook, every beat, and the loop frame.

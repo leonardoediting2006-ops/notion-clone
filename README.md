@@ -95,6 +95,7 @@ tools/
   server.mjs          tiny static dev server
   render.mjs          headless frame-by-frame MP4 / PNG exporter
   analyze-video.py    measures a video against the viral formula: hard cuts, camera/motion energy, longest take, loudness, silent gaps
+  qa-motion.mjs       steps a short's timeline without rendering and flags pops, jerks and flicker (camera, characters, props, lights); the short exposes window.__qa
   tighten-voice.py    cuts every pause in a voiceover and overlaps the phrase edges
   fetch-sfx.mjs       downloads REAL recorded sound effects (CC0/CC-BY, ESC-50) and cuts them for a short
 ```
