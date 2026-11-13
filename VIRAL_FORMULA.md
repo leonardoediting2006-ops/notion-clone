@@ -222,6 +222,15 @@ the `?scale` renderer; `tools/analyze-video.py` (this guide's measuring stick).
 - Every video comes with **title, tags, description and pinned comment** (`scripts/<name>.md`).
 - Seamless loop (last frame = first frame) when it fits; word timing from a **recorded `.srt`**; don't change the owner's script text except where they ask (deliberate typos on request).
 
+### A variant the owner asked for: many places (`dog-sneeze`)
+
+When the owner wants "lots of scenes in different detailed environments", break R1/R4 on purpose and keep everything else: one place per
+clause (a hard cut on the first word, −0.03 s), a **different look for every place** (light, colour of the sky, props), each place built in
+detail, the dog at the same size in every shot (≈ 40–75 % of the frame), a camera glide in every shot peaking at ≈ 3–4 m/s (the hook may run at the
+hero's speed), diegetic graphics and the colour code unchanged, and the first place returns for the loop. Plan the places so that no two
+neighbouring shots look alike (garden → living room → bedroom → flowerbed → kitchen → hallway → park → front yard → vegetable patch → meadow).
+Portrait frames are narrow: a side-on dog needs ≥ 2.3 m of distance to fit, so prefer 3/4-front angles and runs toward the lens.
+
 ## 9. QA before you say "done"
 
 Run `python tools/analyze-video.py out/<name>.mp4` (it works on our renders and on reference videos; needs ffmpeg + numpy), and, before rendering, `node tools/qa-motion.mjs shorts/<name> --step 2` (a short opts in by defining `window.__qa`; it flags pops, jerks and flicker in the camera, characters, props and lights), then check:

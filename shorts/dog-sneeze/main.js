@@ -127,24 +127,24 @@ function hookCam(u) {
 const OWN = V(-2.35, 0, 1.0), CUSH = V(-2.55, 0.6, 1.8);
 function shot2(t) {
   const u = t - CUT[1];
-  const run = prog(u, 0, 0.95), x = u < 0.95 ? lerp(0.9, -1.75, run) : 0, jump = prog(u, 0.95, 1.3);
+  const run = prog(u, 0, 0.9), x = u < 0.9 ? lerp(0.9, -1.75, run) : 0, jump = prog(u, 0.9, 1.3);
   let dx = x, dy = 0, dz = 1.5, ry = -Math.PI / 2, pose;
-  if (u < 0.95) pose = base(u, { run: 1, leap: 0.5 * Math.max(0, wob(u * 16)), lift: 0.06 * Math.max(0, wob(u * 16)), headPitch: 0.04, jawOpen: 0.3, ears: 0.5, wag: 1 });
-  else { const s = ease.inOut(jump); dx = lerp(-1.75, -2.55, s); dz = lerp(1.5, 1.8, s); dy = lerp(0, 0.55, s) + 0.34 * wob(Math.PI * jump); pose = base(u, { leap: 0.9 * wob(Math.PI * Math.min(1, jump * 1.1)) + 0.0, headPitch: -0.05, jawOpen: 0.3, ears: 0.6, wag: 1, run: 0.0 }); }
-  const cx = u < 0.95 ? dx + 0.55 : (-1.2 - 0.35 * ease.inOut(prog(u, 0.95, 1.3))) + 0.0, cz = -0.9;
+  if (u < 0.9) pose = base(u, { run: 1, leap: 0.5 * Math.max(0, wob(u * 16)), lift: 0.06 * Math.max(0, wob(u * 16)), headPitch: 0.04, jawOpen: 0.3, ears: 0.5, wag: 1 });
+  else { const s = ease.inOut(jump); dx = lerp(-1.75, -2.55, jump); dz = lerp(1.5, 1.8, s); dy = lerp(0, 0.55, s) + 0.34 * wob(Math.PI * jump); pose = base(u, { leap: 0.9 * wob(Math.PI * Math.min(1, jump * 1.1)) + 0.0, headPitch: -0.05, jawOpen: 0.3, ears: 0.6, wag: 1, run: 0.0 }); }
+  const cx = u < 0.9 ? 1.45 - 2.94 * u : (() => { const q = (u - 0.9) / 0.4; return (2 * q ** 3 - 3 * q ** 2 + 1) * -1.2 + (q ** 3 - 2 * q ** 2 + q) * 0.4 * -2.94 + (-2 * q ** 3 + 3 * q ** 2) * -1.55; })(), cz = -0.9;
   const raise = seg(u, 0.0, 0.18), slam = seg(u, 0.18, 0.3);
   return { cam: { pos: V(cx, lerp(0.7, 0.82, prog(u, 0, 1.3)), cz), look: V(dx - 0.25, 0.45 + 0.2 * Math.sin(Math.PI * jump), 1.5), fov: 58 },
-    dog: { x: dx, y: dy, z: dz, ry, pose, look: [-0.5, 0.1] }, rope: u < 0.95,
+    dog: { x: dx, y: dy, z: dz, ry, pose, look: [-0.5, 0.1] }, rope: u < 0.9,
     owner: { x: OWN.x, z: OWN.z, pose: { t, sit: 1, seat: 0.46, look: [0.4, 0.2], eyes: { happy: 0.4 }, mouth: { open: 0.5, smile: 0.9 }, armR: { a: lerp(lerp(0.15, 2.5, raise), 0.5, slam), e: 0.3 }, armL: { a: -0.1, e: 0 } } },
-    whack: 0.3, land: 1.2, u };
+    whack: 0.3, land: 1.3, u };
 }
 
 // ---------- 3: the bedroom: he pounces on you, you tip over laughing, he steals your sock ----------
 const BR = { P: V(0.8, 0.45, -0.4) };
 function shot3(t) {
   const u = t - CUT[2], R = 2.6, az = lerp(-1.0, -0.25, ease.inOut(prog(u, 0, 1.73)));
-  const come = prog(u, 0, 0.52), up = seg(u, 0.4, 0.62) * (1 - seg(u, 1.05, 1.28)), tug = seg(u, 1.15, 1.35);
-  const x = lerp(2.0, 1.05, ease.out(come)), z = lerp(-1.1, -0.1, ease.inOut(come)) + 0.2 * tug, ry = lerp(-1.9, -Math.PI / 2, ease.inOut(come)) + lerp(0, 1.1, tug);
+  const come = prog(u, 0, 0.52), up = seg(u, 0.4, 0.62) * (1 - seg(u, 1.05, 1.28)), tug = seg(u, 1.1, 1.5);
+  const x = lerp(2.0, 1.05, ease.out(come)), z = lerp(-1.1, -0.1, ease.inOut(come)) + 0.2 * tug, ry = lerp(-1.9, -Math.PI / 2, ease.inOut(come)) + lerp(0, 0.8, tug);
   const pose = base(u, { run: come < 1 ? 1 - come * 0.6 : 0, beg: 0.85 * up, headPitch: lerp(0.0, 0.6, tug) + 0.1 * wob(u * 11) * up, headYaw: 0.32 * wob(u * 9) * up + 0.55 * wob(u * 15) * tug, jawOpen: 0.5 + 0.2 * wob(u * 13), ears: 0.4, wag: 1, lift: 0.08 * Math.max(0, wob(u * 14)) * (1 - up) * (come < 1 ? 1 : 0) });
   const fall = seg(u, 0.5, 0.95) * (1 - seg(u, 1.2, 1.6));
   return { cam: { pos: P(O.bed, BR.P.x + Math.sin(az) * R, 0.62 + 0.08 * wob(u * 1.2), BR.P.z + Math.cos(az) * R), look: P(O.bed, BR.P.x, BR.P.y + 0.1, BR.P.z), fov: 54 },
@@ -202,13 +202,13 @@ function whirl(u, C, { r0 = 0.9, spin = 2.2, a0 = 0, snarl = 0.8, rage = 1, stil
 }
 const PK = { C8: V(-1.5, 0, 0.5), C9: V(-3.2, 0, -3.9), C10: V(15.2, 0, -2.8) };
 function shot8(t) {
-  const u = t - CUT[7], az = lerp(0.9, -1.2, ease.inOut(prog(u, 0, 1.97))), R = lerp(3.4, 2.9, prog(u, 0, 1.97)), C = PK.C8;
+  const u = t - CUT[7], az = lerp(0.9, -0.6, ease.inOut(prog(u, 0, 1.97))), R = lerp(3.4, 2.9, prog(u, 0, 1.97)), C = PK.C8;
   const [a, b] = whirl(u, C, { snarl: lerp(0.35, 0.95, seg(t, at(43) - 0.1, at(43) + 0.2)) });
   return { cam: { pos: P(O.park, C.x + Math.sin(az) * R, 0.7, C.z + Math.cos(az) * R), look: P(O.park, C.x, 0.4, C.z), fov: 50 }, dogs: [a, b].map((s) => ({ ...s, x: O.park.x + s.x, z: O.park.z + s.z })),
     red: seg(t, at(43), at(43) + 0.5), C: P(O.park, C.x, 0, C.z), owner: { x: O.park.x - 8.2, z: O.park.z - 2.0, sit: true }, u };
 }
 function shot9(t) {
-  const u = t - CUT[8], a = lerp(-0.8, 0.6, ease.inOut(prog(u, 0, 1.05))), R = 2.9, C = PK.C9;
+  const u = t - CUT[8], a = lerp(-0.38, 0.38, ease.inOut(prog(u, 0, 1.05))), R = 2.9, C = PK.C9;
   const snap = (ph) => 0.1 + 0.55 * Math.max(0, wob(u * 17 + ph)) ** 2;
   const mk = (me, ry, ph, hero_) => ({ x: O.park.x + me, z: O.park.z + C.z, y: 0, ry, pose: base(u, { bow: 0.35 + 0.1 * wob(u * 6 + ph), headPitch: -0.05 + 0.12 * wob(u * 9 + ph), headYaw: 0.2 * wob(u * 7 + ph), jawOpen: snap(ph), snarl: 1, ears: -0.6, wag: 1, squint: 0.25, lift: 0.02 }), look: [hero_ ? 0.7 : -0.7, 0.1] });
   return { cam: { pos: P(O.park, C.x + Math.sin(a) * R, 0.55, C.z + Math.cos(a) * R), look: P(O.park, C.x, 0.4, C.z), fov: 50 },
@@ -216,17 +216,17 @@ function shot9(t) {
 }
 const SNEEZE10 = at(52) + 0.2;
 function shot10(t) {
-  const u = t - CUT[9], C = PK.C10, az = lerp(-0.9, 0.7, ease.inOut(prog(u, 0, 2.55))), R = lerp(3.3, 2.7, ease.inOut(prog(u, 0, 2.55)));
+  const u = t - CUT[9], C = PK.C10, az = lerp(-0.9, 0.35, ease.inOut(prog(u, 0, 2.55))), R = lerp(3.1, 3.75, ease.inOut(prog(u, 0, 2.55)));
   const calm = seg(t, at(55) - 0.05, at(57) + 0.15), still = seg(u, 0.45, 0.8) * (1 - calm);
   const [a0, b0] = whirl(u, C, { rage: 1 - still, snarl: 0.9 * (1 - still), still: true });
-  const form = seg(u, 1.4, 2.3), a = { ...a0, x: lerp(a0.x, C.x - 0.85, form), z: lerp(a0.z, C.z + 0.25, form) }, b = { ...b0, x: lerp(b0.x, C.x + 0.85, form), z: lerp(b0.z, C.z - 0.1, form) };
+  const form = seg(u, 1.4, 2.3), a = { ...a0, x: lerp(a0.x, C.x - 0.42, form), z: lerp(a0.z, C.z + 0.2, form) }, b = { ...b0, x: lerp(b0.x, C.x + 0.48, form), z: lerp(b0.z, C.z - 0.3, form) };
   const sn = sneeze(t, SNEEZE10, 1);
   const heroP = addP(a.pose, sn), pal2 = { ...b.pose };
   const relax = (p, k) => ({ ...p, bow: lerp(p.bow ?? 0, 0.5, k), snarl: lerp(p.snarl ?? 0, 0, k), jawOpen: lerp(p.jawOpen ?? 0, 0.28, k), ears: lerp(p.ears ?? 0, 0.5, k), squint: lerp(p.squint ?? 0, 0.3, k) });
   const hp = relax(heroP, calm), pp = relax(pal2, calm);
   const fx = (s, p, lunge = 0) => ({ ...s, x: O.park.x + s.x, z: O.park.z + s.z + lunge, pose: p });
   const cam10 = P(O.park, C.x + Math.sin(az) * R, lerp(0.55, 0.75, prog(u, 0, 2.55)), C.z + Math.cos(az) * R);
-  const faceCam = Math.atan2(cam10.x - (O.park.x + a.x), cam10.z - (O.park.z + a.z)) - 0.55, face = seg(u, 0.5, 0.95);
+  const faceCam = Math.atan2(cam10.x - (O.park.x + a.x), cam10.z - (O.park.z + a.z)) - 0.55, face = seg(u, 0.35, 1.0);
   const faceCamB = Math.atan2(cam10.x - (O.park.x + b.x), cam10.z - (O.park.z + b.z)) + 0.55;
   const heroS = fx({ ...a, ry: lerp(a.ry, faceCam + Math.round((a.ry - faceCam) / 6.2832) * 6.2832, face) }, hp);
   const palS = fx({ ...b, ry: lerp(b.ry, faceCamB + Math.round((b.ry - faceCamB) / 6.2832) * 6.2832, form) }, pp);
@@ -237,7 +237,7 @@ function shot10(t) {
 // ---------- 11: the front yard: the game freezes mid-leap; the camera circles the hanging dog ----------
 function shot11(t) {
   const u = t - CUT[10], tau = u < 0.6 ? u : 0.6 + 0.04 * (u - 0.6);
-  const R = 2.8, az = lerp(-1.0, 1.6, ease.inOut(prog(u, 0, 2.22))), C = V(0.9, 0.85, 9.4);
+  const R = 2.8, az = lerp(-0.8, 1.1, ease.inOut(prog(u, 0, 2.22))), C = V(0.9, 0.85, 9.4);
   const run = prog(tau, 0, 0.6), x = lerp(0.1, 0.85, ease.out(run)), z = lerp(10.4, 9.55, run), y = 0.8 * wob(Math.PI * Math.min(1, run * 0.92)) * 0.95;
   const glance = seg(t, at(66) - 0.2, at(66) + 0.3);
   const bx = lerp(1.15, 0.98, run), by = lerp(1.3, 1.5, run) - 0.2 * wob(Math.PI * Math.min(1, run)) * 0, bz = lerp(9.2, 9.45, run);
@@ -258,10 +258,10 @@ function shot12(t) {
 
 // ---------- 13: the sunset meadow: you and he leap about; one 3D heart ----------
 function shot13(t) {
-  const u = t - CUT[12], az = lerp(-0.9, 0.8, ease.inOut(prog(u, 0, 1.13))), R = lerp(3.5, 3.0, prog(u, 0, 1.13)), C = V(0.0, 0, -9.0), y0 = meadow.hgt(C.x, C.z);
-  const bounce = Math.max(0, wob(u * 7.5)), twirl = u * 4.2;
+  const u = t - CUT[12], az = lerp(-0.35, 0.35, ease.inOut(prog(u, 0, 1.13))), R = lerp(3.5, 3.0, prog(u, 0, 1.13)), C = V(0.0, 0, -9.0), y0 = meadow.hgt(C.x, C.z);
+  const bounce = Math.max(0, wob(u * 7.5)), twirl = u * 2.8;
   return { cam: { pos: P(O.meadow, C.x + Math.sin(az) * R, y0 + lerp(0.55, 0.95, prog(u, 0, 1.13)), C.z + Math.cos(az) * R), look: P(O.meadow, C.x, y0 + 0.8, C.z), fov: 50 },
-    dog: { x: O.meadow.x + C.x - 0.5 + 1.1 * Math.cos(twirl), z: O.meadow.z + C.z + 0.9 * Math.sin(twirl), y: y0 + 0.3 * bounce, ry: -twirl, pose: base(u, { leap: 0.7 * bounce, run: 0.8, jawOpen: 0.4, ears: 0.6, wag: 1, headPitch: -0.15, lift: 0 }), look: [0, 0.3] },
+    dog: { x: O.meadow.x + C.x + 0.55 * Math.sin(0.9 * twirl - 1.4), z: O.meadow.z + C.z + 0.4 + 0.2 * Math.sin(twirl), y: y0 + 0.3 * bounce, ry: 1.1 + 0.3 * Math.sin(twirl), pose: base(u, { leap: 0.7 * bounce, run: 0.8, jawOpen: 0.4, ears: 0.6, wag: 1, headPitch: -0.15, lift: 0 }), look: [0, 0.3] },
     owner: { x: O.meadow.x + C.x - 0.5, z: O.meadow.z + C.z, y: y0 + 0.02 + 0.07 * bounce, pose: { t, look: [0, 0.4], eyes: { happy: 1 }, mouth: { open: 0.9, smile: 1 }, armR: { a: 2.7, e: 0.2 }, armL: { a: -2.7, e: 0.2 }, cute: 0.5 } },
     heart: bump(prog(t, at(74) - 0.05, at(77) + 0.2)), heartAt: P(O.meadow, C.x, y0 + 1.95, C.z), u };
 }
@@ -355,9 +355,9 @@ function effects(t, F, k) {
     beamTop.set({ w0: V(3.2, 2.2, 0.35), w1: V(3.2, 2.2, 2.3), f0: V(0.5, 0, 0.5), f1: V(0.5, 0, 2.4), color: 0xffe9a8, on: 1 });
     beamBot.set({ w0: V(3.2, 0.95, 0.35), w1: V(3.2, 0.95, 2.3), f0: V(2.0, 0, 0.5), f1: V(2.0, 0, 2.4), color: 0xffe9a8, on: 0.7 });
     motes.set(t, { c: V(1.7, 1.1, 1.45), s: V(2.6, 1.7, 2.2), drift: 0.04 }, 1);
-    puffs.set(t, CUT[1] + F.whack, CUSH, { count: 10, radius: 0.55, rise: 0.9, size: 0.85, life: 1.7 });
+    puffs.set(t, CUT[1] + F.whack, V(-1.85, 0.85, 1.25), { count: 14, radius: 0.8, rise: 0.9, size: 1.05, life: 1.9 });
     const lp = CUT[1] + F.land - 0.1;
-    puffs2.set(t, lp, V(-2.5, 0.75, 1.8), { count: 14, radius: 0.5, rise: 1.0, size: 0.8, life: 1.4 });
+    puffs2.set(t, lp, V(-2.4, 0.75, 1.7), { count: 14, radius: 0.6, rise: 1.0, size: 0.95, life: 1.5 });
     rope.visible = F.rope; if (F.rope) { hero.mouth.getWorldPosition(tw); rope.position.copy(tw).add(V(0, 0.0, 0)); rope.rotation.set(0, hero.rotation.y + Math.PI / 2, 0); }
   }
   if (k === 3 && F.sock) { sock.visible = true; hero.mouth.getWorldPosition(tw); sock.position.copy(tw).add(V(0, -0.02, 0)); sock.rotation.set(0, hero.rotation.y + 0.8, 0.3 * wob(t * 15)); }
@@ -403,9 +403,9 @@ for (const n of [0, 1, 2]) { const u = (0.5 + n) / 2.6; for (const [t0, lo, hi] 
 sfx.loop(0, CUT[1], "birds_a", { gain: 0.16, fadeIn: 0.05, fadeOut: 0.12 }); sfx.loop(CUT[13], DURATION, "birds_a", { gain: 0.16, fadeIn: 0.1, fadeOut: 0.05 });
 sneezeSfx(HK.snap, "sneeze_1", 1.45, 0.9); for (let i = 0; i < 3; i++) snd(HK.snap + 0.12 + i * 0.07, `pop_${i + 1}`, 0.14, { rate: 1.4 + 0.2 * i, pan: i - 1 });
 // 2 the living room: his claws on the floorboards, the cushion thumped, a puff of dust, the landing on the couch, your laugh
-stepsAt(CUT[1] + 0.05, CUT[1] + 0.95, 24, 0.2, CUT[1]);
+stepsAt(CUT[1] + 0.05, CUT[1] + 0.9, 24, 0.2, CUT[1]);
 snd(CUT[1] + 0.3, "thump", 0.42, { rate: 0.7 }); snd(CUT[1] + 0.32, "breath_out", 0.22, { rate: 1.7 });
-snd(CUT[1] + 1.2, "thump", 0.4, { rate: 0.8 }); snd(CUT[1] + 1.22, "creak_1", 0.12, { rate: 1.2 }); snd(CUT[1] + 1.24, "breath_out", 0.2, { rate: 1.5, pan: -0.3 });
+snd(CUT[1] + 1.3, "thump", 0.4, { rate: 0.8 }); snd(CUT[1] + 1.32, "creak_1", 0.12, { rate: 1.2 }); snd(CUT[1] + 1.34, "breath_out", 0.2, { rate: 1.5, pan: -0.3 });
 snd(CUT[1] + 0.7, "laugh_3", 0.4, { pan: -0.3 });
 // 3 the bedroom: he pounces, you tip over laughing, he tugs your sock and plays a growl
 stepsAt(CUT[2] + 0.02, CUT[2] + 0.5, 24, 0.2, CUT[2]);
@@ -445,7 +445,7 @@ const vec = (v) => [v.x, v.y, v.z];
 window.__qa = Object.assign((t) => {
   apply(t);
   const f = V(0, 0, -1).applyQuaternion(camera.quaternion);
-  const out = { cam: vec(camera.position), aim: vec(f), fov: [camera.fov], dog: vec(hero.position), dogry: [hero.rotation.y], head: vec(hero.point("Head")), mouth: vec(hero.mouth.getWorldPosition(new THREE.Vector3())), light: [hemi.intensity, key.intensity] };
+  const out = { cam: vec(camera.position), aim: vec(f), fov: [camera.fov], dog: vec(hero.position), dogry: [Math.sin(hero.rotation.y), Math.cos(hero.rotation.y)], head: vec(hero.point("Head")), mouth: vec(hero.mouth.getWorldPosition(new THREE.Vector3())), light: [hemi.intensity, key.intensity] };
   return out;
 }, { cuts: CUT, fps: FPS, duration: DURATION });
 window.__dbg = { scene, camera, hero, pal, owner, DURATION, CUT, at, words, apply, O, frameOf };

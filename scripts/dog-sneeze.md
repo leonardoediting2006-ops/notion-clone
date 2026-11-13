@@ -48,3 +48,66 @@ green = friendly / safe (the "disclaimer" rings, relaxed dog) · red = tension (
 
 Energy curve: HOT (1–2) → HOT/medium (3–7) → CALM-ish push-ins on the explanation (6, 7, 12) → HOT (8–11, 13) → loop.
 Budget check: places 10 (owner override) · cuts 13, each on a clause start · emojis 0 · icons 1 (3D heart) · beats ≈ one per 1.3 s.
+
+### Self-check against `VIRAL_FORMULA.md`
+
+| Rule | Result |
+|---|---|
+| R1 one world | **Broken on purpose** (owner's request): 10 places, each built in detail (back garden lawn, living room with a sunbeam, bedroom, flowerbed + patio, kitchen, hallway with the front door, park with pond/stream/bridge, front yard + street, vegetable patch + shed, sunset meadow). The garden is visited four times (hook, flowerbed, vegetable patch, loop), each time at a different corner |
+| R2 medium shots | Dog (or dog + you) 40–75 % of the frame height; cameras at his eye height; one POV (your eyes on the bed) |
+| R3 camera never rests | Yes: every shot is a glide/orbit/track; arcs peak at ≈ 3–4 m/s (the hook's dolly runs at his speed, 2.6 m/s) |
+| R4 cuts | 13 hard cuts, each on the first word of a clause (−0.03 s); no dissolves. Average shot 1.6 s (owner override of "cuts only in the first 6 s") |
+| R5 explanation in the world | sunbeam + dust (not the cause), pollen, a gaze line (he checks you), green rings (friendly), red ring + red glow on the jaws (tension) that turns green and bursts at "break the tension", a frozen leap (pausing mid-game), one heart |
+| R6 emojis | **0** emoji; **1** 3D heart at 20.5 s |
+| R7 faces | His glossy eyes, squeezed eyes in the sneeze, soft eyes in shot 12; your laugh, your pinched nose, your surprise |
+| R8 hook | Frame 1: he gallops at the lens on the lawn; first word at t = 0 |
+| R9 beats | 14 shots, ≈ 30 beats in 22 s |
+| R10 captions | One chunk at a time, ≈ 66 % height, pixel font drawn in code. No other text |
+| R11 voice | No gaps (22.18 s, 3.65 words/s); mix mastered to −14.2 LUFS, true peak −1.0 dBFS; 137 effects |
+| R12 ending | "Which is why…" = the hook's path run for its last 0.9 s: the last frame is the first frame |
+
+## Fact check (kept honest in the description)
+
+Dogs do sneeze in short bursts during play, often together with a play bow or a head shake, and trainers and behaviourists read these
+"play sneezes" as a signal that the rough stuff is meant in fun. It is a plausible, widely reported interpretation, not a settled finding,
+and a sneeze can also be dust, pollen, excitement or a real irritation. The description says so in one line; a dog that sneezes a lot
+outside of play, or with discharge, should see a vet.
+
+## Upload kit
+
+**Title (pick one)**
+1. Why Your Dog Fake-Sneezes When You Play 🐶
+2. That Sneeze During Play Isn't Allergies 🤧🐶
+3. "I'm Not Angry, I'm Just Playing" — What Your Dog's Sneeze Means 🐶
+
+**Tags**
+```
+why does my dog sneeze when we play, dog play sneeze, dog fake sneeze, dog sneezing while playing, dog sneezes in my face, dog play signals, dog body language, dog calming signals, dog play bow, dog play fighting, dog roughhousing, dog wrestling, dog behavior, dog facts, dog and owner, dog bond, cute dog, dog shorts, pet facts, animal facts, shorts
+```
+
+**Description**
+```
+Your dog isn't sneezing because of dust. 🐶 When he stops mid-game and sneezes at you, many dogs are saying: "I'm not angry, I'm just playing." Rough play looks like teeth and snapping jaws, so a quick sneeze breaks the tension. Next time it happens, you were just told you're a great playmate. ❤️
+(Dogs also sneeze from dust, pollen or excitement: watch the whole dog. The video is dramatised: science plus a little poetry.)
+#shorts #dogs #dogfacts
+
+Sounds: "Angelus Bell" by Peaveycroquette and "barkingdog_in_dream" by Taira Komori (freesound.org, CC BY).
+```
+
+**Pinned comment**
+```
+Does your dog sneeze at you when you play? Tell me 👇🐶
+```
+
+## Build notes
+
+- `main.js`: the whole story as pure functions of time (14 shot functions returning camera, dogs, owner and effects) + the cue sheet (137 effects).
+  `outdoors.js`: back garden, park, meadow. `indoors.js`: bedroom, hallway. `build.js`: small builders. `fx.js`: sneeze spray, drifting dust/pollen,
+  dust puffs, sunbeam, gaze line, lens splat. The flat (dog-kibble `room.js`) and `js/outside.js` are reused; every new place sits far away on the
+  same big grass plane (garden z = −40, park x = +70, meadow x = −70, bedroom and hallway at z = −90 / −110) and only the shot's place is visible.
+- Sneeze: head back, snap forward, a decaying head shake (`sneeze()` in `main.js`); the real sneeze recordings are placed so each burst lands on the snap.
+- Voice: `tools/tighten-voice.py` on the original, Whisper (`small.en`) transcript, pocketsphinx forced alignment, mapped onto the tightened audio.
+- Sounds: `tools/forge-sneeze-sfx.py` (new sneezes, laughs and bird-song from CC0 recordings; the rest copied from earlier shorts). The sneezes are
+  human recordings played higher for a small dog: no CC0 recording of a dog's play-sneeze exists in the datasets used.
+- Cloud check: stills at full resolution + `node tools/qa-motion.mjs shorts/dog-sneeze --step 2` + the audio-only mix. The final render is on your PC:
+  `npm run render -- shorts/dog-sneeze --headed` (1,331 frames, 2160×3840).

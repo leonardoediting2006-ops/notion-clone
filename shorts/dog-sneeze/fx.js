@@ -57,7 +57,7 @@ export function createMotes(scene, { n = 120, color = 0xfff2c0, size = 0.03, add
 
 // ---- soft dust clouds: puffs(t, t0, centre, { n, radius, rise }) ----
 export function createPuffs(scene, n = 16) {
-  const list = Array.from({ length: n }, () => { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: puffTex, color: 0xf2e6cf, transparent: true, depthWrite: false, opacity: 0 })); s.visible = false; s.renderOrder = 6; s.userData.ink = false; scene.add(s); return s; });
+  const list = Array.from({ length: n }, () => { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: puffTex, color: 0xf3e2c4, transparent: true, depthWrite: false, opacity: 0 })); s.visible = false; s.renderOrder = 6; s.userData.ink = false; scene.add(s); return s; });
   return {
     list, hide() { list.forEach((s) => (s.visible = false)); },
     set(t, t0, c, { count = n, radius = 0.35, rise = 0.5, size = 0.7, life = 1.6 } = {}) {
@@ -66,7 +66,7 @@ export function createPuffs(scene, n = 16) {
         if (i >= count || u < 0 || u > life) { s.visible = false; return; }
         const a = hash(i, 1) * 6.28, r = radius * (0.3 + 0.7 * hash(i, 2)), k = clamp01(u / life), e = 1 - (1 - Math.min(1, u * 2.5)) ** 2;
         s.visible = true; s.position.set(c.x + Math.cos(a) * r * e, c.y + rise * e * (0.5 + hash(i, 3)) * 0.6 + 0.1 * u * (0.4 + hash(i, 4)), c.z + Math.sin(a) * r * e);
-        s.scale.setScalar(size * (0.35 + 0.65 * e) * (0.7 + 0.6 * hash(i, 5))); s.material.opacity = 0.55 * Math.min(1, u * 8) * (1 - k) * (1 - k); s.material.rotation = a + u * (hash(i, 6) - 0.5);
+        s.scale.setScalar(size * (0.35 + 0.65 * e) * (0.7 + 0.6 * hash(i, 5))); s.material.opacity = 0.55 * Math.min(1, u * 8) * (1 - k * k); s.material.rotation = a + u * (hash(i, 6) - 0.5);
       });
     },
   };
@@ -78,7 +78,7 @@ export function createBeam(scene) {
     const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(4 * 3), 3)); geo.setAttribute("color", new THREE.BufferAttribute(new Float32Array(4 * 4), 4)); geo.setIndex([0, 1, 2, 1, 3, 2]);
     const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending })); m.frustumCulled = false; m.renderOrder = 5; m.userData.ink = false; m.visible = false; scene.add(m); return { m, geo, op, grow };
   };
-  const layers = [mk(0.2, 0), mk(0.1, 0.18)];
+  const layers = [mk(0.34, 0), mk(0.18, 0.2)];
   return {
     layers, hide() { layers.forEach((l) => (l.m.visible = false)); },
     // the window's two top corners (w0, w1) and the floor patch's two far corners (f0, f1): a slab of light from the window to the floor
