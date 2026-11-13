@@ -105,6 +105,12 @@ Does your dog sneeze at you when you play? Tell me 👇🐶
   `outdoors.js`: back garden, park, meadow. `indoors.js`: bedroom, hallway. `build.js`: small builders. `fx.js`: sneeze spray, drifting dust/pollen,
   dust puffs, sunbeam, gaze line, lens splat. The flat (dog-kibble `room.js`) and `js/outside.js` are reused; every new place sits far away on the
   same big grass plane (garden z = −40, park x = +70, meadow x = −70, bedroom and hallway at z = −90 / −110) and only the shot's place is visible.
+- Backgrounds: `js/outside.js` also draws big flat green hill domes, 3D cloud blobs and a large sun disc; they read as odd "circles" behind the
+  action, so this short hides them (`outside.hills`, `outside.clouds`, sun below the horizon) and paints its own backdrop instead
+  (`backdrop.js`: an 8192 x 1024 cartoon panorama per kind: suburb, park, sunset — snow-capped mountains, hills, a forest edge of outlined trees,
+  neighbouring houses and a church, fluffy outlined clouds, a sunset glow with birds — plus a fog-coloured skirt where it meets the lawn). In front of it
+  the sets add real 3D neighbour houses, rings of trees, a gazebo, a barn, a silo and a windmill. The bedroom wallpaper is now soft stripes (the big
+  white dots read as circles too).
 - Sneeze: head back, snap forward, a decaying head shake (`sneeze()` in `main.js`); the real sneeze recordings are placed so each burst lands on the snap.
 - Voice: `tools/tighten-voice.py` on the original, Whisper (`small.en`) transcript, pocketsphinx forced alignment, mapped onto the tightened audio.
 - Sounds: `tools/forge-sneeze-sfx.py` (new sneezes, laughs and bird-song from CC0 recordings; the rest copied from earlier shorts). The sneezes are

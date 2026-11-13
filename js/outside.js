@@ -129,7 +129,8 @@ export function buildOutside() {
   addTree({ species: "pine", height: 7.0, crown: 1.6, seed: 28, leaves: 700, far: true }, -16.0, 6.0);
 
   // ---------- hills, clouds, grass, wild flowers ----------
-  for (const [x, y, z, r, h, c] of [[-40, 3, 120, 46, 11, W.PAL.hill1], [30, 4, 126, 50, 13, W.PAL.hill2], [0, 3, 108, 38, 8, W.PAL.hill3], [120, 3, 40, 46, 12, W.PAL.hill2], [126, 3, -20, 40, 10, W.PAL.hill1], [112, 3, 90, 40, 9, W.PAL.hill3], [-120, 3, 20, 44, 11, W.PAL.hill2], [20, 3, -90, 46, 12, W.PAL.hill1]]) put(g, W.hill(r, h, c), x, y, z);
+  const hills = [];
+  for (const [x, y, z, r, h, c] of [[-40, 3, 120, 46, 11, W.PAL.hill1], [30, 4, 126, 50, 13, W.PAL.hill2], [0, 3, 108, 38, 8, W.PAL.hill3], [120, 3, 40, 46, 12, W.PAL.hill2], [126, 3, -20, 40, 10, W.PAL.hill1], [112, 3, 90, 40, 9, W.PAL.hill3], [-120, 3, 20, 44, 11, W.PAL.hill2], [20, 3, -90, 46, 12, W.PAL.hill1]]) hills.push(put(g, W.hill(r, h, c), x, y, z));
   const clouds = [];
   for (const [x, y, z, s] of [[60, 16, 20, 2.4], [70, 20, -8, 3.0], [80, 14, 46, 2.0], [-30, 22, 90, 2.8], [26, 18, 100, 2.2], [48, 24, 60, 3.2]]) clouds.push(put(g, W.cloud(s), x, y, z));
   const skip = (x, z) => (z > 14.2 && z < 22.2) || (Math.abs(x - 0.8) < 0.8 && z > 4.6 && z < 14.6) || (x > -3.6 && x < 3.6 && z < 5.4) || (z > 5.2 && z < 7.0 && ((x > -4.4 && x < -1.2) || (x > 2.9 && x < 5.9)));
@@ -138,7 +139,7 @@ export function buildOutside() {
   g.add(W.meadowFlowers({ x0: -14, x1: 14, z0: 7, z1: 14, count: 170, skip, seed: 3 }));
   g.add(W.meadowFlowers({ x0: 4, x1: 14, z0: -6, z1: 8, count: 120, skip, seed: 8 }));
   outlineStatic(g, { width: 0.02, min: 0.08 });
-  W.fuseStatic(g, { skip: [snow, ground, ...clouds] });
+  W.fuseStatic(g, { skip: [snow, ground, ...clouds, ...hills] });
 
   // ---------- the sky: a dome, a sun, a moon, stars ----------
   const skyC = document.createElement("canvas"); skyC.width = 4; skyC.height = 256;
@@ -158,7 +159,7 @@ export function buildOutside() {
   const dayTop = 0x45a6ff, dayMid = 0xa9defa, dayLow = 0xe9f8ff, nightTop = 0x070b30, nightMid = 0x1a2a6c, nightLow = 0x3a4a9a, warmTop = 0x5876c8, warmMid = 0xff9a5c, warmLow = 0xffdca0;
   let lastLeaf = "";
   const out = {
-    group, sky, fogColor: new THREE.Color(),
+    group, sky, hills, clouds, fogColor: new THREE.Color(),     // hills and clouds are exposed so a short can hide them (dog-sneeze paints its own backdrop)
     // light 0..1 (night..day), warm 0..1 (sunset), sunEl/sunAz radians (azimuth from +x towards +z), season 0 spring .. 3 winter, t seconds
     set({ light = 1, warm = 0, sunEl = 0.5, sunAz = 0.4, season = 1, t = 0, moonEl = -1, moonAz = 0 } = {}) {
       const top = mixC(nightTop, dayTop, light).lerp(col(warmTop), warm), mid = mixC(nightMid, dayMid, light).lerp(col(warmMid), warm), low = mixC(nightLow, dayLow, light).lerp(col(warmLow), warm);

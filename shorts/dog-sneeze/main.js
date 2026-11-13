@@ -12,6 +12,7 @@ import { createKit, clamp01, lerp, ease, prog, V, bump } from "../dog-gaze/kit.j
 import { buildRoom } from "../dog-kibble/room.js";
 import { buildGarden, buildPark, buildMeadow } from "./outdoors.js";
 import { buildBedroom, buildHallway } from "./indoors.js";
+import { createBackdrop } from "./backdrop.js";
 import { createSpray, createMotes, createPuffs, createBeam, createSightline, createLens } from "./fx.js";
 
 // "Why your dog fake-sneezes when you play": 14 hard cuts through 10 different places (garden, living room, bedroom, flowerbed, kitchen,
@@ -53,6 +54,10 @@ const smooth = (u) => u * u * (3 - 2 * u);
 const room = buildRoom(); scene.add(room.group); room.house.ceiling.visible = false;
 const outside = buildOutside(); scene.add(outside.group, outside.sky);
 scene.fog = new THREE.Fog(0xe9f8ff, 45, 260);
+outside.hills.forEach((h) => (h.visible = false)); outside.clouds.forEach((c) => (c.visible = false));      // no flat green domes or 3D cloud blobs: every place gets a painted backdrop (backdrop.js)
+const BACKDROPS = { suburb: createBackdrop("suburb"), park: createBackdrop("park"), sunset: createBackdrop("sunset") };
+for (const b of Object.values(BACKDROPS)) scene.add(b.group);
+const SHOT_BACKDROP = [null, "suburb", "suburb", null, null, "suburb", "suburb", null, "park", "park", "park", "suburb", "suburb", "sunset", "suburb"];
 const O = { garden: V(0, 0, -40), park: V(70, 0, 0), meadow: V(-70, 0, 0), bed: V(-40, 0, -90), hall: V(-40, 0, -110) };
 const garden = buildGarden(), park = buildPark(), meadow = buildMeadow(), bedroom = buildBedroom(), hall = buildHallway();
 garden.group.position.copy(O.garden); park.group.position.copy(O.park); meadow.group.position.copy(O.meadow); bedroom.group.position.copy(O.bed); hall.group.position.copy(O.hall);
@@ -268,13 +273,13 @@ function shot13(t) {
 
 // ===================== light and sky per shot =====================
 const LIGHT = {
-  garden: { hemi: [0xe4f4ff, 0xc2dc8e, 2.15], key: [0xfff1d2, 1.7], off: V(3.5, 6.2, 4.2), rim: [0xfff2d6, 0.5], sky: { light: 1, warm: 0.12, sunEl: 0.75, sunAz: 2.0 }, shadow: 6 },
-  flat: { hemi: [0xfff6e4, 0xe0c9a0, 2.3], key: [0xfff0d2, 1.5], off: V(2.5, 4.6, 4.6), rim: [0xfff0d0, 0.35], sky: { light: 1, warm: 0.0, sunEl: 0.9, sunAz: 0.3 }, shadow: 4.5 },
-  bed: { hemi: [0xfff3e0, 0xe8cfa6, 2.25], key: [0xffe6bc, 1.35], off: V(2.2, 3.8, 2.8), rim: [0xffe9c8, 0.4], sky: { light: 1, warm: 0.2, sunEl: 0.8, sunAz: 0.3 }, shadow: 4 },
-  hall: { hemi: [0xfff0dc, 0xc9a982, 2.15], key: [0xfff4e0, 1.3], off: V(1.4, 3.4, 3.2), rim: [0xfff4d8, 0.6], sky: { light: 1, warm: 0.1, sunEl: 0.8, sunAz: 0.3 }, shadow: 4 },
-  park: { hemi: [0xe6f4ff, 0xb5d98a, 2.2], key: [0xfff6e0, 1.75], off: V(3.8, 6.4, 3.6), rim: [0xfff6e0, 0.5], sky: { light: 1, warm: 0.0, sunEl: 0.95, sunAz: 1.0 }, shadow: 6 },
-  outside: { hemi: [0xe9f5ff, 0xbcd890, 2.15], key: [0xffeccb, 1.65], off: V(3.6, 5.6, 4.6), rim: [0xffecd0, 0.5], sky: { light: 1, warm: 0.18, sunEl: 0.6, sunAz: 0.5 }, shadow: 6 },
-  meadow: { hemi: [0xffd8b0, 0xb08a60, 1.95], key: [0xffb36e, 1.9], off: V(0.5, 3.6, -7.0), rim: [0xffc890, 0.9], sky: { light: 0.85, warm: 1.0, sunEl: 0.1, sunAz: -1.57 }, shadow: 6 },
+  garden: { hemi: [0xe4f4ff, 0xc2dc8e, 2.15], key: [0xfff1d2, 1.7], off: V(3.5, 6.2, 4.2), rim: [0xfff2d6, 0.5], sky: { light: 1, warm: 0.12, sunEl: -1, sunAz: 2.0 }, shadow: 6 },
+  flat: { hemi: [0xfff6e4, 0xe0c9a0, 2.3], key: [0xfff0d2, 1.5], off: V(2.5, 4.6, 4.6), rim: [0xfff0d0, 0.35], sky: { light: 1, warm: 0.0, sunEl: -1, sunAz: 0.3 }, shadow: 4.5 },
+  bed: { hemi: [0xfff3e0, 0xe8cfa6, 2.25], key: [0xffe6bc, 1.35], off: V(2.2, 3.8, 2.8), rim: [0xffe9c8, 0.4], sky: { light: 1, warm: 0.2, sunEl: -1, sunAz: 0.3 }, shadow: 4 },
+  hall: { hemi: [0xfff0dc, 0xc9a982, 2.15], key: [0xfff4e0, 1.3], off: V(1.4, 3.4, 3.2), rim: [0xfff4d8, 0.6], sky: { light: 1, warm: 0.1, sunEl: -1, sunAz: 0.3 }, shadow: 4 },
+  park: { hemi: [0xe6f4ff, 0xb5d98a, 2.2], key: [0xfff6e0, 1.75], off: V(3.8, 6.4, 3.6), rim: [0xfff6e0, 0.5], sky: { light: 1, warm: 0.0, sunEl: -1, sunAz: 1.0 }, shadow: 6 },
+  outside: { hemi: [0xe9f5ff, 0xbcd890, 2.15], key: [0xffeccb, 1.65], off: V(3.6, 5.6, 4.6), rim: [0xffecd0, 0.5], sky: { light: 1, warm: 0.18, sunEl: -1, sunAz: 0.5 }, shadow: 6 },
+  meadow: { hemi: [0xffd8b0, 0xb08a60, 1.95], key: [0xffb36e, 1.9], off: V(0.5, 3.6, -7.0), rim: [0xffc890, 0.9], sky: { light: 0.85, warm: 1.0, sunEl: -1, sunAz: -1.57 }, shadow: 6 },
 };
 const hemi = new THREE.HemisphereLight(0xfff6e4, 0xe0c9a0, 2.3);
 const key = new THREE.DirectionalLight(0xfff0d2, 1.5);
@@ -317,9 +322,11 @@ function apply(t) {
   hemi.color.set(L.hemi[0]); hemi.groundColor.set(L.hemi[1]); hemi.intensity = L.hemi[2]; key.color.set(L.key[0]); key.intensity = L.key[1]; rim.color.set(L.rim[0]); rim.intensity = L.rim[1];
   outside.set({ ...L.sky, season: 1, t });
   scene.fog.color.copy(outside.fogColor);
+  for (const [n, b] of Object.entries(BACKDROPS)) b.group.visible = SHOT_BACKDROP[k] === n;
   // camera
   const c = window.__cam ? { pos: V(...window.__cam.pos), look: V(...window.__cam.look), fov: window.__cam.fov ?? 46 } : F.cam;
   camera.position.copy(c.pos); camera.lookAt(c.look);
+  for (const b of Object.values(BACKDROPS)) b.follow(camera.position, outside.fogColor);
   if (camera.fov !== c.fov) { camera.fov = c.fov; camera.updateProjectionMatrix(); }
   camera.updateMatrixWorld(true);
   // sun and the back light follow the subject

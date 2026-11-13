@@ -27,6 +27,44 @@ const shedTex = canvasTex(128, 128, (x) => { for (let i = 0; i < 8; i++) { x.fil
 
 const flowerCols = [0xff8fb3, 0xffd34e, 0xffffff, 0xa890e8, 0xff6a5a, 0xff9d3c];
 
+
+// ---- the real 3D surroundings that sit in front of the painted backdrop (backdrop.js): rings of trees, neighbouring houses, a barn and a windmill ----
+function ring(n, r0, r1, seed, skipArc = null) {
+  const out = []; let q = seed; const rnd = () => ((q = (q * 16807) % 2147483647) / 2147483647);
+  for (let i = 0; i < n; i++) { const a = (i / n) * Math.PI * 2 + rnd() * 0.3, r = r0 + rnd() * (r1 - r0); if (skipArc && skipArc(a)) continue; const k = rnd(); out.push([Math.sin(a) * r, Math.cos(a) * r, k < 0.25 ? "pine" : k < 0.5 ? "maple" : k < 0.75 ? "oak" : "birch", 6.5 + rnd() * 3.5]); }
+  return out;
+}
+function treeRing(g, items, yAt = () => 0) {
+  items.forEach(([x, z, sp, h], i) => put(g, W.leafyTree({ species: sp, height: h, crown: sp === "pine" ? 1.7 : 2.5, seed: 200 + i * 7, leaves: sp === "pine" ? 650 : 1000, far: sp === "pine" }), x, yAt(x, z), z, i * 1.3));
+}
+function barn(g, x, y, z, ry) {
+  const b = new THREE.Group(), red = tm(0xb8452f), white = tm(0xfff6e8), dark = tm(0x5a4038);
+  rbox(b, 6.2, 3.6, 8.4, red, 0, 1.8, 0, 0.05);
+  for (const k of [-1, 1]) { const r = rbox(b, 3.9, 0.16, 9.0, dark, k * 1.65, 4.45, 0, 0.03); r.rotation.z = -k * 0.62; }
+  rbox(b, 2.2, 2.6, 0.08, white, 0, 1.35, 4.24, 0.02); for (const sgn of [-1, 1]) { const x2 = rbox(b, 2.5, 0.12, 0.08, red, 0, 1.35, 4.3, 0.01); x2.rotation.z = sgn * 0.82; }
+  rbox(b, 1.0, 0.9, 0.08, white, 0, 3.3, 4.24, 0.02); rbox(b, 0.5, 0.06, 0.1, red, 0, 3.3, 4.3, 0.01);
+  const silo = new THREE.Group(); cyl(silo, 1.3, 1.3, 7.2, tm(0xc9d2de), 0, 3.6, 0, 18).userData.ink = true; ball(silo, 1.3, tm(0x8fa0b8), 0, 7.2, 0, 1, 0.7, 1); for (const yy of [1.5, 3.2, 4.9, 6.4]) mesh(silo, new THREE.TorusGeometry(1.32, 0.04, 6, 24).rotateX(Math.PI / 2), tm(0x8fa0b8), 0, yy, 0);
+  put(b, silo, 4.6, 0, -2.2);
+  b.position.set(x, y, z); b.rotation.y = ry; g.add(b);
+}
+function windmill(g, x, y, z, ry) {
+  const w = new THREE.Group();
+  const tower = cyl(w, 1.0, 1.9, 9, tm(0xf1e6d2), 0, 4.5, 0, 12); tower.userData.ink = true;
+  const cap = cyl(w, 0.2, 1.15, 1.6, tm(0xb4553d), 0, 9.7, 0, 12); cap.userData.ink = true;
+  rbox(w, 0.9, 1.5, 0.08, tm(0x6b4630), 0, 1.0, 1.72, 0.02);
+  const hub = new THREE.Group(); hub.position.set(0, 9.6, 1.25); hub.rotation.z = 0.55;
+  for (let k = 0; k < 4; k++) { const arm = new THREE.Group(); arm.rotation.z = (k * Math.PI) / 2; rbox(arm, 0.14, 5.2, 0.1, tm(0x8a5a3a), 0, 2.7, 0, 0.02); rbox(arm, 0.9, 3.4, 0.05, tm(0xfff6e8), 0.5, 3.1, 0.06, 0.01); hub.add(arm); }
+  ball(hub, 0.22, tm(0x6b4630), 0, 0, 0.05); w.add(hub); w.position.set(x, y, z); w.rotation.y = ry; g.add(w);
+}
+function gazebo(g, x, z) {
+  const b = new THREE.Group();
+  cyl(b, 2.0, 2.1, 0.16, tm(0xe6d6b4), 0, 0.08, 0, 6).userData.ink = true;
+  for (let i = 0; i < 6; i++) { const a = (i / 6) * Math.PI * 2 + Math.PI / 6; cyl(b, 0.07, 0.07, 2.3, tm(0xfff6e8), Math.sin(a) * 1.75, 1.25, Math.cos(a) * 1.75, 8); }
+  const roof = new THREE.Mesh(new THREE.ConeGeometry(2.4, 1.1, 6), tm(0x5b8f6a)); roof.position.y = 2.95; roof.castShadow = true; b.add(roof); ball(b, 0.1, tm(0xffd23a), 0, 3.55, 0);
+  mesh(b, new THREE.TorusGeometry(1.75, 0.04, 6, 6).rotateX(Math.PI / 2), tm(0xfff6e8), 0, 0.9, 0);
+  b.position.set(x, 0, z); g.add(b);
+}
+
 // a flower: stem, five petals, a centre (shared materials so fuseStatic can merge the lot)
 function flower(g, x, z, h, c, r = 0.045) {
   cyl(g, 0.008, 0.008, h, tm(W.PAL.leafDark), x, h / 2, z, 5);
@@ -143,6 +181,10 @@ export function buildGarden() {
     put(g, s, -5.2, 0, -4.8, 0.6); }
   { const bar = new THREE.Group(); cyl(bar, 0.32, 0.36, 0.85, tm(0x9a6a3c), 0, 0.42, 0, 16).userData.ink = true; for (const y of [0.2, 0.62]) mesh(bar, new THREE.TorusGeometry(0.35, 0.015, 5, 18).rotateX(Math.PI / 2), tm(0x5d6670), 0, y, 0); cyl(bar, 0.3, 0.3, 0.02, tm(0x62bfea), 0, 0.84, 0, 16); put(g, bar, -9.6, 0, -8.0); }
   { const wb = new THREE.Group(); rbox(wb, 0.9, 0.28, 0.55, tm(0x3d6fb4), 0, 0.5, 0, 0.05).rotation.z = 0.0; cyl(wb, 0.2, 0.2, 0.06, tm(0x2e3340), 0.5, 0.2, 0, 14).rotation.x = Math.PI / 2; for (const z of [-0.2, 0.2]) cyl(wb, 0.02, 0.02, 0.9, tm(0xb98a58), -0.5, 0.58, z, 5).rotation.z = Math.PI / 2 - 0.2; put(g, wb, -9.6, 0, 1.6, 0.9); }
+  // neighbouring houses and a ring of real trees beyond the fences, in front of the painted backdrop
+  for (const [x, z, ry, o] of [[-24.5, -3, Math.PI / 2, { w: 7.0, h: 4.4, d: 5.2, style: "stucco", wall: 0xf5d6c6, roof: W.PAL.roof2, door: 0x5f8f6a }], [24.5, -1, -Math.PI / 2, { w: 7.4, h: 4.6, d: 5.4, style: "brick", wall: 0xc9684a, roof: 0x6f7fb8, door: 0xf2f0e6 }], [-21, 19, Math.PI - 0.15, { w: 7.2, h: 4.4, d: 5.0, style: "siding", wall: 0xcfe7ee, roof: 0xb4553d, door: 0xd9734f }], [19, 21, Math.PI + 0.2, { w: 7.0, h: 4.4, d: 5.2, style: "siding", wall: 0xf6dcc0, roof: W.PAL.roof, door: 0x4f7ccf }], [2, 28, Math.PI, { w: 7.6, h: 4.6, d: 5.4, style: "stucco", wall: 0xe9d6f2, roof: 0x7d96d8, door: 0xf2b84a }], [-26, -22, 0.9, { w: 7.0, h: 4.4, d: 5.2, style: "brick", wall: 0xb9674f, roof: 0x7a5a4a, door: 0xf2f0e6 }], [27, -24, -0.9, { w: 7.2, h: 4.4, d: 5.2, style: "siding", wall: 0xf5d6c6, roof: 0xb4553d, door: 0x5f8f6a }]]) put(g, W.house(o), x, 0, z, ry);
+  treeRing(g, ring(20, 19, 40, 31, (a) => false));
+  for (const [x, z] of [[-19, 2], [19, 3], [-18, -10], [18, -12]]) put(g, W.leafyBush({ r: 0.9, seed: Math.abs(x * z) | 0, leaves: 320, flowers: 6, flowerColor: W.PAL.pink }), x, 0, z);
   outlineStatic(g, { width: 0.016, min: 0.06 });
   W.fuseStatic(g, {});
   return { group: g };
@@ -181,6 +223,9 @@ export function buildPark() {
   for (let i = 0; i < 10; i++) { const x = -16 + i * 4.3, z = 11.5 + Math.sin(i) * 1.5; put(g, W.leafyBush({ r: 0.7, seed: 60 + i, leaves: 240, flowers: i % 3 === 0 ? 8 : 0, flowerColor: W.PAL.pink, tint: i }), x, 0, z); }
   g.add(W.grassField({ x0: -34, x1: 34, z0: -28, z1: 24, count: 30000, seed: 12, height: 0.17, spread: 0.12, skip: keepOut }));
   g.add(W.meadowFlowers({ x0: -30, x1: 30, z0: -16, z1: 14, count: 260, seed: 5, skip: keepOut }));
+  gazebo(g, -13, -12);
+  treeRing(g, ring(22, 27, 52, 41, (a) => false));
+  for (const [x, z] of [[-20, 8], [20, 10], [-24, -14], [24, -16], [2, -22], [-8, 24]]) put(g, W.leafyBush({ r: 1.0, seed: Math.abs(x * z) | 0, leaves: 340, flowers: 8, flowerColor: [W.PAL.pink, W.PAL.yellow, W.PAL.purple][(Math.abs(x) | 0) % 3] }), x, 0, z);
   outlineStatic(g, { width: 0.016, min: 0.06 });
   W.fuseStatic(g, { skip: [edge, path, stream] });
   return { group: g, PATH };
@@ -190,7 +235,8 @@ export function buildPark() {
 export function buildMeadow() {
   W.reseed(99);
   const g = new THREE.Group();
-  const hgt = (x, z) => 2.6 * Math.exp(-((x * x + (z + 14) * (z + 14)) / 380)) + 0.35 * Math.sin(x * 0.11) * Math.cos(z * 0.09) + Math.max(0, -z - 32) * 0.08;
+  const sm = (u) => { u = Math.min(1, Math.max(0, u)); return u * u * (3 - 2 * u); };
+  const hgt = (x, z) => (2.6 * Math.exp(-((x * x + (z + 14) * (z + 14)) / 380)) + 0.35 * Math.sin(x * 0.11) * Math.cos(z * 0.09)) * sm((80 - Math.abs(x)) / 30) * sm((z + 62) / 25) * sm((52 - z) / 22);
   const ground = W.terrainMesh({ x0: -90, x1: 90, z0: -70, z1: 60, step: 2, heightAt: hgt, material: W.grassMaterial([36, 26]) }); g.add(ground);
   g.add(W.grassField({ x0: -34, x1: 34, z0: -40, z1: 24, count: 36000, seed: 15, height: 0.34, spread: 0.14, heightAt: hgt }));
   g.add(W.meadowFlowers({ x0: -30, x1: 30, z0: -36, z1: 22, count: 700, seed: 7, colors: [0xffffff, 0xffd34e, 0xff8fb3, 0xa890e8, 0xff7a4a] }));
@@ -199,6 +245,8 @@ export function buildMeadow() {
   { // a rustic fence along the crest and a tiny bench
     for (let i = 0; i < 14; i++) { const x = -12 + i * 1.9, z = -13 + Math.sin(i * 0.5) * 1.2, y = hgt(x, z); rbox(g, 0.09, 0.95, 0.09, tm(0x9a6a3c), x, y + 0.47, z, 0.02); if (i < 13) { const x2 = x + 1.9, z2 = -13 + Math.sin((i + 1) * 0.5) * 1.2, y2 = hgt(x2, z2); for (const dy of [0.45, 0.75]) { const m = rbox(g, 1.95, 0.07, 0.05, tm(0xb98a58), (x + x2) / 2, (y + y2) / 2 + dy, (z + z2) / 2, 0.01); m.rotation.y = -Math.atan2(z2 - z, x2 - x); m.rotation.z = Math.atan2(y2 - y, 1.9); } } }
     put(g, W.bench({ w: 1.4 }), 3.0, hgt(3, -12), -12, Math.PI + 0.2); }
+  barn(g, -27, hgt(-27, -26), -26, 0.6); windmill(g, 31, hgt(31, -30), -30, -0.5);
+  treeRing(g, ring(18, 24, 50, 51, (a) => Math.abs(a - Math.PI) < 0.2), hgt);
   outlineStatic(g, { width: 0.016, min: 0.06 });
   W.fuseStatic(g, { skip: [ground] });
   return { group: g, hgt };
