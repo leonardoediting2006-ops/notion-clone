@@ -8,7 +8,8 @@ const V = (x, y, z) => new THREE.Vector3(x, y, z);
 
 export const DOG_SCALE = 0.7;
 export function heroDog(colors, key, scale = DOG_SCALE, extra = {}) {
-  const d = createDog({ colors, key, collar: false, ...extra });
+  const { factory, ...rest } = extra;                       // factory: another model with the same rig and pose() (js/pug.js createPug)
+  const d = (factory ?? createDog)({ colors, key, collar: false, ...rest });
   d.scale.setScalar(scale);
   const toonPose = d.pose;
   d.pose = ({

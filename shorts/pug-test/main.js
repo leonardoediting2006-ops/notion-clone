@@ -1,0 +1,22 @@
+import { createShort, THREE } from "../../js/engine.js";
+import { heroDog } from "../../js/herodog.js";
+import { createPug } from "../../js/pug.js";
+const short = createShort({ duration: 2, fps: 60, background: "#bfe6ff", fov: 40, lights: false });
+const { scene, camera, renderer, onUpdate } = short;
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap; renderer.toneMapping = THREE.NoToneMapping;
+scene.add(camera);
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(20, 20).rotateX(-Math.PI / 2), new THREE.MeshToonMaterial({ color: 0x8fd16a })); floor.receiveShadow = true; scene.add(floor);
+const hemi = new THREE.HemisphereLight(0xfff6e4, 0xc9b890, 2.3), key = new THREE.DirectionalLight(0xfff0d2, 1.6);
+key.position.set(2.5, 4.6, 3.6); key.castShadow = true; key.shadow.mapSize.set(1024, 1024); Object.assign(key.shadow.camera, { left: -3, right: 3, top: 3, bottom: -3 });
+scene.add(hemi, key, key.target);
+const pug = heroDog(undefined, "p", 1, { factory: createPug }); scene.add(pug);
+onUpdate((t) => {
+  const P = window.__poses ?? [{}];
+  P.forEach((p, i) => { if (i === 0) { pug.pose({ t, cute: 1, wag: 0.5, ...p }); } });
+  const c = window.__cam ?? { pos: [1.3, 0.55, 1.7], look: [0, 0.3, 0], fov: 40 };
+  camera.position.set(...c.pos); camera.lookAt(...c.look); camera.fov = c.fov ?? 40; camera.updateProjectionMatrix();
+  if (window.__grey !== undefined) pug.setGrey(window.__grey);
+  document.getElementById("caption").textContent = "";
+});
+window.__pug = pug;
+short.start();
